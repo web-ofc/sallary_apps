@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('code', 20)->nullable(); // Allow nullable karena mungkin ada yang kosong
             $table->string('company_name', 150);
             $table->string('logo', 150)->nullable();
+            $table->string('ttd', 150)->nullable();
             
             // Sync metadata
             $table->timestamp('last_synced_at')->nullable(); // Kapan terakhir di-sync

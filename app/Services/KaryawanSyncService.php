@@ -257,7 +257,6 @@ class KaryawanSyncService
             'file_ijazah' => $apiData['file_ijazah'] ?? null,
             'file_npwp' => $apiData['file_npwp'] ?? null,
             'file_skck' => $apiData['file_skck'] ?? null,
-            'ptkp_id' => $apiData['ptkp_id'] ?? null,
             'status_resign' => $apiData['status_resign'] ?? false,
             'last_synced_at' => now(),
             'sync_metadata' => json_encode([

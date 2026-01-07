@@ -1,5 +1,5 @@
 <?php
-// app/Exports/PayrollTemplateExport.php (FRESH - Show absen_id)
+// app/Exports/PayrollTemplateExport.php (PATTERN: GREEN-RED-GREEN)
 
 namespace App\Exports;
 
@@ -37,6 +37,7 @@ class PayrollTemplateExport implements WithMultipleSheets
 
 /**
  * SHEET 1: PAYROLL DATA
+ * Pattern: HIJAU (A-X) → MERAH (Y-AF) → HIJAU (AG-AJ)
  */
 class PayrollDataSheet implements FromArray, WithHeadings, WithStyles, WithColumnWidths, WithTitle
 {
@@ -55,8 +56,8 @@ class PayrollDataSheet implements FromArray, WithHeadings, WithStyles, WithColum
                 'periode',
                 'karyawan_id',
                 'company_id',
-                'gaji_pokok',
                 'salary_type',
+                'gaji_pokok',
                 'monthly_kpi',
                 'overtime',
                 'medical_reimbursement',
@@ -73,21 +74,21 @@ class PayrollDataSheet implements FromArray, WithHeadings, WithStyles, WithColum
                 'ca_corporate',
                 'ca_personal',
                 'ca_kehadiran',
-                'pph_21',
                 'bpjs_tenaga_kerja',
                 'bpjs_kesehatan',
                 'pph_21_deduction',
-                'glh',              // ✅ KOLOM BARU - warna hijau
-                'lm',               // ✅ KOLOM BARU - warna hijau
-                'lainnya',          // ✅ KOLOM BARU - warna hijau
-                'bpjs_tk_jht_3_7_percent',
-                'bpjs_tk_jht_2_percent',
-                'bpjs_tk_jkk_0_24_percent',
-                'bpjs_tk_jkm_0_3_percent',
-                'bpjs_tk_jp_2_percent',
-                'bpjs_tk_jp_1_percent',
-                'bpjs_kes_4_percent',
-                'bpjs_kes_1_percent'
+                'bpjs_tk_jht_3_7_percent',     // MERAH
+                'bpjs_tk_jht_2_percent',       // MERAH
+                'bpjs_tk_jkk_0_24_percent',    // MERAH
+                'bpjs_tk_jkm_0_3_percent',     // MERAH
+                'bpjs_tk_jp_2_percent',        // MERAH
+                'bpjs_tk_jp_1_percent',        // MERAH
+                'bpjs_kes_4_percent',          // MERAH
+                'bpjs_kes_1_percent',          // MERAH
+                'pph_21',                      // HIJAU
+                'glh',                         // HIJAU
+                'lm',                          // HIJAU
+                'lainnya'                      // HIJAU
             ]
         ];
     }
@@ -98,12 +99,12 @@ class PayrollDataSheet implements FromArray, WithHeadings, WithStyles, WithColum
             [], [], [],
             // Sample data
             [
-                '2025-01', 1, 1, 5000000, 'gross',
+                '2025-01', 1, 1, 'gross', 5000000,
                 500000, 200000, 100000, 50000, 0, 0,
                 100000, 200000, 150000, 0, 0, 0, 0,
-                0, 0, 0, 250000, 0, 0, 0,
-                0, 0, 0,  // glh, lm, lainnya
-                185000, 100000, 12000, 15000, 100000, 50000, 200000, 50000
+                0, 0, 0, 0, 0, 0,
+                185000, 100000, 12000, 15000, 100000, 50000, 200000, 50000,
+                250000, 0, 0, 0
             ]
         ];
     }
@@ -131,9 +132,9 @@ class PayrollDataSheet implements FromArray, WithHeadings, WithStyles, WithColum
         ]);
         $sheet->getRowDimension(2)->setRowHeight(25);
         
-        // Headers - GREEN (termasuk glh, lm, lainnya)
-        $greenCols = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB'];
-        foreach ($greenCols as $col) {
+        // HIJAU PERTAMA (A-X: 24 kolom)
+        $greenCols1 = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X'];
+        foreach ($greenCols1 as $col) {
             $sheet->getStyle($col.'4')->applyFromArray([
                 'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4CAF50']],
@@ -142,12 +143,23 @@ class PayrollDataSheet implements FromArray, WithHeadings, WithStyles, WithColum
             ]);
         }
         
-        // Headers - RED (BPJS breakdown tetap merah)
-        $redCols = ['AC','AD','AE','AF','AG','AH','AI','AJ'];
+        // MERAH (Y-AF: 8 kolom BPJS)
+        $redCols = ['Y','Z','AA','AB','AC','AD','AE','AF'];
         foreach ($redCols as $col) {
             $sheet->getStyle($col.'4')->applyFromArray([
                 'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F44336']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
+            ]);
+        }
+        
+        // HIJAU KEDUA (AG-AJ: 4 kolom terakhir)
+        $greenCols2 = ['AG','AH','AI','AJ'];
+        foreach ($greenCols2 as $col) {
+            $sheet->getStyle($col.'4')->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4CAF50']],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
                 'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
             ]);
@@ -163,10 +175,10 @@ class PayrollDataSheet implements FromArray, WithHeadings, WithStyles, WithColum
             'F' => 15, 'G' => 15, 'H' => 20, 'I' => 15, 'J' => 15,
             'K' => 12, 'L' => 15, 'M' => 18, 'N' => 18, 'O' => 18,
             'P' => 15, 'Q' => 12, 'R' => 12, 'S' => 15, 'T' => 15,
-            'U' => 15, 'V' => 12, 'W' => 20, 'X' => 18, 'Y' => 18,
-            'Z' => 18, 'AA' => 18, 'AB' => 18,  // glh, lm, lainnya
-            'AC' => 22, 'AD' => 20, 'AE' => 23, 'AF' => 22, 'AG' => 20,
-            'AH' => 20, 'AI' => 18, 'AJ' => 18
+            'U' => 15, 'V' => 20, 'W' => 18, 'X' => 18,
+            'Y' => 22, 'Z' => 20, 'AA' => 23, 'AB' => 22,
+            'AC' => 20, 'AD' => 20, 'AE' => 18, 'AF' => 18,
+            'AG' => 12, 'AH' => 18, 'AI' => 18, 'AJ' => 18
         ];
     }
 }

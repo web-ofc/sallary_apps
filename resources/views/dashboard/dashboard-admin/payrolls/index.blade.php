@@ -81,15 +81,15 @@
                                                 <th rowspan="2" class="text-center align-middle min-w-120px">NIK</th>
                                                 <th rowspan="2" class="text-center align-middle min-w-200px">Nama Karyawan</th>
                                                 <th rowspan="2" class="text-center align-middle min-w-150px">Company</th>
-                                                <th rowspan="2" class="text-center align-middle min-w-120px">Gaji Pokok</th>
                                                 <th rowspan="2" class="text-center align-middle min-w-100px">Salary Type</th>
+                                                <th rowspan="2" class="text-center align-middle min-w-120px">Gaji Pokok</th>
                                                 <th colspan="6" class="text-center bg-warning bg-opacity-10">Monthly Insentif</th>
                                                 <th colspan="4" class="text-center bg-info bg-opacity-10">Monthly Allowance</th>
                                                 <th colspan="3" class="text-center bg-success bg-opacity-10">Yearly Benefit</th>
-                                                <th colspan="5" class="text-center bg-danger bg-opacity-10">Potongan</th>
+                                                <th colspan="4" class="text-center bg-danger bg-opacity-10">Potongan</th>
                                                 <th colspan="7" class="text-center bg-primary bg-opacity-10">BPJS TK</th>
                                                 <th colspan="3" class="text-center bg-secondary bg-opacity-10">BPJS KES</th>
-                                                <th colspan="3" class="text-center bg-secondary bg-opacity-10">Lainnya</th>
+                                                <th colspan="4" class="text-center bg-secondary bg-opacity-10">Lainnya</th>
                                                 <th colspan="4" class="text-center bg-dark bg-opacity-10">Summary</th>
                                                 <th rowspan="2" class="text-center align-middle min-w-120px">Actions</th>
                                             </tr>
@@ -110,7 +110,7 @@
                                                 <th class="text-end min-w-120px bg-danger bg-opacity-10">CA Corporate</th>
                                                 <th class="text-end min-w-120px bg-danger bg-opacity-10">CA Personal</th>
                                                 <th class="text-end min-w-120px bg-danger bg-opacity-10">CA Kehadiran</th>
-                                                <th class="text-end min-w-120px bg-danger bg-opacity-10">PPh 21</th>
+                                                
                                                 <th class="text-end min-w-120px bg-danger bg-opacity-10">PPh 21 Deduction</th>
                                                 <th class="text-end min-w-120px bg-primary bg-opacity-10">BPJS TK</th>
                                                 <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JHT 3.7%</th>
@@ -122,6 +122,7 @@
                                                 <th class="text-end min-w-120px bg-secondary bg-opacity-10">BPJS Kes</th>
                                                 <th class="text-end min-w-120px bg-secondary bg-opacity-10">Kes 4%</th>
                                                 <th class="text-end min-w-120px bg-secondary bg-opacity-10">Kes 1%</th>
+                                                <th class="text-end min-w-120px bg-secondary bg-opacity-10">PPh 21</th>
                                                 <th class="text-end min-w-120px bg-secondary bg-opacity-10">GLH</th>
                                                 <th class="text-end min-w-120px bg-secondary bg-opacity-10">LM</th>
                                                 <th class="text-end min-w-120px bg-secondary bg-opacity-10">Lainnya</th>
@@ -188,15 +189,15 @@
                                                     <th rowspan="2" class="text-center align-middle min-w-120px">NIK</th>
                                                     <th rowspan="2" class="text-center align-middle min-w-200px">Nama Karyawan</th>
                                                     <th rowspan="2" class="text-center align-middle min-w-150px">Company</th>
-                                                    <th rowspan="2" class="text-center align-middle min-w-120px">Gaji Pokok</th>
                                                     <th rowspan="2" class="text-center align-middle min-w-100px">Salary Type</th>
+                                                    <th rowspan="2" class="text-center align-middle min-w-120px">Gaji Pokok</th>
                                                     <th colspan="6" class="text-center bg-warning bg-opacity-10">Monthly Insentif</th>
                                                     <th colspan="4" class="text-center bg-info bg-opacity-10">Monthly Allowance</th>
                                                     <th colspan="3" class="text-center bg-success bg-opacity-10">Yearly Benefit</th>
-                                                    <th colspan="5" class="text-center bg-danger bg-opacity-10">Potongan</th>
+                                                    <th colspan="4" class="text-center bg-danger bg-opacity-10">Potongan</th>
                                                     <th colspan="7" class="text-center bg-primary bg-opacity-10">BPJS TK</th>
                                                     <th colspan="3" class="text-center bg-secondary bg-opacity-10">BPJS KES</th>
-                                                    <th colspan="3" class="text-center bg-secondary bg-opacity-10">Lainnya</th>
+                                                    <th colspan="4" class="text-center bg-secondary bg-opacity-10">Lainnya</th>
                                                     <th colspan="4" class="text-center bg-dark bg-opacity-10">Summary</th>
                                                     <th rowspan="2" class="text-center align-middle min-w-120px">Actions</th>
                                                 </tr>
@@ -217,7 +218,7 @@
                                                     <th class="text-end min-w-120px bg-danger bg-opacity-10">CA Corporate</th>
                                                     <th class="text-end min-w-120px bg-danger bg-opacity-10">CA Personal</th>
                                                     <th class="text-end min-w-120px bg-danger bg-opacity-10">CA Kehadiran</th>
-                                                    <th class="text-end min-w-120px bg-danger bg-opacity-10">PPh 21</th>
+                                                    
                                                     <th class="text-end min-w-120px bg-danger bg-opacity-10">PPh 21 Deduction</th>
                                                     <th class="text-end min-w-120px bg-primary bg-opacity-10">BPJS TK</th>
                                                     <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JHT 3.7%</th>
@@ -229,6 +230,7 @@
                                                     <th class="text-end min-w-120px bg-secondary bg-opacity-10">BPJS Kes</th>
                                                     <th class="text-end min-w-120px bg-secondary bg-opacity-10">Kes 4%</th>
                                                     <th class="text-end min-w-120px bg-secondary bg-opacity-10">Kes 1%</th>
+                                                    <th class="text-end min-w-120px bg-secondary bg-opacity-10">PPh 21</th>
                                                     <th class="text-end min-w-120px bg-secondary bg-opacity-10">GLH</th>
                                                     <th class="text-end min-w-120px bg-secondary bg-opacity-10">LM</th>
                                                     <th class="text-end min-w-120px bg-secondary bg-opacity-10">Lainnya</th>
@@ -257,15 +259,15 @@
                                                     <th rowspan="2" class="text-center align-middle min-w-120px">NIK</th>
                                                     <th rowspan="2" class="text-center align-middle min-w-200px">Nama Karyawan</th>
                                                     <th rowspan="2" class="text-center align-middle min-w-150px">Company</th>
-                                                    <th rowspan="2" class="text-center align-middle min-w-120px">Gaji Pokok</th>
                                                     <th rowspan="2" class="text-center align-middle min-w-100px">Salary Type</th>
+                                                    <th rowspan="2" class="text-center align-middle min-w-120px">Gaji Pokok</th>
                                                     <th colspan="6" class="text-center bg-warning bg-opacity-10">Monthly Insentif</th>
                                                     <th colspan="4" class="text-center bg-info bg-opacity-10">Monthly Allowance</th>
                                                     <th colspan="3" class="text-center bg-success bg-opacity-10">Yearly Benefit</th>
-                                                    <th colspan="5" class="text-center bg-danger bg-opacity-10">Potongan</th>
+                                                    <th colspan="4" class="text-center bg-danger bg-opacity-10">Potongan</th>
                                                     <th colspan="7" class="text-center bg-primary bg-opacity-10">BPJS TK</th>
                                                     <th colspan="3" class="text-center bg-secondary bg-opacity-10">BPJS KES</th>
-                                                    <th colspan="3" class="text-center bg-secondary bg-opacity-10">Lainnya</th>
+                                                    <th colspan="4" class="text-center bg-secondary bg-opacity-10">Lainnya</th>
                                                     <th colspan="4" class="text-center bg-dark bg-opacity-10">Summary</th>
                                                     <th rowspan="2" class="text-center align-middle min-w-120px">Actions</th>
                                                 </tr>
@@ -286,7 +288,7 @@
                                                     <th class="text-end min-w-120px bg-danger bg-opacity-10">CA Corporate</th>
                                                     <th class="text-end min-w-120px bg-danger bg-opacity-10">CA Personal</th>
                                                     <th class="text-end min-w-120px bg-danger bg-opacity-10">CA Kehadiran</th>
-                                                    <th class="text-end min-w-120px bg-danger bg-opacity-10">PPh 21</th>
+                                                    
                                                     <th class="text-end min-w-120px bg-danger bg-opacity-10">PPh 21 Deduction</th>
                                                     <th class="text-end min-w-120px bg-primary bg-opacity-10">BPJS TK</th>
                                                     <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JHT 3.7%</th>
@@ -298,6 +300,7 @@
                                                     <th class="text-end min-w-120px bg-secondary bg-opacity-10">BPJS Kes</th>
                                                     <th class="text-end min-w-120px bg-secondary bg-opacity-10">Kes 4%</th>
                                                     <th class="text-end min-w-120px bg-secondary bg-opacity-10">Kes 1%</th>
+                                                    <th class="text-end min-w-120px bg-secondary bg-opacity-10">PPh 21</th>
                                                     <th class="text-end min-w-120px bg-secondary bg-opacity-10">GLH</th>
                                                     <th class="text-end min-w-120px bg-secondary bg-opacity-10">LM</th>
                                                     <th class="text-end min-w-120px bg-secondary bg-opacity-10">Lainnya</th>
@@ -389,8 +392,8 @@ var KTPayrollList = function() {
                 <td class="text-center">${item.karyawan_nik || '-'}</td>
                 <td>${item.karyawan_nama || '-'}</td>
                 <td>${item.company_nama || '-'}</td>
-                <td class="text-end">${formatCurrency(item.gaji_pokok)}</td>
                 <td class="text-center">${item.salary_type || '-'}</td>
+                <td class="text-end">${formatCurrency(item.gaji_pokok)}</td>
                 <td class="text-end">${formatCurrency(item.monthly_kpi)}</td>
                 <td class="text-end">${formatCurrency(item.overtime)}</td>
                 <td class="text-end">${formatCurrency(item.medical_reimbursement)}</td>
@@ -407,7 +410,7 @@ var KTPayrollList = function() {
                 <td class="text-end">${formatCurrency(item.ca_corporate)}</td>
                 <td class="text-end">${formatCurrency(item.ca_personal)}</td>
                 <td class="text-end">${formatCurrency(item.ca_kehadiran)}</td>
-                <td class="text-end">${formatCurrency(item.pph_21)}</td>
+                
                 <td class="text-end">${formatCurrency(item.pph_21_deduction)}</td>
                 <td class="text-end">${formatCurrency(item.bpjs_tenaga_kerja)}</td>
                 <td class="text-end">${formatCurrency(item.bpjs_tk_jht_3_7_percent)}</td>
@@ -419,6 +422,7 @@ var KTPayrollList = function() {
                 <td class="text-end">${formatCurrency(item.bpjs_kesehatan)}</td>
                 <td class="text-end">${formatCurrency(item.bpjs_kes_4_percent)}</td>
                 <td class="text-end">${formatCurrency(item.bpjs_kes_1_percent)}</td>
+                <td class="text-end">${formatCurrency(item.pph_21)}</td>
                 <td class="text-end">${formatCurrency(item.glh)}</td>
                 <td class="text-end">${formatCurrency(item.lm)}</td>
                 <td class="text-end">${formatCurrency(item.lainnya)}</td>
@@ -536,8 +540,8 @@ var KTPayrollList = function() {
                 { data: 'karyawan_nik', orderable: false },
                 { data: 'karyawan_nama', orderable: false },
                 { data: 'company_nama', orderable: false },
-                { data: 'gaji_pokok_formatted', className: 'text-end', render: formatCurrency },
                 { data: 'salary_type', className: 'text-center' },
+                { data: 'gaji_pokok_formatted', className: 'text-end', render: formatCurrency },
                 { data: 'monthly_kpi', className: 'text-end', render: formatCurrency },
                 { data: 'overtime', className: 'text-end', render: formatCurrency },
                 { data: 'medical_reimbursement', className: 'text-end', render: formatCurrency },
@@ -554,7 +558,7 @@ var KTPayrollList = function() {
                 { data: 'ca_corporate', className: 'text-end', render: formatCurrency },
                 { data: 'ca_personal', className: 'text-end', render: formatCurrency },
                 { data: 'ca_kehadiran', className: 'text-end', render: formatCurrency },
-                { data: 'pph_21', className: 'text-end', render: formatCurrency },
+                
                 { data: 'pph_21_deduction', className: 'text-end', render: formatCurrency },
                 { data: 'bpjs_tenaga_kerja', className: 'text-end', render: formatCurrency },
                 { data: 'bpjs_tk_jht_3_7_percent', className: 'text-end', render: formatCurrency },
@@ -566,6 +570,7 @@ var KTPayrollList = function() {
                 { data: 'bpjs_kesehatan', className: 'text-end', render: formatCurrency },
                 { data: 'bpjs_kes_4_percent', className: 'text-end', render: formatCurrency },
                 { data: 'bpjs_kes_1_percent', className: 'text-end', render: formatCurrency },
+                { data: 'pph_21', className: 'text-end', render: formatCurrency },
                 { data: 'glh', className: 'text-end', render: formatCurrency },
                 { data: 'lm', className: 'text-end', render: formatCurrency },
                 { data: 'lainnya', className: 'text-end', render: formatCurrency },
@@ -610,8 +615,8 @@ var KTPayrollList = function() {
                 { data: 'karyawan_nik', orderable: false },
                 { data: 'karyawan_nama', orderable: false },
                 { data: 'company_nama', orderable: false },
-                { data: 'gaji_pokok_formatted', className: 'text-end', render: formatCurrency },
                 { data: 'salary_type', className: 'text-center' },
+                { data: 'gaji_pokok_formatted', className: 'text-end', render: formatCurrency },
                 { data: 'monthly_kpi', className: 'text-end', render: formatCurrency },
                 { data: 'overtime', className: 'text-end', render: formatCurrency },
                 { data: 'medical_reimbursement', className: 'text-end', render: formatCurrency },
@@ -628,7 +633,7 @@ var KTPayrollList = function() {
                 { data: 'ca_corporate', className: 'text-end', render: formatCurrency },
                 { data: 'ca_personal', className: 'text-end', render: formatCurrency },
                 { data: 'ca_kehadiran', className: 'text-end', render: formatCurrency },
-                { data: 'pph_21', className: 'text-end', render: formatCurrency },
+                
                 { data: 'pph_21_deduction', className: 'text-end', render: formatCurrency },
                 { data: 'bpjs_tenaga_kerja', className: 'text-end', render: formatCurrency },
                 { data: 'bpjs_tk_jht_3_7_percent', className: 'text-end', render: formatCurrency },
@@ -640,6 +645,7 @@ var KTPayrollList = function() {
                 { data: 'bpjs_kesehatan', className: 'text-end', render: formatCurrency },
                 { data: 'bpjs_kes_4_percent', className: 'text-end', render: formatCurrency },
                 { data: 'bpjs_kes_1_percent', className: 'text-end', render: formatCurrency },
+                { data: 'pph_21', className: 'text-end', render: formatCurrency },
                 { data: 'glh', className: 'text-end', render: formatCurrency },
                 { data: 'lm', className: 'text-end', render: formatCurrency },
                 { data: 'lainnya', className: 'text-end', render: formatCurrency },

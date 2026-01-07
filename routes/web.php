@@ -14,6 +14,8 @@ use App\Http\Controllers\KaryawanSyncController;
 use App\Http\Controllers\MutasiCompanyController;
 use App\Http\Controllers\PayrollImportController;
 use App\Http\Controllers\Api\PayrollApiController;
+use App\Http\Controllers\KaryawanPtkpHistorySyncController;
+use App\Http\Controllers\PeriodeKaryawanMasaJabatanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -160,6 +162,34 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
             ->name('ptkp.sync.status');
     });
 
+    Route::prefix('ptkp-history/sync')->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [KaryawanPtkpHistorySyncController::class, 'dashboard'])
+            ->name('ptkp.history.sync.dashboard');
+        
+        // DataTable endpoint untuk PTKP History list
+        Route::post('/datatable', [KaryawanPtkpHistorySyncController::class, 'datatable'])
+            ->name('ptkp.history.sync.datatable');
+        
+        // Trigger sync
+        Route::post('/trigger', [KaryawanPtkpHistorySyncController::class, 'triggerSync'])
+            ->name('ptkp.history.sync.trigger');
+        
+        // Get status (AJAX)
+        Route::get('/status', [KaryawanPtkpHistorySyncController::class, 'getSyncStatus'])
+            ->name('ptkp.history.sync.status');
+        
+        // Get missing PTKP (AJAX)
+        Route::get('/missing-ptkp', [KaryawanPtkpHistorySyncController::class, 'getMissingPtkp'])
+            ->name('ptkp.history.sync.missing-ptkp');
+    });
+
+    Route::prefix('periode-karyawan')->name('periode-karyawan.')->group(function () {
+        Route::get('/', [PeriodeKaryawanMasaJabatanController::class, 'index'])->name('index');
+        Route::get('/datatables', [PeriodeKaryawanMasaJabatanController::class, 'datatables'])->name('datatables');
+        Route::get('/export', [PeriodeKaryawanMasaJabatanController::class, 'export'])->name('export');
+        Route::get('/{periode}/{karyawanId}/{companyId}/{salaryType}', [PeriodeKaryawanMasaJabatanController::class, 'show'])->name('show');
+    });
         
 });
 

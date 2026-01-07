@@ -102,7 +102,7 @@ class KaryawanSyncController extends Controller
     
     public function datatable(Request $request)
     {
-        $query = \App\Models\Karyawan::query()->with('ptkp'); // ✅ Load relasi ptkp
+        $query = \App\Models\Karyawan::query();
 
         // Search
         if ($request->filled('search.value')) {
@@ -111,18 +111,16 @@ class KaryawanSyncController extends Controller
                 $q->where('nama_lengkap', 'like', "%{$search}%")
                 ->orWhere('nik', 'like', "%{$search}%")
                 ->orWhere('email_pribadi', 'like', "%{$search}%")
-                ->orWhere('telp_pribadi', 'like', "%{$search}%")
-                ->orWhere('absen_ptkp_id', 'like', "%{$search}%"); // ✅ Tambah search ptkp
+                ->orWhere('telp_pribadi', 'like', "%{$search}%");
             });
         }
 
         $totalRecords = \App\Models\Karyawan::count();
         $filteredRecords = $query->count();
 
-        // Ordering - ✅ tambahkan 'absen_ptkp_id' ke columns array
         $orderColumnIndex = $request->input('order.0.column', 0);
         $orderDir = $request->input('order.0.dir', 'desc');
-        $columns = ['id', 'absen_karyawan_id', 'nik', 'nama_lengkap', 'email_pribadi', 'telp_pribadi', 'join_date', 'tempat_tanggal_lahir', 'jenis_kelamin', 'absen_ptkp_id', 'status_resign'];
+        $columns = ['id', 'absen_karyawan_id', 'nik', 'nama_lengkap', 'email_pribadi', 'telp_pribadi', 'join_date', 'tempat_tanggal_lahir', 'jenis_kelamin', 'status_resign'];
         $orderColumn = $columns[$orderColumnIndex] ?? 'id';
         
         $query->orderBy($orderColumn, $orderDir);
@@ -132,7 +130,6 @@ class KaryawanSyncController extends Controller
         
         $data = $query->skip($start)->take($length)->get();
 
-        // Format data - ✅ tambahkan ptkp_id
         $formattedData = $data->map(function($karyawan) {
             return [
                 'id' => $karyawan->id,
@@ -148,13 +145,10 @@ class KaryawanSyncController extends Controller
                         ? '<span class="badge bg-primary text-white">Laki-laki</span>' 
                         : '<span class="badge bg-danger text-white">Perempuan</span>')
                     : '-',
-                // ✅ PTKP - tampilkan kriteria dari relasi
-                'ptkp' => $karyawan->ptkp 
-                    ? '<span class="badge bg-info text-white">' . $karyawan->ptkp->kriteria . '</span>' 
-                    : '<span class="badge bg-secondary">-</span>',
                 'status_resign' => $karyawan->status_resign 
                     ? '<span class="badge bg-danger text-white">Resign</span>' 
                     : '<span class="badge bg-success text-white">Aktif</span>',
+                
             ];
         });
 

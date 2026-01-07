@@ -1323,6 +1323,655 @@ class AttendanceApiService
 
     /*
     |--------------------------------------------------------------------------
+    | PTKP HISTORY METHODS
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * GET PTKP HISTORY WITH PAGINATION
+     */
+    public function getPtkpHistoriesPaginated($page = 1, $perPage = 50, $filters = [], $useCache = true)
+    {
+        $perPage = min($perPage, 100);
+        
+        if (!$useCache) {
+            return $this->fetchPtkpHistoriesPaginated($page, $perPage, $filters);
+        }
+        
+        $filterKey = md5(json_encode($filters));
+        $cacheKey = "ptkp_history_page_{$page}_per_{$perPage}_filter_{$filterKey}";
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchPtkpHistoriesPaginated($page, $perPage, $filters);
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, $this->listCacheTime);
+        }
+        
+        return $result;
+    }
+
+    protected function fetchPtkpHistoriesPaginated($page, $perPage, $filters = [])
+    {
+        try {
+            $params = [
+                'page' => $page,
+                'per_page' => $perPage
+            ];
+            
+            // Add filters jika ada
+            if (!empty($filters['search'])) {
+                $params['search'] = $filters['search'];
+            }
+            if (!empty($filters['tahun'])) {
+                $params['tahun'] = $filters['tahun'];
+            }
+            
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/ptkp-history", $params);
+            
+            if ($response->successful()) {
+                $json = $response->json();
+                
+                return [
+                    'success' => true,
+                    'data' => $json['data'] ?? [],
+                    'meta' => $json['meta'] ?? [
+                        'current_page' => $page,
+                        'per_page' => $perPage,
+                        'total' => 0,
+                        'last_page' => 1,
+                    ],
+                    'filters' => $json['filters'] ?? []
+                ];
+            }
+            
+            Log::warning('Failed fetch PTKP History paginated', [
+                'page' => $page,
+                'status' => $response->status()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to fetch PTKP History data'
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error('API Error PTKP History paginated', [
+                'page' => $page,
+                'error' => $e->getMessage()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'API connection error: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * SEARCH PTKP HISTORY
+     */
+    public function searchPtkpHistory($query, $page = 1, $perPage = 20)
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/ptkp-history/search", [
+                    'q' => $query,
+                    'page' => $page,
+                    'per_page' => $perPage
+                ]);
+            
+            if ($response->successful()) {
+                $json = $response->json();
+                
+                return [
+                    'success' => true,
+                    'data' => $json['data'] ?? [],
+                    'meta' => $json['meta'] ?? []
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'Search failed'
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error('Search PTKP History error', [
+                'query' => $query,
+                'error' => $e->getMessage()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * GET SINGLE PTKP HISTORY BY ID
+     */
+    public function getPtkpHistory($id, $useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchPtkpHistory($id);
+        }
+        
+        $cacheKey = "ptkp_history_{$id}";
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchPtkpHistory($id);
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, $this->detailCacheTime);
+        }
+        
+        return $result;
+    }
+
+    protected function fetchPtkpHistory($id)
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/ptkp-history/{$id}");
+            
+            if ($response->successful()) {
+                $data = $response->json('data');
+                
+                if (empty($data)) {
+                    Log::warning('Empty PTKP History data', ['id' => $id]);
+                    return [
+                        'success' => false,
+                        'message' => 'PTKP History tidak ditemukan'
+                    ];
+                }
+                
+                return [
+                    'success' => true,
+                    'data' => $data
+                ];
+            }
+            
+            Log::warning('PTKP History not found', [
+                'id' => $id,
+                'status' => $response->status()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'PTKP History tidak ditemukan'
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error('Error fetching PTKP History', [
+                'id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * GET PTKP HISTORY BY KARYAWAN ID
+     */
+    public function getPtkpHistoryByKaryawan($karyawan_id, $useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchPtkpHistoryByKaryawan($karyawan_id);
+        }
+        
+        $cacheKey = "ptkp_history_karyawan_{$karyawan_id}";
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchPtkpHistoryByKaryawan($karyawan_id);
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, $this->detailCacheTime);
+        }
+        
+        return $result;
+    }
+
+    protected function fetchPtkpHistoryByKaryawan($karyawan_id)
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/ptkp-history/by-karyawan/{$karyawan_id}");
+            
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'data' => $response->json('data') ?? [],
+                    'total' => $response->json('total', 0)
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'PTKP History untuk karyawan ini tidak ditemukan'
+            ];
+            
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * GET PTKP HISTORY BY KARYAWAN & TAHUN
+     */
+    public function getPtkpHistoryByKaryawanTahun($karyawan_id, $tahun, $useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchPtkpHistoryByKaryawanTahun($karyawan_id, $tahun);
+        }
+        
+        $cacheKey = "ptkp_history_karyawan_{$karyawan_id}_tahun_{$tahun}";
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchPtkpHistoryByKaryawanTahun($karyawan_id, $tahun);
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, $this->detailCacheTime);
+        }
+        
+        return $result;
+    }
+
+    protected function fetchPtkpHistoryByKaryawanTahun($karyawan_id, $tahun)
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/ptkp-history/by-karyawan/{$karyawan_id}/tahun/{$tahun}");
+            
+            if ($response->successful()) {
+                $data = $response->json('data');
+                
+                if (empty($data)) {
+                    return [
+                        'success' => false,
+                        'message' => 'PTKP History tidak ditemukan'
+                    ];
+                }
+                
+                return [
+                    'success' => true,
+                    'data' => $data
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'PTKP History tidak ditemukan'
+            ];
+            
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * GET PTKP HISTORY BY TAHUN
+     */
+    public function getPtkpHistoryByTahun($tahun, $useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchPtkpHistoryByTahun($tahun);
+        }
+        
+        $cacheKey = "ptkp_history_tahun_{$tahun}";
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchPtkpHistoryByTahun($tahun);
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, $this->listCacheTime);
+        }
+        
+        return $result;
+    }
+
+    protected function fetchPtkpHistoryByTahun($tahun)
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/ptkp-history/by-tahun/{$tahun}");
+            
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'data' => $response->json('data') ?? [],
+                    'total' => $response->json('total', 0),
+                    'tahun' => $tahun
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to fetch PTKP History by tahun'
+            ];
+            
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * GET PTKP HISTORY MINIMAL - Untuk dropdown
+     */
+    public function getPtkpHistoryMinimal($useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchPtkpHistoryMinimal();
+        }
+        
+        $cacheKey = 'ptkp_history_minimal';
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchPtkpHistoryMinimal();
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, $this->listCacheTime);
+        }
+        
+        return $result;
+    }
+
+    protected function fetchPtkpHistoryMinimal()
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/ptkp-history/minimal");
+            
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'data' => $response->json('data') ?? []
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to fetch minimal data'
+            ];
+            
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * GET UNIQUE YEARS FROM PTKP HISTORY
+     */
+    public function getPtkpHistoryYears($useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchPtkpHistoryYears();
+        }
+        
+        $cacheKey = 'ptkp_history_years';
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchPtkpHistoryYears();
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, $this->listCacheTime);
+        }
+        
+        return $result;
+    }
+
+    protected function fetchPtkpHistoryYears()
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/ptkp-history/years");
+            
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'data' => $response->json('data') ?? []
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to fetch years'
+            ];
+            
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * GET PTKP HISTORY STATISTICS
+     */
+    public function getPtkpHistoryStats($useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchPtkpHistoryStats();
+        }
+        
+        $cacheKey = 'ptkp_history_stats';
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchPtkpHistoryStats();
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, 300); // 5 menit untuk stats
+        }
+        
+        return $result;
+    }
+
+    protected function fetchPtkpHistoryStats()
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/ptkp-history/stats");
+            
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'data' => $response->json('data') ?? []
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to fetch stats'
+            ];
+            
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * GET KARYAWAN WITHOUT PTKP FOR SPECIFIC YEAR
+     */
+    public function getKaryawanMissingPtkp($tahun, $useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchKaryawanMissingPtkp($tahun);
+        }
+        
+        $cacheKey = "ptkp_history_missing_{$tahun}";
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchKaryawanMissingPtkp($tahun);
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, 300); // 5 menit
+        }
+        
+        return $result;
+    }
+
+    protected function fetchKaryawanMissingPtkp($tahun)
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/ptkp-history/missing-ptkp/{$tahun}");
+            
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'data' => $response->json('data') ?? [],
+                    'total' => $response->json('total', 0),
+                    'tahun' => $tahun
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to fetch missing PTKP data'
+            ];
+            
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * GET LATEST PTKP FOR EACH KARYAWAN
+     */
+    public function getLatestPtkpPerKaryawan($useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchLatestPtkpPerKaryawan();
+        }
+        
+        $cacheKey = 'ptkp_history_latest_per_karyawan';
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchLatestPtkpPerKaryawan();
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, 300); // 5 menit
+        }
+        
+        return $result;
+    }
+
+    protected function fetchLatestPtkpPerKaryawan()
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/ptkp-history/latest-per-karyawan");
+            
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'data' => $response->json('data') ?? [],
+                    'total' => $response->json('total', 0)
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to fetch latest PTKP per karyawan'
+            ];
+            
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | CACHE MANAGEMENT - UPDATE SECTION
     |--------------------------------------------------------------------------
     */
@@ -1350,6 +1999,51 @@ class AttendanceApiService
     public function clearPtkpStatusCache($status)
     {
         Cache::forget("ptkp_status_{$status}");
+    }
+
+    /**
+     * Clear cache untuk PTKP History tertentu
+     */
+    public function clearPtkpHistoryCache($id)
+    {
+        Cache::forget("ptkp_history_{$id}");
+        Log::info("Cache cleared", ['type' => 'ptkp_history', 'id' => $id]);
+    }
+
+    /**
+     * Clear cache PTKP History by karyawan
+     */
+    public function clearPtkpHistoryKaryawanCache($karyawan_id)
+    {
+        Cache::forget("ptkp_history_karyawan_{$karyawan_id}");
+    }
+
+    /**
+     * Clear cache PTKP History by karyawan & tahun
+     */
+    public function clearPtkpHistoryKaryawanTahunCache($karyawan_id, $tahun)
+    {
+        Cache::forget("ptkp_history_karyawan_{$karyawan_id}_tahun_{$tahun}");
+    }
+
+    /**
+     * Clear cache PTKP History by tahun
+     */
+    public function clearPtkpHistoryTahunCache($tahun)
+    {
+        Cache::forget("ptkp_history_tahun_{$tahun}");
+    }
+
+    /**
+     * Clear all PTKP History related cache
+     */
+    public function clearAllPtkpHistoryCache()
+    {
+        Cache::forget('ptkp_history_minimal');
+        Cache::forget('ptkp_history_years');
+        Cache::forget('ptkp_history_stats');
+        Cache::forget('ptkp_history_latest_per_karyawan');
+        Log::info("All PTKP History cache cleared");
     }
 
 }

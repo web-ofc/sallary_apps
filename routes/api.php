@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\KaryawanController;
 use App\Http\Controllers\KaryawanSyncController;
 use App\Http\Controllers\KaryawanViewController;
 use App\Http\Controllers\Api\PayrollApiController;
+use App\Http\Controllers\KaryawanPtkpHistorySyncController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,55 +25,55 @@ use App\Http\Controllers\Api\PayrollApiController;
         return $request->user();
     });
 
-Route::prefix('karyawan')->group(function () {
-    
-    // List & Search
-    Route::get('/', [KaryawanViewController::class, 'index']);
-    Route::get('/search', [KaryawanViewController::class, 'search']);
-    
-    // Minimal data untuk dropdown
-    Route::get('/active-minimal', [KaryawanViewController::class, 'activeMinimal']);
-    
-    // Bulk operations
-    Route::post('/bulk', [KaryawanViewController::class, 'bulk']);
-    
-    // Cache management
-    Route::post('/clear-cache', [KaryawanViewController::class, 'clearMinimalCache']);
-    Route::post('/clear-cache/{id}', [KaryawanViewController::class, 'clearSpecificCache']);
-    
-    // ⚠️ {id} route HARUS di paling bawah
-    Route::get('/{id}', [KaryawanViewController::class, 'show']);
-});
+    Route::prefix('karyawan')->group(function () {
+        
+        // List & Search
+        Route::get('/', [KaryawanViewController::class, 'index']);
+        Route::get('/search', [KaryawanViewController::class, 'search']);
+        
+        // Minimal data untuk dropdown
+        Route::get('/active-minimal', [KaryawanViewController::class, 'activeMinimal']);
+        
+        // Bulk operations
+        Route::post('/bulk', [KaryawanViewController::class, 'bulk']);
+        
+        // Cache management
+        Route::post('/clear-cache', [KaryawanViewController::class, 'clearMinimalCache']);
+        Route::post('/clear-cache/{id}', [KaryawanViewController::class, 'clearSpecificCache']);
+        
+        // ⚠️ {id} route HARUS di paling bawah
+        Route::get('/{id}', [KaryawanViewController::class, 'show']);
+    });
 
-/*
-|--------------------------------------------------------------------------
-| COMPANY ROUTES
-|--------------------------------------------------------------------------
-*/
-Route::prefix('companies')->group(function () {
-    
-    // List & Search
-    Route::get('/', [CompanyViewController::class, 'getCompanies']);
-    Route::get('/search', [CompanyViewController::class, 'search']);
-    
-    // Minimal data untuk dropdown
-    Route::get('/minimal', [CompanyViewController::class, 'minimal']);
-    
-    // Get by code
-    Route::get('/by-code/{code}', [CompanyViewController::class, 'getByCode']);
-    
-    // Bulk operations
-    Route::post('/bulk', [CompanyViewController::class, 'bulk']);
-    
-    // Cache management
-    Route::post('/clear-cache', [CompanyViewController::class, 'clearMinimalCache']);
-    Route::post('/clear-cache/{id}', [CompanyViewController::class, 'clearSpecificCache']);
-    
-    // ⚠️ {id} route HARUS di paling bawah
-    Route::get('/{id}', [CompanyViewController::class, 'getCompany']);
-});
+    /*
+    |--------------------------------------------------------------------------
+    | COMPANY ROUTES
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('companies')->group(function () {
+        
+        // List & Search
+        Route::get('/', [CompanyViewController::class, 'getCompanies']);
+        Route::get('/search', [CompanyViewController::class, 'search']);
+        
+        // Minimal data untuk dropdown
+        Route::get('/minimal', [CompanyViewController::class, 'minimal']);
+        
+        // Get by code
+        Route::get('/by-code/{code}', [CompanyViewController::class, 'getByCode']);
+        
+        // Bulk operations
+        Route::post('/bulk', [CompanyViewController::class, 'bulk']);
+        
+        // Cache management
+        Route::post('/clear-cache', [CompanyViewController::class, 'clearMinimalCache']);
+        Route::post('/clear-cache/{id}', [CompanyViewController::class, 'clearSpecificCache']);
+        
+        // ⚠️ {id} route HARUS di paling bawah
+        Route::get('/{id}', [CompanyViewController::class, 'getCompany']);
+    });
 
-Route::prefix('karyawan/sync')->group(function () {
+    Route::prefix('karyawan/sync')->group(function () {
         
         // Trigger full sync
         // POST /api/karyawan/sync
@@ -95,6 +96,32 @@ Route::prefix('karyawan/sync')->group(function () {
     Route::post('/all', [PtkpSyncController::class, 'syncAll'])->name('all');
     Route::post('/{id}', [PtkpSyncController::class, 'syncById'])->name('by-id');
     Route::get('/stats', [PtkpSyncController::class, 'stats'])->name('stats');
+
+    Route::prefix('sync/ptkp-history')->name('api.sync.ptkp-history.')->group(function () {
+        // Full sync
+        Route::post('/all', [KaryawanPtkpHistorySyncController::class, 'syncAll'])
+            ->name('all');
+        
+        // Sync by specific ID
+        Route::post('/{id}', [KaryawanPtkpHistorySyncController::class, 'syncById'])
+            ->name('by-id');
+        
+        // Sync by karyawan
+        Route::post('/karyawan/{karyawan_id}', [KaryawanPtkpHistorySyncController::class, 'syncByKaryawan'])
+            ->name('by-karyawan');
+        
+        // Sync by tahun
+        Route::post('/tahun/{tahun}', [KaryawanPtkpHistorySyncController::class, 'syncByTahun'])
+            ->name('by-tahun');
+        
+        // Get stats
+        Route::get('/stats', [KaryawanPtkpHistorySyncController::class, 'stats'])
+            ->name('stats');
+        
+        // Get missing PTKP for year
+        Route::get('/missing-ptkp', [KaryawanPtkpHistorySyncController::class, 'getMissingPtkp'])
+            ->name('missing-ptkp');
+    });
 /*
 |--------------------------------------------------------------------------
 | PAYROLL ROUTES

@@ -53,10 +53,6 @@ class Karyawan extends Model
         return $this->hasMany(Payroll::class, 'karyawan_id');
     }
 
-     public function ptkp()
-    {
-        return $this->belongsTo(ListPtkp::class, 'ptkp_id', 'absen_ptkp_id');
-    }
     
     /**
      * Check apakah karyawan punya payroll

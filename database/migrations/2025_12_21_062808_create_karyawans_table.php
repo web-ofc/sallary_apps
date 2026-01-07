@@ -35,7 +35,6 @@ return new class extends Migration
             $table->string('file_ijazah')->nullable();
             $table->string('file_npwp')->nullable();
             $table->string('file_skck')->nullable();
-            $table->unsignedBigInteger('ptkp_id')->nullable();
             
             // Status & Sync metadata
             $table->boolean('status_resign')->default(false);

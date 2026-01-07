@@ -40,5 +40,11 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage-users', function ($user) {
             return in_array($user->role, ['admin']);
         });
+        Gate::define('ptkp-history-sync', function ($user) {
+            return in_array($user->role, ['admin']);
+        });
+        Gate::define('periode-karyawan', function ($user) {
+            return in_array($user->role, ['admin']);
+        });
     }
 }
