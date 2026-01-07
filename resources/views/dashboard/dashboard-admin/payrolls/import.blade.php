@@ -146,6 +146,7 @@
                                                     <th>Periode</th>
                                                     <th>Karyawan</th>
                                                     <th>Company</th>
+                                                    <th>Salary Type</th>
                                                     <th>Gaji Pokok</th>
                                                     <th>Monthly KPI</th>
                                                     <th>Overtime</th>
@@ -160,28 +161,28 @@
                                                     <th>Yearly Bonus</th>
                                                     <th>THR</th>
                                                     <th>Other</th>
-                                                    <th>BPJS TK JHT 3.7%</th>
-                                                    <th>BPJS TK JKK 0.24%</th>
-                                                    <th>BPJS TK JKM 0.3%</th>
-                                                    <th>BPJS TK JP 2%</th>
-                                                    <th>BPJS TK JHT 2%</th>
-                                                    <th>BPJS TK JP 1%</th>
-                                                    <th>BPJS TK</th>
-                                                    <th>BPJS Kes 4%</th>
-                                                    <th>BPJS Kes 1%</th>
-                                                    <th>BPJS Kesehatan</th>
                                                     <th>CA Corporate</th>
                                                     <th>CA Personal</th>
                                                     <th>CA Kehadiran</th>
-                                                    <th>PPh 21</th>
+                                                    <th>BPJS TK</th>
+                                                    <th>BPJS Kesehatan</th>
                                                     <th>PPh 21 Deduction</th>
+                                                    <th>BPJS TK JHT 3.7%</th>
+                                                    <th>BPJS TK JHT 2%</th>
+                                                    <th>BPJS TK JKK 0.24%</th>
+                                                    <th>BPJS TK JKM 0.3%</th>
+                                                    <th>BPJS TK JP 2%</th>
+                                                    <th>BPJS TK JP 1%</th>
+                                                    <th>BPJS Kes 4%</th>
+                                                    <th>BPJS Kes 1%</th>
+                                                    <th>PPh 21</th>
                                                     <th>GLH</th>
                                                     <th>LM</th>
                                                     <th>Lainnya</th>
                                                     <th class="bg-light-success">Total Penerimaan</th>
                                                     <th class="bg-light-danger">Total Potongan</th>
                                                     <th class="bg-light-primary">Gaji Bersih</th>
-                                                    <th>Salary Type</th>
+                                                    
                                                 </tr>
                                             </thead>
                                             <tbody></tbody>
@@ -330,6 +331,7 @@ function showValidData() {
                 },
                 orderable: false
             },
+            { data: 'salary_type', className: 'text-center' },
             { data: 'gaji_pokok', render: formatRupiah, className: 'text-end' },
             { data: 'monthly_kpi', render: formatRupiah, className: 'text-end' },
             { data: 'overtime', render: formatRupiah, className: 'text-end' },
@@ -344,28 +346,28 @@ function showValidData() {
             { data: 'yearly_bonus', render: formatRupiah, className: 'text-end' },
             { data: 'thr', render: formatRupiah, className: 'text-end' },
             { data: 'other', render: formatRupiah, className: 'text-end' },
-            { data: 'bpjs_tk_jht_3_7_percent', render: formatRupiah, className: 'text-end' },
-            { data: 'bpjs_tk_jkk_0_24_percent', render: formatRupiah, className: 'text-end' },
-            { data: 'bpjs_tk_jkm_0_3_percent', render: formatRupiah, className: 'text-end' },
-            { data: 'bpjs_tk_jp_2_percent', render: formatRupiah, className: 'text-end' },
-            { data: 'bpjs_tk_jht_2_percent', render: formatRupiah, className: 'text-end' },
-            { data: 'bpjs_tk_jp_1_percent', render: formatRupiah, className: 'text-end' },
-            { data: 'bpjs_tenaga_kerja', render: formatRupiah, className: 'text-end' },
-            { data: 'bpjs_kes_4_percent', render: formatRupiah, className: 'text-end' },
-            { data: 'bpjs_kes_1_percent', render: formatRupiah, className: 'text-end' },
-            { data: 'bpjs_kesehatan', render: formatRupiah, className: 'text-end' },
             { data: 'ca_corporate', render: formatRupiah, className: 'text-end' },
             { data: 'ca_personal', render: formatRupiah, className: 'text-end' },
             { data: 'ca_kehadiran', render: formatRupiah, className: 'text-end' },
-            { data: 'pph_21', render: formatRupiah, className: 'text-end' },
+            { data: 'bpjs_tenaga_kerja', render: formatRupiah, className: 'text-end' },
+            { data: 'bpjs_kesehatan', render: formatRupiah, className: 'text-end' },
             { data: 'pph_21_deduction', render: formatRupiah, className: 'text-end' },
+            { data: 'bpjs_tk_jht_3_7_percent', render: formatRupiah, className: 'text-end' },
+            { data: 'bpjs_tk_jht_2_percent', render: formatRupiah, className: 'text-end' },
+            { data: 'bpjs_tk_jkk_0_24_percent', render: formatRupiah, className: 'text-end' },
+            { data: 'bpjs_tk_jkm_0_3_percent', render: formatRupiah, className: 'text-end' },
+            { data: 'bpjs_tk_jp_2_percent', render: formatRupiah, className: 'text-end' },
+            { data: 'bpjs_tk_jp_1_percent', render: formatRupiah, className: 'text-end' },
+            { data: 'bpjs_kes_4_percent', render: formatRupiah, className: 'text-end' },
+            { data: 'bpjs_kes_1_percent', render: formatRupiah, className: 'text-end' },
+            { data: 'pph_21', render: formatRupiah, className: 'text-end' },
             { data: 'glh', render: formatRupiah, className: 'text-end' },
             { data: 'lm', render: formatRupiah, className: 'text-end' },
             { data: 'lainnya', render: formatRupiah, className: 'text-end' },
             { data: 'total_penerimaan', render: formatRupiahBold, className: 'text-end bg-light-success' },
             { data: 'total_potongan', render: formatRupiahBold, className: 'text-end bg-light-danger' },
             { data: 'gaji_bersih', render: formatRupiahBold, className: 'text-end bg-light-primary' },
-            { data: 'salary_type', className: 'text-center' }
+            
         ],
         scrollX: true,
         scrollCollapse: true,
