@@ -86,50 +86,50 @@
                                                 <th colspan="6" class="text-center bg-warning bg-opacity-10">Monthly Insentif</th>
                                                 <th colspan="4" class="text-center bg-info bg-opacity-10">Monthly Allowance</th>
                                                 <th colspan="3" class="text-center bg-success bg-opacity-10">Yearly Benefit</th>
-                                                <th colspan="3" class="text-center bg-danger bg-opacity-10">Potongan</th>
-                                                <th colspan="9" class="text-center bg-primary bg-opacity-10">BPJS TK</th>
+                                                <th colspan="6" class="text-center bg-danger bg-opacity-10">Potongan</th>
+                                                <th colspan="6" class="text-center bg-primary bg-opacity-10">BPJS TK</th>
                                                 <th colspan="2" class="text-center bg-secondary bg-opacity-10">BPJS KES</th>
                                                 <th colspan="4" class="text-center bg-secondary bg-opacity-10">Lainnya</th>
                                                 <th colspan="4" class="text-center bg-dark bg-opacity-10">Summary</th>
                                                 <th rowspan="2" class="text-center align-middle min-w-120px">Actions</th>
                                             </tr>
                                             <tr>
-                                                <th class="text-end min-w-120px bg-warning bg-opacity-10">Monthly KPI</th>
-                                                <th class="text-end min-w-120px bg-warning bg-opacity-10">Overtime</th>
-                                                <th class="text-end min-w-120px bg-warning bg-opacity-10">Medical</th>
-                                                <th class="text-end min-w-120px bg-warning bg-opacity-10">Insentif Sholat</th>
-                                                <th class="text-end min-w-120px bg-warning bg-opacity-10">Monthly Bonus</th>
-                                                <th class="text-end min-w-120px bg-warning bg-opacity-10">Rapel</th>
-                                                <th class="text-end min-w-120px bg-info bg-opacity-10">Tunj. Pulsa</th>
-                                                <th class="text-end min-w-120px bg-info bg-opacity-10">Tunj. Kehadiran</th>
-                                                <th class="text-end min-w-120px bg-info bg-opacity-10">Tunj. Transport</th>
-                                                <th class="text-end min-w-120px bg-info bg-opacity-10">Tunj. Lainnya</th>
-                                                <th class="text-end min-w-120px bg-success bg-opacity-10">Yearly Bonus</th>
-                                                <th class="text-end min-w-120px bg-success bg-opacity-10">THR</th>
-                                                <th class="text-end min-w-120px bg-success bg-opacity-10">Other</th>
-                                                <th class="text-end min-w-120px bg-danger bg-opacity-10">CA Corporate</th>
-                                                <th class="text-end min-w-120px bg-danger bg-opacity-10">CA Personal</th>
-                                                <th class="text-end min-w-120px bg-danger bg-opacity-10">CA Kehadiran</th>
+                                                <th class="text-center min-w-120px bg-warning bg-opacity-10">Monthly KPI</th>
+                                                <th class="text-center min-w-120px bg-warning bg-opacity-10">Overtime</th>
+                                                <th class="text-center min-w-120px bg-warning bg-opacity-10">Medical</th>
+                                                <th class="text-center min-w-120px bg-warning bg-opacity-10">Insentif Sholat</th>
+                                                <th class="text-center min-w-120px bg-warning bg-opacity-10">Monthly Bonus</th>
+                                                <th class="text-center min-w-120px bg-warning bg-opacity-10">Rapel</th>
+                                                <th class="text-center min-w-120px bg-info bg-opacity-10">Tunj. Pulsa</th>
+                                                <th class="text-center min-w-120px bg-info bg-opacity-10">Tunj. Kehadiran</th>
+                                                <th class="text-center min-w-120px bg-info bg-opacity-10">Tunj. Transport</th>
+                                                <th class="text-center min-w-120px bg-info bg-opacity-10">Tunj. Lainnya</th>
+                                                <th class="text-center min-w-120px bg-success bg-opacity-10">Yearly Bonus</th>
+                                                <th class="text-center min-w-120px bg-success bg-opacity-10">THR</th>
+                                                <th class="text-center min-w-120px bg-success bg-opacity-10">Other</th>
+                                                <th class="text-center min-w-120px bg-danger bg-opacity-10">CA Corporate</th>
+                                                <th class="text-center min-w-120px bg-danger bg-opacity-10">CA Personal</th>
+                                                <th class="text-center min-w-120px bg-danger bg-opacity-10">CA Kehadiran</th>
                                                 
-                                                <th class="text-end min-w-120px bg-primary bg-opacity-10">BPJS TK</th>
-                                                <th class="text-end min-w-120px bg-primary bg-opacity-10">BPJS Kes</th>
-                                                <th class="text-end min-w-120px bg-primary bg-opacity-10">PPh 21 Deduction</th>
-                                                <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JHT 3.7%</th>
-                                                <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JHT 2%</th>
-                                                <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JKK 0.24%</th>
-                                                <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JKM 0.3%</th>
-                                                <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JP 2%</th>
-                                                <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JP 1%</th>
-                                                <th class="text-end min-w-120px bg-secondary bg-opacity-10">Kes 4%</th>
-                                                <th class="text-end min-w-120px bg-secondary bg-opacity-10">Kes 1%</th>
-                                                <th class="text-end min-w-120px bg-secondary bg-opacity-10">PPh 21</th>
-                                                <th class="text-end min-w-120px bg-secondary bg-opacity-10">GLH</th>
-                                                <th class="text-end min-w-120px bg-secondary bg-opacity-10">LM</th>
-                                                <th class="text-end min-w-120px bg-secondary bg-opacity-10">Lainnya</th>
-                                                <th class="text-end min-w-150px bg-dark bg-opacity-10 fw-bold">Salary</th>
-                                                <th class="text-end min-w-150px bg-dark bg-opacity-10 fw-bold">Total Penerimaan</th>
-                                                <th class="text-end min-w-150px bg-dark bg-opacity-10 fw-bold">Total Potongan</th>
-                                                <th class="text-end min-w-150px bg-dark bg-opacity-10 fw-bold">Gaji Bersih</th>
+                                                <th class="text-center min-w-120px bg-danger bg-opacity-10">BPJS TK</th>
+                                                <th class="text-center min-w-120px bg-danger bg-opacity-10">BPJS Kes</th>
+                                                <th class="text-center min-w-120px bg-danger bg-opacity-10">PPh 21 Deduction</th>
+                                                <th class="text-center min-w-120px bg-primary bg-opacity-10">TK JHT 3.7%</th>
+                                                <th class="text-center min-w-120px bg-primary bg-opacity-10">TK JHT 2%</th>
+                                                <th class="text-center min-w-120px bg-primary bg-opacity-10">TK JKK 0.24%</th>
+                                                <th class="text-center min-w-120px bg-primary bg-opacity-10">TK JKM 0.3%</th>
+                                                <th class="text-center min-w-120px bg-primary bg-opacity-10">TK JP 2%</th>
+                                                <th class="text-center min-w-120px bg-primary bg-opacity-10">TK JP 1%</th>
+                                                <th class="text-center min-w-120px bg-secondary bg-opacity-10">Kes 4%</th>
+                                                <th class="text-center min-w-120px bg-secondary bg-opacity-10">Kes 1%</th>
+                                                <th class="text-center min-w-120px bg-secondary bg-opacity-10">PPh 21</th>
+                                                <th class="text-center min-w-120px bg-secondary bg-opacity-10">GLH</th>
+                                                <th class="text-center min-w-120px bg-secondary bg-opacity-10">LM</th>
+                                                <th class="text-center min-w-120px bg-secondary bg-opacity-10">Lainnya</th>
+                                                <th class="text-center min-w-150px bg-dark bg-opacity-10 fw-bold">Salary</th>
+                                                <th class="text-center min-w-150px bg-dark bg-opacity-10 fw-bold">Total Penerimaan</th>
+                                                <th class="text-center min-w-150px bg-dark bg-opacity-10 fw-bold">Total Potongan</th>
+                                                <th class="text-center min-w-150px bg-dark bg-opacity-10 fw-bold">Gaji Bersih</th>
                                             </tr>
                                         </thead>
                                         <tbody></tbody>
@@ -194,50 +194,50 @@
                                                     <th colspan="6" class="text-center bg-warning bg-opacity-10">Monthly Insentif</th>
                                                     <th colspan="4" class="text-center bg-info bg-opacity-10">Monthly Allowance</th>
                                                     <th colspan="3" class="text-center bg-success bg-opacity-10">Yearly Benefit</th>
-                                                    <th colspan="3" class="text-center bg-danger bg-opacity-10">Potongan</th>
-                                                    <th colspan="9" class="text-center bg-primary bg-opacity-10">BPJS TK</th>
+                                                    <th colspan="6" class="text-center bg-danger bg-opacity-10">Potongan</th>
+                                                    <th colspan="6" class="text-center bg-primary bg-opacity-10">BPJS TK</th>
                                                     <th colspan="2" class="text-center bg-secondary bg-opacity-10">BPJS KES</th>
                                                     <th colspan="4" class="text-center bg-secondary bg-opacity-10">Lainnya</th>
                                                     <th colspan="4" class="text-center bg-dark bg-opacity-10">Summary</th>
                                                     <th rowspan="2" class="text-center align-middle min-w-120px">Actions</th>
                                                 </tr>
                                                 <tr>
-                                                    <th class="text-end min-w-120px bg-warning bg-opacity-10">Monthly KPI</th>
-                                                    <th class="text-end min-w-120px bg-warning bg-opacity-10">Overtime</th>
-                                                    <th class="text-end min-w-120px bg-warning bg-opacity-10">Medical</th>
-                                                    <th class="text-end min-w-120px bg-warning bg-opacity-10">Insentif Sholat</th>
-                                                    <th class="text-end min-w-120px bg-warning bg-opacity-10">Monthly Bonus</th>
-                                                    <th class="text-end min-w-120px bg-warning bg-opacity-10">Rapel</th>
-                                                    <th class="text-end min-w-120px bg-info bg-opacity-10">Tunj. Pulsa</th>
-                                                    <th class="text-end min-w-120px bg-info bg-opacity-10">Tunj. Kehadiran</th>
-                                                    <th class="text-end min-w-120px bg-info bg-opacity-10">Tunj. Transport</th>
-                                                    <th class="text-end min-w-120px bg-info bg-opacity-10">Tunj. Lainnya</th>
-                                                    <th class="text-end min-w-120px bg-success bg-opacity-10">Yearly Bonus</th>
-                                                    <th class="text-end min-w-120px bg-success bg-opacity-10">THR</th>
-                                                    <th class="text-end min-w-120px bg-success bg-opacity-10">Other</th>
-                                                    <th class="text-end min-w-120px bg-danger bg-opacity-10">CA Corporate</th>
-                                                    <th class="text-end min-w-120px bg-danger bg-opacity-10">CA Personal</th>
-                                                    <th class="text-end min-w-120px bg-danger bg-opacity-10">CA Kehadiran</th>
+                                                    <th class="text-center min-w-120px bg-warning bg-opacity-10">Monthly KPI</th>
+                                                    <th class="text-center min-w-120px bg-warning bg-opacity-10">Overtime</th>
+                                                    <th class="text-center min-w-120px bg-warning bg-opacity-10">Medical</th>
+                                                    <th class="text-center min-w-120px bg-warning bg-opacity-10">Insentif Sholat</th>
+                                                    <th class="text-center min-w-120px bg-warning bg-opacity-10">Monthly Bonus</th>
+                                                    <th class="text-center min-w-120px bg-warning bg-opacity-10">Rapel</th>
+                                                    <th class="text-center min-w-120px bg-info bg-opacity-10">Tunj. Pulsa</th>
+                                                    <th class="text-center min-w-120px bg-info bg-opacity-10">Tunj. Kehadiran</th>
+                                                    <th class="text-center min-w-120px bg-info bg-opacity-10">Tunj. Transport</th>
+                                                    <th class="text-center min-w-120px bg-info bg-opacity-10">Tunj. Lainnya</th>
+                                                    <th class="text-center min-w-120px bg-success bg-opacity-10">Yearly Bonus</th>
+                                                    <th class="text-center min-w-120px bg-success bg-opacity-10">THR</th>
+                                                    <th class="text-center min-w-120px bg-success bg-opacity-10">Other</th>
+                                                    <th class="text-center min-w-120px bg-danger bg-opacity-10">CA Corporate</th>
+                                                    <th class="text-center min-w-120px bg-danger bg-opacity-10">CA Personal</th>
+                                                    <th class="text-center min-w-120px bg-danger bg-opacity-10">CA Kehadiran</th>
                                                     
-                                                    <th class="text-end min-w-120px bg-primary bg-opacity-10">BPJS TK</th>
-                                                    <th class="text-end min-w-120px bg-primary bg-opacity-10">BPJS Kes</th>
-                                                    <th class="text-end min-w-120px bg-primary bg-opacity-10">PPh 21 Deduction</th>
-                                                    <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JHT 3.7%</th>
-                                                    <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JHT 2%</th>
-                                                    <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JKK 0.24%</th>
-                                                    <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JKM 0.3%</th>
-                                                    <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JP 2%</th>
-                                                    <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JP 1%</th>
-                                                    <th class="text-end min-w-120px bg-secondary bg-opacity-10">Kes 4%</th>
-                                                    <th class="text-end min-w-120px bg-secondary bg-opacity-10">Kes 1%</th>
-                                                    <th class="text-end min-w-120px bg-secondary bg-opacity-10">PPh 21</th>
-                                                    <th class="text-end min-w-120px bg-secondary bg-opacity-10">GLH</th>
-                                                    <th class="text-end min-w-120px bg-secondary bg-opacity-10">LM</th>
-                                                    <th class="text-end min-w-120px bg-secondary bg-opacity-10">Lainnya</th>
-                                                    <th class="text-end min-w-150px bg-dark bg-opacity-10 fw-bold">Salary</th>
-                                                    <th class="text-end min-w-150px bg-dark bg-opacity-10 fw-bold">Total Penerimaan</th>
-                                                    <th class="text-end min-w-150px bg-dark bg-opacity-10 fw-bold">Total Potongan</th>
-                                                    <th class="text-end min-w-150px bg-dark bg-opacity-10 fw-bold">Gaji Bersih</th>
+                                                    <th class="text-center min-w-120px bg-danger bg-opacity-10">BPJS TK</th>
+                                                    <th class="text-center min-w-120px bg-danger bg-opacity-10">BPJS Kes</th>
+                                                    <th class="text-center min-w-120px bg-danger bg-opacity-10">PPh 21 Deduction</th>
+                                                    <th class="text-center min-w-120px bg-primary bg-opacity-10">TK JHT 3.7%</th>
+                                                    <th class="text-center min-w-120px bg-primary bg-opacity-10">TK JHT 2%</th>
+                                                    <th class="text-center min-w-120px bg-primary bg-opacity-10">TK JKK 0.24%</th>
+                                                    <th class="text-center min-w-120px bg-primary bg-opacity-10">TK JKM 0.3%</th>
+                                                    <th class="text-center min-w-120px bg-primary bg-opacity-10">TK JP 2%</th>
+                                                    <th class="text-center min-w-120px bg-primary bg-opacity-10">TK JP 1%</th>
+                                                    <th class="text-center min-w-120px bg-secondary bg-opacity-10">Kes 4%</th>
+                                                    <th class="text-center min-w-120px bg-secondary bg-opacity-10">Kes 1%</th>
+                                                    <th class="text-center min-w-120px bg-secondary bg-opacity-10">PPh 21</th>
+                                                    <th class="text-center min-w-120px bg-secondary bg-opacity-10">GLH</th>
+                                                    <th class="text-center min-w-120px bg-secondary bg-opacity-10">LM</th>
+                                                    <th class="text-center min-w-120px bg-secondary bg-opacity-10">Lainnya</th>
+                                                    <th class="text-center min-w-150px bg-dark bg-opacity-10 fw-bold">Salary</th>
+                                                    <th class="text-center min-w-150px bg-dark bg-opacity-10 fw-bold">Total Penerimaan</th>
+                                                    <th class="text-center min-w-150px bg-dark bg-opacity-10 fw-bold">Total Potongan</th>
+                                                    <th class="text-center min-w-150px bg-dark bg-opacity-10 fw-bold">Gaji Bersih</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="virtualScrollBody"></tbody>
@@ -264,50 +264,50 @@
                                                     <th colspan="6" class="text-center bg-warning bg-opacity-10">Monthly Insentif</th>
                                                     <th colspan="4" class="text-center bg-info bg-opacity-10">Monthly Allowance</th>
                                                     <th colspan="3" class="text-center bg-success bg-opacity-10">Yearly Benefit</th>
-                                                     <th colspan="3" class="text-center bg-danger bg-opacity-10">Potongan</th>
-                                                    <th colspan="9" class="text-center bg-primary bg-opacity-10">BPJS TK</th>
+                                                    <th colspan="6" class="text-center bg-danger bg-opacity-10">Potongan</th>
+                                                    <th colspan="6" class="text-center bg-primary bg-opacity-10">BPJS TK</th>
                                                     <th colspan="2" class="text-center bg-secondary bg-opacity-10">BPJS KES</th>
                                                     <th colspan="4" class="text-center bg-secondary bg-opacity-10">Lainnya</th>
                                                     <th colspan="4" class="text-center bg-dark bg-opacity-10">Summary</th>
                                                     <th rowspan="2" class="text-center align-middle min-w-120px">Actions</th>
                                                 </tr>
                                                 <tr>
-                                                    <th class="text-end min-w-120px bg-warning bg-opacity-10">Monthly KPI</th>
-                                                    <th class="text-end min-w-120px bg-warning bg-opacity-10">Overtime</th>
-                                                    <th class="text-end min-w-120px bg-warning bg-opacity-10">Medical</th>
-                                                    <th class="text-end min-w-120px bg-warning bg-opacity-10">Insentif Sholat</th>
-                                                    <th class="text-end min-w-120px bg-warning bg-opacity-10">Monthly Bonus</th>
-                                                    <th class="text-end min-w-120px bg-warning bg-opacity-10">Rapel</th>
-                                                    <th class="text-end min-w-120px bg-info bg-opacity-10">Tunj. Pulsa</th>
-                                                    <th class="text-end min-w-120px bg-info bg-opacity-10">Tunj. Kehadiran</th>
-                                                    <th class="text-end min-w-120px bg-info bg-opacity-10">Tunj. Transport</th>
-                                                    <th class="text-end min-w-120px bg-info bg-opacity-10">Tunj. Lainnya</th>
-                                                    <th class="text-end min-w-120px bg-success bg-opacity-10">Yearly Bonus</th>
-                                                    <th class="text-end min-w-120px bg-success bg-opacity-10">THR</th>
-                                                    <th class="text-end min-w-120px bg-success bg-opacity-10">Other</th>
-                                                    <th class="text-end min-w-120px bg-danger bg-opacity-10">CA Corporate</th>
-                                                    <th class="text-end min-w-120px bg-danger bg-opacity-10">CA Personal</th>
-                                                    <th class="text-end min-w-120px bg-danger bg-opacity-10">CA Kehadiran</th>
+                                                    <th class="text-center min-w-120px bg-warning bg-opacity-10">Monthly KPI</th>
+                                                    <th class="text-center min-w-120px bg-warning bg-opacity-10">Overtime</th>
+                                                    <th class="text-center min-w-120px bg-warning bg-opacity-10">Medical</th>
+                                                    <th class="text-center min-w-120px bg-warning bg-opacity-10">Insentif Sholat</th>
+                                                    <th class="text-center min-w-120px bg-warning bg-opacity-10">Monthly Bonus</th>
+                                                    <th class="text-center min-w-120px bg-warning bg-opacity-10">Rapel</th>
+                                                    <th class="text-center min-w-120px bg-info bg-opacity-10">Tunj. Pulsa</th>
+                                                    <th class="text-center min-w-120px bg-info bg-opacity-10">Tunj. Kehadiran</th>
+                                                    <th class="text-center min-w-120px bg-info bg-opacity-10">Tunj. Transport</th>
+                                                    <th class="text-center min-w-120px bg-info bg-opacity-10">Tunj. Lainnya</th>
+                                                    <th class="text-center min-w-120px bg-success bg-opacity-10">Yearly Bonus</th>
+                                                    <th class="text-center min-w-120px bg-success bg-opacity-10">THR</th>
+                                                    <th class="text-center min-w-120px bg-success bg-opacity-10">Other</th>
+                                                    <th class="text-center min-w-120px bg-danger bg-opacity-10">CA Corporate</th>
+                                                    <th class="text-center min-w-120px bg-danger bg-opacity-10">CA Personal</th>
+                                                    <th class="text-center min-w-120px bg-danger bg-opacity-10">CA Kehadiran</th>
                                                     
-                                                    <th class="text-end min-w-120px bg-primary bg-opacity-10">BPJS TK</th>
-                                                    <th class="text-end min-w-120px bg-primary bg-opacity-10">BPJS Kes</th>
-                                                    <th class="text-end min-w-120px bg-primary bg-opacity-10">PPh 21 Deduction</th>
-                                                    <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JHT 3.7%</th>
-                                                    <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JHT 2%</th>
-                                                    <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JKK 0.24%</th>
-                                                    <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JKM 0.3%</th>
-                                                    <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JP 2%</th>
-                                                    <th class="text-end min-w-120px bg-primary bg-opacity-10">TK JP 1%</th>
-                                                    <th class="text-end min-w-120px bg-secondary bg-opacity-10">Kes 4%</th>
-                                                    <th class="text-end min-w-120px bg-secondary bg-opacity-10">Kes 1%</th>
-                                                    <th class="text-end min-w-120px bg-secondary bg-opacity-10">PPh 21</th>
-                                                    <th class="text-end min-w-120px bg-secondary bg-opacity-10">GLH</th>
-                                                    <th class="text-end min-w-120px bg-secondary bg-opacity-10">LM</th>
-                                                    <th class="text-end min-w-120px bg-secondary bg-opacity-10">Lainnya</th>
-                                                    <th class="text-end min-w-150px bg-dark bg-opacity-10 fw-bold">Salary</th>
-                                                    <th class="text-end min-w-150px bg-dark bg-opacity-10 fw-bold">Total Penerimaan</th>
-                                                    <th class="text-end min-w-150px bg-dark bg-opacity-10 fw-bold">Total Potongan</th>
-                                                    <th class="text-end min-w-150px bg-dark bg-opacity-10 fw-bold">Gaji Bersih</th>
+                                                    <th class="text-center min-w-120px bg-danger bg-opacity-10">BPJS TK</th>
+                                                    <th class="text-center min-w-120px bg-danger bg-opacity-10">BPJS Kes</th>
+                                                    <th class="text-center min-w-120px bg-danger bg-opacity-10">PPh 21 Deduction</th>
+                                                    <th class="text-center min-w-120px bg-primary bg-opacity-10">TK JHT 3.7%</th>
+                                                    <th class="text-center min-w-120px bg-primary bg-opacity-10">TK JHT 2%</th>
+                                                    <th class="text-center min-w-120px bg-primary bg-opacity-10">TK JKK 0.24%</th>
+                                                    <th class="text-center min-w-120px bg-primary bg-opacity-10">TK JKM 0.3%</th>
+                                                    <th class="text-center min-w-120px bg-primary bg-opacity-10">TK JP 2%</th>
+                                                    <th class="text-center min-w-120px bg-primary bg-opacity-10">TK JP 1%</th>
+                                                    <th class="text-center min-w-120px bg-secondary bg-opacity-10">Kes 4%</th>
+                                                    <th class="text-center min-w-120px bg-secondary bg-opacity-10">Kes 1%</th>
+                                                    <th class="text-center min-w-120px bg-secondary bg-opacity-10">PPh 21</th>
+                                                    <th class="text-center min-w-120px bg-secondary bg-opacity-10">GLH</th>
+                                                    <th class="text-center min-w-120px bg-secondary bg-opacity-10">LM</th>
+                                                    <th class="text-center min-w-120px bg-secondary bg-opacity-10">Lainnya</th>
+                                                    <th class="text-center min-w-150px bg-dark bg-opacity-10 fw-bold">Salary</th>
+                                                    <th class="text-center min-w-150px bg-dark bg-opacity-10 fw-bold">Total Penerimaan</th>
+                                                    <th class="text-center min-w-150px bg-dark bg-opacity-10 fw-bold">Total Potongan</th>
+                                                    <th class="text-center min-w-150px bg-dark bg-opacity-10 fw-bold">Gaji Bersih</th>
                                                 </tr>
                                             </thead>
                                             <tbody></tbody>
@@ -393,43 +393,43 @@ var KTPayrollList = function() {
                 <td>${item.karyawan_nama || '-'}</td>
                 <td>${item.company_nama || '-'}</td>
                 <td class="text-center">${item.salary_type || '-'}</td>
-                <td class="text-end">${formatCurrency(item.gaji_pokok)}</td>
-                <td class="text-end">${formatCurrency(item.monthly_kpi)}</td>
-                <td class="text-end">${formatCurrency(item.overtime)}</td>
-                <td class="text-end">${formatCurrency(item.medical_reimbursement)}</td>
-                <td class="text-end">${formatCurrency(item.insentif_sholat)}</td>
-                <td class="text-end">${formatCurrency(item.monthly_bonus)}</td>
-                <td class="text-end">${formatCurrency(item.rapel)}</td>
-                <td class="text-end">${formatCurrency(item.tunjangan_pulsa)}</td>
-                <td class="text-end">${formatCurrency(item.tunjangan_kehadiran)}</td>
-                <td class="text-end">${formatCurrency(item.tunjangan_transport)}</td>
-                <td class="text-end">${formatCurrency(item.tunjangan_lainnya)}</td>
-                <td class="text-end">${formatCurrency(item.yearly_bonus)}</td>
-                <td class="text-end">${formatCurrency(item.thr)}</td>
-                <td class="text-end">${formatCurrency(item.other)}</td>
-                <td class="text-end">${formatCurrency(item.ca_corporate)}</td>
-                <td class="text-end">${formatCurrency(item.ca_personal)}</td>
-                <td class="text-end">${formatCurrency(item.ca_kehadiran)}</td>
+                <td class="text-center">${formatCurrency(item.gaji_pokok)}</td>
+                <td class="text-center">${formatCurrency(item.monthly_kpi)}</td>
+                <td class="text-center">${formatCurrency(item.overtime)}</td>
+                <td class="text-center">${formatCurrency(item.medical_reimbursement)}</td>
+                <td class="text-center">${formatCurrency(item.insentif_sholat)}</td>
+                <td class="text-center">${formatCurrency(item.monthly_bonus)}</td>
+                <td class="text-center">${formatCurrency(item.rapel)}</td>
+                <td class="text-center">${formatCurrency(item.tunjangan_pulsa)}</td>
+                <td class="text-center">${formatCurrency(item.tunjangan_kehadiran)}</td>
+                <td class="text-center">${formatCurrency(item.tunjangan_transport)}</td>
+                <td class="text-center">${formatCurrency(item.tunjangan_lainnya)}</td>
+                <td class="text-center">${formatCurrency(item.yearly_bonus)}</td>
+                <td class="text-center">${formatCurrency(item.thr)}</td>
+                <td class="text-center">${formatCurrency(item.other)}</td>
+                <td class="text-center">${formatCurrency(item.ca_corporate)}</td>
+                <td class="text-center">${formatCurrency(item.ca_personal)}</td>
+                <td class="text-center">${formatCurrency(item.ca_kehadiran)}</td>
                 
-                <td class="text-end">${formatCurrency(item.bpjs_tenaga_kerja)}</td>
-                <td class="text-end">${formatCurrency(item.bpjs_kesehatan)}</td>
-                <td class="text-end">${formatCurrency(item.pph_21_deduction)}</td>
-                <td class="text-end">${formatCurrency(item.bpjs_tk_jht_3_7_percent)}</td>
-                <td class="text-end">${formatCurrency(item.bpjs_tk_jht_2_percent)}</td>
-                <td class="text-end">${formatCurrency(item.bpjs_tk_jkk_0_24_percent)}</td>
-                <td class="text-end">${formatCurrency(item.bpjs_tk_jkm_0_3_percent)}</td>
-                <td class="text-end">${formatCurrency(item.bpjs_tk_jp_2_percent)}</td>
-                <td class="text-end">${formatCurrency(item.bpjs_tk_jp_1_percent)}</td>
-                <td class="text-end">${formatCurrency(item.bpjs_kes_4_percent)}</td>
-                <td class="text-end">${formatCurrency(item.bpjs_kes_1_percent)}</td>
-                <td class="text-end">${formatCurrency(item.pph_21)}</td>
-                <td class="text-end">${formatCurrency(item.glh)}</td>
-                <td class="text-end">${formatCurrency(item.lm)}</td>
-                <td class="text-end">${formatCurrency(item.lainnya)}</td>
-                <td class="text-end fw-bold bg-light">${formatCurrency(item.salary)}</td>
-                <td class="text-end fw-bold bg-light">${formatCurrency(item.total_penerimaan)}</td>
-                <td class="text-end fw-bold bg-light">${formatCurrency(item.total_potongan)}</td>
-                <td class="text-end fw-bold bg-success bg-opacity-10">${formatCurrency(item.gaji_bersih)}</td>
+                <td class="text-center">${formatCurrency(item.bpjs_tenaga_kerja)}</td>
+                <td class="text-center">${formatCurrency(item.bpjs_kesehatan)}</td>
+                <td class="text-center">${formatCurrency(item.pph_21_deduction)}</td>
+                <td class="text-center">${formatCurrency(item.bpjs_tk_jht_3_7_percent)}</td>
+                <td class="text-center">${formatCurrency(item.bpjs_tk_jht_2_percent)}</td>
+                <td class="text-center">${formatCurrency(item.bpjs_tk_jkk_0_24_percent)}</td>
+                <td class="text-center">${formatCurrency(item.bpjs_tk_jkm_0_3_percent)}</td>
+                <td class="text-center">${formatCurrency(item.bpjs_tk_jp_2_percent)}</td>
+                <td class="text-center">${formatCurrency(item.bpjs_tk_jp_1_percent)}</td>
+                <td class="text-center">${formatCurrency(item.bpjs_kes_4_percent)}</td>
+                <td class="text-center">${formatCurrency(item.bpjs_kes_1_percent)}</td>
+                <td class="text-center">${formatCurrency(item.pph_21)}</td>
+                <td class="text-center">${formatCurrency(item.glh)}</td>
+                <td class="text-center">${formatCurrency(item.lm)}</td>
+                <td class="text-center">${formatCurrency(item.lainnya)}</td>
+                <td class="text-center fw-bold bg-light">${formatCurrency(item.salary)}</td>
+                <td class="text-center fw-bold bg-light">${formatCurrency(item.total_penerimaan)}</td>
+                <td class="text-center fw-bold bg-light">${formatCurrency(item.total_potongan)}</td>
+                <td class="text-center fw-bold bg-success bg-opacity-10">${formatCurrency(item.gaji_bersih)}</td>
                 <td class="text-center">
                     <a href="/payrolls/${item.id}/edit" class="btn btn-icon btn-light-primary btn-sm me-1">
                         <i class="ki-outline ki-pencil fs-5"></i>
@@ -541,43 +541,43 @@ var KTPayrollList = function() {
                 { data: 'karyawan_nama', orderable: false },
                 { data: 'company_nama', orderable: false },
                 { data: 'salary_type', className: 'text-center' },
-                { data: 'gaji_pokok_formatted', className: 'text-end', render: formatCurrency },
-                { data: 'monthly_kpi', className: 'text-end', render: formatCurrency },
-                { data: 'overtime', className: 'text-end', render: formatCurrency },
-                { data: 'medical_reimbursement', className: 'text-end', render: formatCurrency },
-                { data: 'insentif_sholat', className: 'text-end', render: formatCurrency },
-                { data: 'monthly_bonus', className: 'text-end', render: formatCurrency },
-                { data: 'rapel', className: 'text-end', render: formatCurrency },
-                { data: 'tunjangan_pulsa', className: 'text-end', render: formatCurrency },
-                { data: 'tunjangan_kehadiran', className: 'text-end', render: formatCurrency },
-                { data: 'tunjangan_transport', className: 'text-end', render: formatCurrency },
-                { data: 'tunjangan_lainnya', className: 'text-end', render: formatCurrency },
-                { data: 'yearly_bonus', className: 'text-end', render: formatCurrency },
-                { data: 'thr', className: 'text-end', render: formatCurrency },
-                { data: 'other', className: 'text-end', render: formatCurrency },
-                { data: 'ca_corporate', className: 'text-end', render: formatCurrency },
-                { data: 'ca_personal', className: 'text-end', render: formatCurrency },
-                { data: 'ca_kehadiran', className: 'text-end', render: formatCurrency },
+                { data: 'gaji_pokok_formatted', className: 'text-center', render: formatCurrency },
+                { data: 'monthly_kpi', className: 'text-center', render: formatCurrency },
+                { data: 'overtime', className: 'text-center', render: formatCurrency },
+                { data: 'medical_reimbursement', className: 'text-center', render: formatCurrency },
+                { data: 'insentif_sholat', className: 'text-center', render: formatCurrency },
+                { data: 'monthly_bonus', className: 'text-center', render: formatCurrency },
+                { data: 'rapel', className: 'text-center', render: formatCurrency },
+                { data: 'tunjangan_pulsa', className: 'text-center', render: formatCurrency },
+                { data: 'tunjangan_kehadiran', className: 'text-center', render: formatCurrency },
+                { data: 'tunjangan_transport', className: 'text-center', render: formatCurrency },
+                { data: 'tunjangan_lainnya', className: 'text-center', render: formatCurrency },
+                { data: 'yearly_bonus', className: 'text-center', render: formatCurrency },
+                { data: 'thr', className: 'text-center', render: formatCurrency },
+                { data: 'other', className: 'text-center', render: formatCurrency },
+                { data: 'ca_corporate', className: 'text-center', render: formatCurrency },
+                { data: 'ca_personal', className: 'text-center', render: formatCurrency },
+                { data: 'ca_kehadiran', className: 'text-center', render: formatCurrency },
                 
-                { data: 'bpjs_tenaga_kerja', className: 'text-end', render: formatCurrency },
-                { data: 'bpjs_kesehatan', className: 'text-end', render: formatCurrency },
-                { data: 'pph_21_deduction', className: 'text-end', render: formatCurrency },
-                { data: 'bpjs_tk_jht_3_7_percent', className: 'text-end', render: formatCurrency },
-                { data: 'bpjs_tk_jht_2_percent', className: 'text-end', render: formatCurrency },
-                { data: 'bpjs_tk_jkk_0_24_percent', className: 'text-end', render: formatCurrency },
-                { data: 'bpjs_tk_jkm_0_3_percent', className: 'text-end', render: formatCurrency },
-                { data: 'bpjs_tk_jp_2_percent', className: 'text-end', render: formatCurrency },
-                { data: 'bpjs_tk_jp_1_percent', className: 'text-end', render: formatCurrency },
-                { data: 'bpjs_kes_4_percent', className: 'text-end', render: formatCurrency },
-                { data: 'bpjs_kes_1_percent', className: 'text-end', render: formatCurrency },
-                { data: 'pph_21', className: 'text-end', render: formatCurrency },
-                { data: 'glh', className: 'text-end', render: formatCurrency },
-                { data: 'lm', className: 'text-end', render: formatCurrency },
-                { data: 'lainnya', className: 'text-end', render: formatCurrency },
-                { data: 'salary_formatted', className: 'text-end fw-bold bg-light', render: formatCurrency },
-                { data: 'total_penerimaan_formatted', className: 'text-end fw-bold bg-light', render: formatCurrency },
-                { data: 'total_potongan_formatted', className: 'text-end fw-bold bg-light', render: formatCurrency },
-                { data: 'gaji_bersih_formatted', className: 'text-end fw-bold bg-success bg-opacity-10', render: formatCurrency },
+                { data: 'bpjs_tenaga_kerja', className: 'text-center', render: formatCurrency },
+                { data: 'bpjs_kesehatan', className: 'text-center', render: formatCurrency },
+                { data: 'pph_21_deduction', className: 'text-center', render: formatCurrency },
+                { data: 'bpjs_tk_jht_3_7_percent', className: 'text-center', render: formatCurrency },
+                { data: 'bpjs_tk_jht_2_percent', className: 'text-center', render: formatCurrency },
+                { data: 'bpjs_tk_jkk_0_24_percent', className: 'text-center', render: formatCurrency },
+                { data: 'bpjs_tk_jkm_0_3_percent', className: 'text-center', render: formatCurrency },
+                { data: 'bpjs_tk_jp_2_percent', className: 'text-center', render: formatCurrency },
+                { data: 'bpjs_tk_jp_1_percent', className: 'text-center', render: formatCurrency },
+                { data: 'bpjs_kes_4_percent', className: 'text-center', render: formatCurrency },
+                { data: 'bpjs_kes_1_percent', className: 'text-center', render: formatCurrency },
+                { data: 'pph_21', className: 'text-center', render: formatCurrency },
+                { data: 'glh', className: 'text-center', render: formatCurrency },
+                { data: 'lm', className: 'text-center', render: formatCurrency },
+                { data: 'lainnya', className: 'text-center', render: formatCurrency },
+                { data: 'salary_formatted', className: 'text-center fw-bold bg-light', render: formatCurrency },
+                { data: 'total_penerimaan_formatted', className: 'text-center fw-bold bg-light', render: formatCurrency },
+                { data: 'total_potongan_formatted', className: 'text-center fw-bold bg-light', render: formatCurrency },
+                { data: 'gaji_bersih_formatted', className: 'text-center fw-bold bg-success bg-opacity-10', render: formatCurrency },
                 { data: 'action', orderable: false, searchable: false }
             ],
             scrollX: true,
@@ -586,7 +586,6 @@ var KTPayrollList = function() {
                 leftColumns: 5
             },
             order: [[2, 'desc']], 
-            dom: '<"table-responsive"t><"row"<"col-sm-12 col-md-5"li><"col-sm-12 col-md-7"p>>', 
             scrollX: true,
             drawCallback: function() { updatePendingCount(); updateSelectedIds(); }
         });
@@ -616,43 +615,43 @@ var KTPayrollList = function() {
                 { data: 'karyawan_nama', orderable: false },
                 { data: 'company_nama', orderable: false },
                 { data: 'salary_type', className: 'text-center' },
-                { data: 'gaji_pokok_formatted', className: 'text-end', render: formatCurrency },
-                { data: 'monthly_kpi', className: 'text-end', render: formatCurrency },
-                { data: 'overtime', className: 'text-end', render: formatCurrency },
-                { data: 'medical_reimbursement', className: 'text-end', render: formatCurrency },
-                { data: 'insentif_sholat', className: 'text-end', render: formatCurrency },
-                { data: 'monthly_bonus', className: 'text-end', render: formatCurrency },
-                { data: 'rapel', className: 'text-end', render: formatCurrency },
-                { data: 'tunjangan_pulsa', className: 'text-end', render: formatCurrency },
-                { data: 'tunjangan_kehadiran', className: 'text-end', render: formatCurrency },
-                { data: 'tunjangan_transport', className: 'text-end', render: formatCurrency },
-                { data: 'tunjangan_lainnya', className: 'text-end', render: formatCurrency },
-                { data: 'yearly_bonus', className: 'text-end', render: formatCurrency },
-                { data: 'thr', className: 'text-end', render: formatCurrency },
-                { data: 'other', className: 'text-end', render: formatCurrency },
-                { data: 'ca_corporate', className: 'text-end', render: formatCurrency },
-                { data: 'ca_personal', className: 'text-end', render: formatCurrency },
-                { data: 'ca_kehadiran', className: 'text-end', render: formatCurrency },
+                { data: 'gaji_pokok_formatted', className: 'text-center', render: formatCurrency },
+                { data: 'monthly_kpi', className: 'text-center', render: formatCurrency },
+                { data: 'overtime', className: 'text-center', render: formatCurrency },
+                { data: 'medical_reimbursement', className: 'text-center', render: formatCurrency },
+                { data: 'insentif_sholat', className: 'text-center', render: formatCurrency },
+                { data: 'monthly_bonus', className: 'text-center', render: formatCurrency },
+                { data: 'rapel', className: 'text-center', render: formatCurrency },
+                { data: 'tunjangan_pulsa', className: 'text-center', render: formatCurrency },
+                { data: 'tunjangan_kehadiran', className: 'text-center', render: formatCurrency },
+                { data: 'tunjangan_transport', className: 'text-center', render: formatCurrency },
+                { data: 'tunjangan_lainnya', className: 'text-center', render: formatCurrency },
+                { data: 'yearly_bonus', className: 'text-center', render: formatCurrency },
+                { data: 'thr', className: 'text-center', render: formatCurrency },
+                { data: 'other', className: 'text-center', render: formatCurrency },
+                { data: 'ca_corporate', className: 'text-center', render: formatCurrency },
+                { data: 'ca_personal', className: 'text-center', render: formatCurrency },
+                { data: 'ca_kehadiran', className: 'text-center', render: formatCurrency },
                 
-                { data: 'bpjs_tenaga_kerja', className: 'text-end', render: formatCurrency },
-                { data: 'bpjs_kesehatan', className: 'text-end', render: formatCurrency },
-                { data: 'pph_21_deduction', className: 'text-end', render: formatCurrency },
-                { data: 'bpjs_tk_jht_3_7_percent', className: 'text-end', render: formatCurrency },
-                { data: 'bpjs_tk_jht_2_percent', className: 'text-end', render: formatCurrency },
-                { data: 'bpjs_tk_jkk_0_24_percent', className: 'text-end', render: formatCurrency },
-                { data: 'bpjs_tk_jkm_0_3_percent', className: 'text-end', render: formatCurrency },
-                { data: 'bpjs_tk_jp_2_percent', className: 'text-end', render: formatCurrency },
-                { data: 'bpjs_tk_jp_1_percent', className: 'text-end', render: formatCurrency },
-                { data: 'bpjs_kes_4_percent', className: 'text-end', render: formatCurrency },
-                { data: 'bpjs_kes_1_percent', className: 'text-end', render: formatCurrency },
-                { data: 'pph_21', className: 'text-end', render: formatCurrency },
-                { data: 'glh', className: 'text-end', render: formatCurrency },
-                { data: 'lm', className: 'text-end', render: formatCurrency },
-                { data: 'lainnya', className: 'text-end', render: formatCurrency },
-                { data: 'salary_formatted', className: 'text-end fw-bold bg-light', render: formatCurrency },
-                { data: 'total_penerimaan_formatted', className: 'text-end fw-bold bg-light', render: formatCurrency },
-                { data: 'total_potongan_formatted', className: 'text-end fw-bold bg-light', render: formatCurrency },
-                { data: 'gaji_bersih_formatted', className: 'text-end fw-bold bg-success bg-opacity-10', render: formatCurrency },
+                { data: 'bpjs_tenaga_kerja', className: 'text-center', render: formatCurrency },
+                { data: 'bpjs_kesehatan', className: 'text-center', render: formatCurrency },
+                { data: 'pph_21_deduction', className: 'text-center', render: formatCurrency },
+                { data: 'bpjs_tk_jht_3_7_percent', className: 'text-center', render: formatCurrency },
+                { data: 'bpjs_tk_jht_2_percent', className: 'text-center', render: formatCurrency },
+                { data: 'bpjs_tk_jkk_0_24_percent', className: 'text-center', render: formatCurrency },
+                { data: 'bpjs_tk_jkm_0_3_percent', className: 'text-center', render: formatCurrency },
+                { data: 'bpjs_tk_jp_2_percent', className: 'text-center', render: formatCurrency },
+                { data: 'bpjs_tk_jp_1_percent', className: 'text-center', render: formatCurrency },
+                { data: 'bpjs_kes_4_percent', className: 'text-center', render: formatCurrency },
+                { data: 'bpjs_kes_1_percent', className: 'text-center', render: formatCurrency },
+                { data: 'pph_21', className: 'text-center', render: formatCurrency },
+                { data: 'glh', className: 'text-center', render: formatCurrency },
+                { data: 'lm', className: 'text-center', render: formatCurrency },
+                { data: 'lainnya', className: 'text-center', render: formatCurrency },
+                { data: 'salary_formatted', className: 'text-center fw-bold bg-light', render: formatCurrency },
+                { data: 'total_penerimaan_formatted', className: 'text-center fw-bold bg-light', render: formatCurrency },
+                { data: 'total_potongan_formatted', className: 'text-center fw-bold bg-light', render: formatCurrency },
+                { data: 'gaji_bersih_formatted', className: 'text-center fw-bold bg-success bg-opacity-10', render: formatCurrency },
                 { data: 'action', orderable: false, searchable: false }
             ],
             scrollX: true,
