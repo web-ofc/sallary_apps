@@ -10,10 +10,15 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileProxyController;
 use App\Http\Controllers\CompanySyncController;
 use App\Http\Controllers\CompanyViewController;
+use App\Http\Controllers\JenisTerSyncController;
 use App\Http\Controllers\KaryawanSyncController;
+use App\Http\Controllers\Pph21TahunanController;
 use App\Http\Controllers\MutasiCompanyController;
+use App\Http\Controllers\PayrollAnnualController;
 use App\Http\Controllers\PayrollImportController;
 use App\Http\Controllers\Api\PayrollApiController;
+use App\Http\Controllers\RangeBrutoSyncController;
+use App\Http\Controllers\Pph21TaxBracketController;
 use App\Http\Controllers\KaryawanPtkpHistorySyncController;
 use App\Http\Controllers\PeriodeKaryawanMasaJabatanController;
 
@@ -50,6 +55,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('users/data', [UserController::class, 'getData'])->name('users.data');
 
         
+    // ========================================
+    // PAYROLL IMPORT ROUTES
+    // ========================================
     Route::prefix('payrolls/import')->group(function () {
         Route::get('/', [PayrollImportController::class, 'index'])
             ->name('payrolls.import');
@@ -57,48 +65,94 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::post('/validate', [PayrollImportController::class, 'validateExcel'])
             ->name('payrolls.import.validate');
         
-        // ✅ NEW: DataTables routes
-        Route::post('/datatablevalid', [PayrollImportController::class, 'validDataTable'])
+        // DataTables routes
+        Route::post('/datatable/valid', [PayrollImportController::class, 'validDataTable'])
             ->name('payrolls.import.datatable.valid');
         
-        Route::post('/datatableerrors', [PayrollImportController::class, 'errorDataTable'])
+        Route::post('/datatable/errors', [PayrollImportController::class, 'errorDataTable'])
             ->name('payrolls.import.datatable.errors');
         
+        // Import biasa (bulanan)
         Route::post('/process', [PayrollImportController::class, 'process'])
             ->name('payrolls.import.process');
+        
+        // 🆕 Import untuk PPh21 Tahunan
+        Route::post('/process-annual', [PayrollImportController::class, 'processAnnual'])
+            ->name('payrolls.import.process-annual');
         
         Route::get('/template', [PayrollImportController::class, 'downloadTemplate'])
             ->name('payrolls.import.template');
         
         Route::post('/download-errors', [PayrollImportController::class, 'downloadErrors'])
             ->name('payrolls.import.download-errors');
-    });
-    
 
-  
+        // Calculate PPh21 bulanan (TER-based)
+        Route::post('/calculate-pph21', [PayrollImportController::class, 'calculatePph21BeforeImport'])
+            ->name('payrolls.import.calculate-pph21');
+        
+        // Calculate PPh21 untuk data yang sudah di database
+        Route::post('/calculate-pph21/batch', [PayrollImportController::class, 'calculatePph21Batch'])
+            ->name('payrolls.calculate-pph21.batch');
+        
+        // Calculate PPh21 berdasarkan periode
+        Route::post('/calculate-pph21/by-periode', [PayrollImportController::class, 'calculatePph21ByPeriode'])
+            ->name('payrolls.calculate-pph21.by-periode');
+        
+        // Recalculate PPh21 (force update)
+        Route::post('/recalculate-pph21', [PayrollImportController::class, 'recalculatePph21'])
+            ->name('payrolls.recalculate-pph21');
+    });
+
     // ========================================
-    // PAYROLL ROUTES
+    // 🆕 PAYROLL ANNUAL CALCULATION ROUTES
     // ========================================
-    Route::post('/payrollsdatatablepending', [PayrollController::class, 'datatablePending'])
+    Route::prefix('payrolls/calculate-annual')->group(function () {
+        // Page untuk hitung PPh21 Tahunan
+        Route::get('/', [PayrollAnnualController::class, 'index'])
+            ->name('payrolls.calculate-annual.index');
+        
+            // ✅ BARU: Get bracket headers by year (AJAX)
+        Route::get('/bracket-headers', [PayrollAnnualController::class, 'getBracketHeaders'])
+        ->name('payrolls.calculate-annual.bracket-headers');
+    
+        // DataTable untuk data pending
+        Route::post('/datatable', [PayrollAnnualController::class, 'datatable'])
+            ->name('payrolls.calculate-annual.datatable');
+        
+        // Process perhitungan PPh21 Tahunan
+        Route::post('/process', [PayrollAnnualController::class, 'process'])
+            ->name('payrolls.calculate-annual.process');
+        
+        // Get detail untuk modal
+        Route::get('/detail', [PayrollAnnualController::class, 'getDetail'])
+            ->name('payrolls.calculate-annual.detail');
+    });
+
+    // ========================================
+    // PAYROLL ROUTES (existing)
+    // ========================================
+    Route::post('/payrolls/datatable/pending', [PayrollController::class, 'datatablePending'])
         ->name('payrollsdatatablepending');
         
-    Route::post('/payrollsdatatablereleased', [PayrollController::class, 'datatableReleased'])
+    Route::post('/payrolls/datatable/released', [PayrollController::class, 'datatableReleased'])
         ->name('payrollsdatatablereleased');
 
-    // ✅ Release batch action
+    // Release batch action
     Route::post('/payrolls/release', [PayrollController::class, 'releaseData'])
         ->name('payrolls.release');
 
-    // ✅ Summary route (sebelum resource agar tidak conflict)
+    // Summary route
     Route::get('/payrolls/summary/{periode}', [PayrollController::class, 'summary'])
         ->name('payrolls.summary');
 
-    // Export payroll (harus sebelum resource route)
+    // Export payroll
     Route::get('/payrolls/export', [PayrollController::class, 'export'])
         ->name('payrolls.export');
         
-    // ✅ Resource routes
+    // Resource routes
     Route::resource('payrolls', PayrollController::class);
+
+    
     
 
 
@@ -190,6 +244,54 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('/export', [PeriodeKaryawanMasaJabatanController::class, 'export'])->name('export');
         Route::get('/{periode}/{karyawanId}/{companyId}/{salaryType}', [PeriodeKaryawanMasaJabatanController::class, 'show'])->name('show');
     });
+
+    Route::prefix('jenis-ter/sync')->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [JenisTerSyncController::class, 'dashboard'])
+            ->name('jenis-ter.sync.dashboard');
+        
+        // DataTable endpoint untuk Jenis TER list
+        Route::post('/datatable', [JenisTerSyncController::class, 'datatable'])
+            ->name('jenis-ter.sync.datatable');
+        
+        // Trigger sync
+        Route::post('/trigger', [JenisTerSyncController::class, 'triggerSync'])
+            ->name('jenis-ter.sync.trigger');
+        
+        // Get status (AJAX)
+        Route::get('/status', [JenisTerSyncController::class, 'getSyncStatus'])
+            ->name('jenis-ter.sync.status');
+    });
+
+    Route::prefix('range-bruto/sync')->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [RangeBrutoSyncController::class, 'dashboard'])
+            ->name('range-bruto.sync.dashboard');
+        
+        // DataTable endpoint untuk Range Bruto list
+        Route::post('/datatable', [RangeBrutoSyncController::class, 'datatable'])
+            ->name('range-bruto.sync.datatable');
+        
+        // Trigger sync
+        Route::post('/trigger', [RangeBrutoSyncController::class, 'triggerSync'])
+            ->name('range-bruto.sync.trigger');
+        
+        // Get status (AJAX)
+        Route::get('/status', [RangeBrutoSyncController::class, 'getSyncStatus'])
+            ->name('range-bruto.sync.status');
+    });
+
+    Route::get('pph21taxbrackets/data', [Pph21TaxBracketController::class, 'getData'])->name('pph21taxbrackets.data');
+    Route::resource('/pph21taxbrackets', Pph21TaxBracketController::class);
+
+    Route::prefix('payroll')->name('pph21.tahunan.')->group(function () {
+        Route::get('/pph21-tahunan', [Pph21TahunanController::class, 'index'])->name('index');
+        Route::get('/pph21-tahunan/data', [Pph21TahunanController::class, 'getData'])->name('data');
+        Route::get('/pph21-tahunan/detail', [Pph21TahunanController::class, 'getDetail'])->name('detail');
+    });
+
+    Route::get('/pph21-tahunan/bracket-headers', [Pph21TahunanController::class, 'getBracketHeaders'])
+        ->name('pph21.tahunan.bracket-headers');
         
 });
 

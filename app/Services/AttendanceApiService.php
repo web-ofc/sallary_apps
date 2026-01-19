@@ -2046,4 +2046,949 @@ class AttendanceApiService
         Log::info("All PTKP History cache cleared");
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | JENIS TER METHODS
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * GET JENIS TER WITH PAGINATION
+     */
+    public function getJenisTersPaginated($page = 1, $perPage = 50, $useCache = true)
+    {
+        $perPage = min($perPage, 100);
+        
+        if (!$useCache) {
+            return $this->fetchJenisTersPaginated($page, $perPage);
+        }
+        
+        $cacheKey = "jenis_ter_page_{$page}_per_{$perPage}";
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchJenisTersPaginated($page, $perPage);
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, $this->listCacheTime);
+        }
+        
+        return $result;
+    }
+
+    protected function fetchJenisTersPaginated($page, $perPage)
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/jenis-ters", [
+                    'page' => $page,
+                    'per_page' => $perPage
+                ]);
+            
+            if ($response->successful()) {
+                $json = $response->json();
+                
+                return [
+                    'success' => true,
+                    'data' => $json['data'] ?? [],
+                    'meta' => $json['meta'] ?? [
+                        'current_page' => $page,
+                        'per_page' => $perPage,
+                        'total' => 0,
+                        'last_page' => 1,
+                    ]
+                ];
+            }
+            
+            Log::warning('Failed fetch jenis ter paginated', [
+                'page' => $page,
+                'status' => $response->status()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to fetch jenis ter data'
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error('API Error jenis ter paginated', [
+                'page' => $page,
+                'error' => $e->getMessage()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'API connection error: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * GET ALL JENIS TER (NO PAGINATION) - For sync
+     */
+    public function getAllJenisTers($useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchAllJenisTers();
+        }
+        
+        $cacheKey = 'jenis_ter_all';
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchAllJenisTers();
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, $this->listCacheTime);
+        }
+        
+        return $result;
+    }
+
+    protected function fetchAllJenisTers()
+    {
+        try {
+            // Fetch all pages
+            $allData = [];
+            $page = 1;
+            $perPage = 100;
+            
+            do {
+                $response = Http::withToken($this->token)
+                    ->acceptJson()
+                    ->timeout(30)
+                    ->get("{$this->baseUrl}/jenis-ters", [
+                        'page' => $page,
+                        'per_page' => $perPage
+                    ]);
+                
+                if (!$response->successful()) {
+                    break;
+                }
+                
+                $json = $response->json();
+                $data = $json['data'] ?? [];
+                $allData = array_merge($allData, $data);
+                
+                $meta = $json['meta'] ?? [];
+                $currentPage = $meta['current_page'] ?? $page;
+                $lastPage = $meta['last_page'] ?? 1;
+                
+                if ($currentPage >= $lastPage) {
+                    break;
+                }
+                
+                $page++;
+                
+            } while (true);
+            
+            return [
+                'success' => true,
+                'data' => $allData,
+                'total' => count($allData)
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error('Error fetching all jenis ter', [
+                'error' => $e->getMessage()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * SEARCH JENIS TER
+     */
+    public function searchJenisTer($query, $page = 1, $perPage = 20)
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/jenis-ters/search", [
+                    'q' => $query,
+                    'page' => $page,
+                    'per_page' => $perPage
+                ]);
+            
+            if ($response->successful()) {
+                $json = $response->json();
+                
+                return [
+                    'success' => true,
+                    'data' => $json['data'] ?? [],
+                    'meta' => $json['meta'] ?? []
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'Search failed'
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error('Search jenis ter error', [
+                'query' => $query,
+                'error' => $e->getMessage()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * GET SINGLE JENIS TER BY ID
+     */
+    public function getJenisTer($id, $useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchJenisTer($id);
+        }
+        
+        $cacheKey = "jenis_ter_{$id}";
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchJenisTer($id);
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, $this->detailCacheTime);
+        }
+        
+        return $result;
+    }
+
+    protected function fetchJenisTer($id)
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/jenis-ters/{$id}");
+            
+            if ($response->successful()) {
+                $data = $response->json('data');
+                
+                if (empty($data)) {
+                    Log::warning('Empty jenis ter data', ['id' => $id]);
+                    return [
+                        'success' => false,
+                        'message' => 'Jenis TER tidak ditemukan'
+                    ];
+                }
+                
+                return [
+                    'success' => true,
+                    'data' => $data
+                ];
+            }
+            
+            Log::warning('Jenis TER not found', [
+                'id' => $id,
+                'status' => $response->status()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'Jenis TER tidak ditemukan'
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error('Error fetching jenis ter', [
+                'id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * GET JENIS TER MINIMAL - Untuk dropdown
+     */
+    public function getJenisTerMinimal($useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchJenisTerMinimal();
+        }
+        
+        $cacheKey = 'jenis_ter_minimal';
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchJenisTerMinimal();
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, $this->listCacheTime);
+        }
+        
+        return $result;
+    }
+
+    protected function fetchJenisTerMinimal()
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/jenis-ters/minimal");
+            
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'data' => $response->json('data') ?? []
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to fetch minimal data'
+            ];
+            
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * GET JENIS TER STATISTICS
+     */
+    public function getJenisTerStats($useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchJenisTerStats();
+        }
+        
+        $cacheKey = 'jenis_ter_stats';
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchJenisTerStats();
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, 300); // 5 menit
+        }
+        
+        return $result;
+    }
+
+    protected function fetchJenisTerStats()
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/jenis-ters/stats");
+            
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'data' => $response->json('data') ?? []
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to fetch stats'
+            ];
+            
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Clear cache untuk jenis ter tertentu
+     */
+    public function clearJenisTerCache($id)
+    {
+        Cache::forget("jenis_ter_{$id}");
+        Log::info("Cache cleared", ['type' => 'jenis_ter', 'id' => $id]);
+    }
+
+    /**
+     * Clear all jenis ter cache
+     */
+    public function clearAllJenisTerCache()
+    {
+        Cache::forget('jenis_ter_all');
+        Cache::forget('jenis_ter_minimal');
+        Cache::forget('jenis_ter_stats');
+        Log::info("All Jenis TER cache cleared");
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | RANGE BRUTO METHODS
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * GET RANGE BRUTO WITH PAGINATION
+     */
+    public function getRangeBrutosPaginated($page = 1, $perPage = 50, $filters = [], $useCache = true)
+    {
+        $perPage = min($perPage, 100);
+        
+        if (!$useCache) {
+            return $this->fetchRangeBrutosPaginated($page, $perPage, $filters);
+        }
+        
+        $filterKey = md5(json_encode($filters));
+        $cacheKey = "range_bruto_page_{$page}_per_{$perPage}_filter_{$filterKey}";
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchRangeBrutosPaginated($page, $perPage, $filters);
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, $this->listCacheTime);
+        }
+        
+        return $result;
+    }
+
+    protected function fetchRangeBrutosPaginated($page, $perPage, $filters = [])
+    {
+        try {
+            $params = [
+                'page' => $page,
+                'per_page' => $perPage
+            ];
+            
+            // Add filters
+            if (!empty($filters['jenis_ter_id'])) {
+                $params['jenis_ter_id'] = $filters['jenis_ter_id'];
+            }
+            if (!empty($filters['search'])) {
+                $params['search'] = $filters['search'];
+            }
+            
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/range-brutos", $params);
+            
+            if ($response->successful()) {
+                $json = $response->json();
+                
+                return [
+                    'success' => true,
+                    'data' => $json['data'] ?? [],
+                    'meta' => $json['meta'] ?? [
+                        'current_page' => $page,
+                        'per_page' => $perPage,
+                        'total' => 0,
+                        'last_page' => 1,
+                    ],
+                    'filters' => $json['filters'] ?? []
+                ];
+            }
+            
+            Log::warning('Failed fetch range bruto paginated', [
+                'page' => $page,
+                'status' => $response->status()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to fetch range bruto data'
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error('API Error range bruto paginated', [
+                'page' => $page,
+                'error' => $e->getMessage()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'API connection error: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * GET ALL RANGE BRUTO (NO PAGINATION) - For sync
+     */
+    public function getAllRangeBrutos($useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchAllRangeBrutos();
+        }
+        
+        $cacheKey = 'range_bruto_all';
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchAllRangeBrutos();
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, $this->listCacheTime);
+        }
+        
+        return $result;
+    }
+
+    protected function fetchAllRangeBrutos()
+    {
+        try {
+            // Fetch all pages
+            $allData = [];
+            $page = 1;
+            $perPage = 100;
+            
+            do {
+                $response = Http::withToken($this->token)
+                    ->acceptJson()
+                    ->timeout(30)
+                    ->get("{$this->baseUrl}/range-brutos", [
+                        'page' => $page,
+                        'per_page' => $perPage
+                    ]);
+                
+                if (!$response->successful()) {
+                    break;
+                }
+                
+                $json = $response->json();
+                $data = $json['data'] ?? [];
+                $allData = array_merge($allData, $data);
+                
+                $meta = $json['meta'] ?? [];
+                $currentPage = $meta['current_page'] ?? $page;
+                $lastPage = $meta['last_page'] ?? 1;
+                
+                if ($currentPage >= $lastPage) {
+                    break;
+                }
+                
+                $page++;
+                
+            } while (true);
+            
+            return [
+                'success' => true,
+                'data' => $allData,
+                'total' => count($allData)
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error('Error fetching all range bruto', [
+                'error' => $e->getMessage()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * SEARCH RANGE BRUTO
+     */
+    public function searchRangeBruto($query, $page = 1, $perPage = 20)
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/range-brutos/search", [
+                    'q' => $query,
+                    'page' => $page,
+                    'per_page' => $perPage
+                ]);
+            
+            if ($response->successful()) {
+                $json = $response->json();
+                
+                return [
+                    'success' => true,
+                    'data' => $json['data'] ?? [],
+                    'meta' => $json['meta'] ?? []
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'Search failed'
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error('Search range bruto error', [
+                'query' => $query,
+                'error' => $e->getMessage()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * GET SINGLE RANGE BRUTO BY ID
+     */
+    public function getRangeBruto($id, $useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchRangeBruto($id);
+        }
+        
+        $cacheKey = "range_bruto_{$id}";
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchRangeBruto($id);
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, $this->detailCacheTime);
+        }
+        
+        return $result;
+    }
+
+    protected function fetchRangeBruto($id)
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/range-brutos/{$id}");
+            
+            if ($response->successful()) {
+                $data = $response->json('data');
+                
+                if (empty($data)) {
+                    Log::warning('Empty range bruto data', ['id' => $id]);
+                    return [
+                        'success' => false,
+                        'message' => 'Range Bruto tidak ditemukan'
+                    ];
+                }
+                
+                return [
+                    'success' => true,
+                    'data' => $data
+                ];
+            }
+            
+            Log::warning('Range Bruto not found', [
+                'id' => $id,
+                'status' => $response->status()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'Range Bruto tidak ditemukan'
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error('Error fetching range bruto', [
+                'id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * GET RANGE BRUTO BY JENIS TER ID
+     */
+    public function getRangeBrutoByJenisTer($jenisTerId, $useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchRangeBrutoByJenisTer($jenisTerId);
+        }
+        
+        $cacheKey = "range_bruto_jenis_ter_{$jenisTerId}";
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchRangeBrutoByJenisTer($jenisTerId);
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, $this->listCacheTime);
+        }
+        
+        return $result;
+    }
+
+    protected function fetchRangeBrutoByJenisTer($jenisTerId)
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/range-brutos/by-jenis-ter/{$jenisTerId}");
+            
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'data' => $response->json('data') ?? [],
+                    'total' => $response->json('total', 0)
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to fetch range bruto by jenis ter'
+            ];
+            
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * FIND TER BY BRUTO AMOUNT
+     */
+    public function findTerByBruto($jenisTerId, $bruto, $useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchFindTerByBruto($jenisTerId, $bruto);
+        }
+        
+        $cacheKey = "find_ter_jenis_{$jenisTerId}_bruto_{$bruto}";
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchFindTerByBruto($jenisTerId, $bruto);
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, 300); // 5 menit
+        }
+        
+        return $result;
+    }
+
+    protected function fetchFindTerByBruto($jenisTerId, $bruto)
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/range-brutos/find-ter", [
+                    'jenis_ter_id' => $jenisTerId,
+                    'bruto' => $bruto
+                ]);
+            
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'data' => $response->json('data') ?? null
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'TER tidak ditemukan untuk bruto ini'
+            ];
+            
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * GET RANGE BRUTO MINIMAL - Untuk dropdown
+     */
+    public function getRangeBrutoMinimal($jenisTerId = null, $useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchRangeBrutoMinimal($jenisTerId);
+        }
+        
+        $cacheKey = $jenisTerId 
+            ? "range_bruto_minimal_jenis_{$jenisTerId}" 
+            : 'range_bruto_minimal';
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchRangeBrutoMinimal($jenisTerId);
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, $this->listCacheTime);
+        }
+        
+        return $result;
+    }
+
+    protected function fetchRangeBrutoMinimal($jenisTerId = null)
+    {
+        try {
+            $params = [];
+            if ($jenisTerId) {
+                $params['jenis_ter_id'] = $jenisTerId;
+            }
+            
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/range-brutos/minimal", $params);
+            
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'data' => $response->json('data') ?? []
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to fetch minimal data'
+            ];
+            
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * GET RANGE BRUTO STATISTICS
+     */
+    public function getRangeBrutoStats($useCache = true)
+    {
+        if (!$useCache) {
+            return $this->fetchRangeBrutoStats();
+        }
+        
+        $cacheKey = 'range_bruto_stats';
+        $cached = Cache::get($cacheKey);
+        
+        if ($cached !== null) {
+            return $cached;
+        }
+        
+        $result = $this->fetchRangeBrutoStats();
+        
+        if ($result['success']) {
+            Cache::put($cacheKey, $result, 300); // 5 menit
+        }
+        
+        return $result;
+    }
+
+    protected function fetchRangeBrutoStats()
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/range-brutos/stats");
+            
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'data' => $response->json('data') ?? []
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to fetch stats'
+            ];
+            
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Clear cache untuk range bruto tertentu
+     */
+    public function clearRangeBrutoCache($id)
+    {
+        Cache::forget("range_bruto_{$id}");
+        Log::info("Cache cleared", ['type' => 'range_bruto', 'id' => $id]);
+    }
+
+    /**
+     * Clear cache range bruto by jenis ter
+     */
+    public function clearRangeBrutoJenisTerCache($jenisTerId)
+    {
+        Cache::forget("range_bruto_jenis_ter_{$jenisTerId}");
+    }
+
+    /**
+     * Clear all range bruto cache
+     */
+    public function clearAllRangeBrutoCache()
+    {
+        Cache::forget('range_bruto_all');
+        Cache::forget('range_bruto_minimal');
+        Cache::forget('range_bruto_stats');
+        Log::info("All Range Bruto cache cleared");
+    }
+
 }

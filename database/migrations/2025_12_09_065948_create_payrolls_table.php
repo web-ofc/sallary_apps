@@ -62,6 +62,7 @@ return new class extends Migration
             $table->integer('lainnya')->nullable();
 
             $table->boolean('is_released')->default(false);
+            $table->boolean('is_last_period')->default(false);
 
             $table->timestamps();
         });

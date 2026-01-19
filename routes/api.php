@@ -6,9 +6,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PtkpSyncController;
 use App\Http\Controllers\CompanyViewController;
 use App\Http\Controllers\Api\KaryawanController;
+use App\Http\Controllers\JenisTerSyncController;
 use App\Http\Controllers\KaryawanSyncController;
 use App\Http\Controllers\KaryawanViewController;
 use App\Http\Controllers\Api\PayrollApiController;
+use App\Http\Controllers\RangeBrutoSyncController;
 use App\Http\Controllers\KaryawanPtkpHistorySyncController;
 
 /*
@@ -97,6 +99,19 @@ use App\Http\Controllers\KaryawanPtkpHistorySyncController;
     Route::post('/{id}', [PtkpSyncController::class, 'syncById'])->name('by-id');
     Route::get('/stats', [PtkpSyncController::class, 'stats'])->name('stats');
 
+     Route::prefix('sync/jenis-ter')->name('api.sync.jenis-ter.')->group(function () {
+        Route::post('/all', [JenisTerSyncController::class, 'syncAll'])->name('all');
+        Route::post('/{id}', [JenisTerSyncController::class, 'syncById'])->name('by-id');
+        Route::get('/stats', [JenisTerSyncController::class, 'stats'])->name('stats');
+    });
+
+    Route::prefix('sync/range-bruto')->name('api.sync.range-bruto.')->group(function () {
+        Route::post('/all', [RangeBrutoSyncController::class, 'syncAll'])->name('all');
+        Route::post('/{id}', [RangeBrutoSyncController::class, 'syncById'])->name('by-id');
+        Route::post('/by-jenis-ter/{jenisTerId}', [RangeBrutoSyncController::class, 'syncByJenisTer'])->name('by-jenis-ter');
+        Route::get('/stats', [RangeBrutoSyncController::class, 'stats'])->name('stats');
+    });
+    
     Route::prefix('sync/ptkp-history')->name('api.sync.ptkp-history.')->group(function () {
         // Full sync
         Route::post('/all', [KaryawanPtkpHistorySyncController::class, 'syncAll'])

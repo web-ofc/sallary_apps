@@ -95,6 +95,72 @@
                     </div>
                     @endcan
 
+                    @can('jenis-ter-sync')
+                    <div class="menu-item">
+                        <a class="menu-link" href="{{ route('jenis-ter.sync.dashboard') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-badge fs-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                    <span class="path4"></span>
+                                    <span class="path5"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">Jenis Ter</span>
+                        </a>
+                    </div>
+                    @endcan
+
+                    @can('range-bruto-sync')
+                    <div class="menu-item">
+                        <a class="menu-link" href="{{ route('range-bruto.sync.dashboard') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-badge fs-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                    <span class="path4"></span>
+                                    <span class="path5"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">Range Bruto</span>
+                        </a>
+                    </div>
+                    @endcan
+                    
+                    <div class="menu-item">
+                        <a class="menu-link" href="{{ route('pph21.tahunan.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-badge fs-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                    <span class="path4"></span>
+                                    <span class="path5"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">Laporan PPH 21 Tahunan</span>
+                        </a>
+                    </div>
+
+                    @can('pph21-tax-brackets')
+                    <div class="menu-item">
+                        <a class="menu-link" href="{{ route('pph21taxbrackets.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-badge fs-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                    <span class="path4"></span>
+                                    <span class="path5"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">PPH21 Braket</span>
+                        </a>
+                    </div>
+                    @endcan
+
                     {{-- ============================================
                         PTKP & PERIODE KARYAWAN GROUP (ACCORDION)
                     ============================================ --}}

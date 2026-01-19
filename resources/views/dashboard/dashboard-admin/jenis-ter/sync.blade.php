@@ -1,17 +1,17 @@
-{{-- resources/views/dashboard/dashboard-admin/ptkp/sync.blade.php --}}
+{{-- resources/views/dashboard/dashboard-admin/jenis-ter/sync.blade.php --}}
 
 @extends('layouts.master')
 
-@section('title', 'Sinkronisasi PTKP')
+@section('title', 'Sinkronisasi Jenis TER')
 
 @section('content')
 <div class="container-fluid">
     
     {{-- Header --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>📋 Sinkronisasi PTKP</h2>
+        <h2>📊 Sinkronisasi Jenis TER</h2>
         <div>
-            <button type="button" class="btn btn-primary" onclick="refreshStats()">
+            <button type="button" class="btn btn-secondary" onclick="refreshStats()">
                 <i class="fas fa-sync"></i> Refresh Stats
             </button>
         </div>
@@ -32,27 +32,33 @@
     </div>
     @endif
     
-    {{-- Sync Health Status --}}
+    {{-- Health Status --}}
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Status Sinkronisasi</h5>
+                    <h5 class="card-title">Status Kesehatan Sistem</h5>
                     
                     <div class="row">
                         <div class="col-md-6">
                             <div class="d-flex align-items-center mb-3">
-                                @if($health['healthy'])
+                                @if($health['status'] === 'healthy')
                                     <i class="fas fa-check-circle text-success fa-2x me-3"></i>
                                     <div>
                                         <h6 class="mb-0">Status: <span class="badge bg-success">HEALTHY</span></h6>
-                                        <small class="text-muted">Semua data ter-sinkronisasi dengan baik</small>
+                                        <small class="text-muted">{{ $health['message'] }}</small>
                                     </div>
-                                @else
+                                @elseif($health['status'] === 'warning')
                                     <i class="fas fa-exclamation-triangle text-warning fa-2x me-3"></i>
                                     <div>
-                                        <h6 class="mb-0">Status: <span class="badge bg-warning">NEEDS SYNC</span></h6>
-                                        <small class="text-muted">{{ $health['needs_sync_count'] }} PTKP perlu di-sync</small>
+                                        <h6 class="mb-0">Status: <span class="badge bg-warning">WARNING</span></h6>
+                                        <small class="text-muted">{{ $health['message'] }}</small>
+                                    </div>
+                                @else
+                                    <i class="fas fa-times-circle text-danger fa-2x me-3"></i>
+                                    <div>
+                                        <h6 class="mb-0">Status: <span class="badge bg-danger">CRITICAL</span></h6>
+                                        <small class="text-muted">{{ $health['message'] }}</small>
                                     </div>
                                 @endif
                             </div>
@@ -61,16 +67,16 @@
                         <div class="col-md-6">
                             <div class="progress mb-2" style="height: 25px;">
                                 <div class="progress-bar 
-                                    @if($health['percentage_synced'] >= 90) bg-success
-                                    @elseif($health['percentage_synced'] >= 70) bg-warning
+                                    @if($health['health_percentage'] >= 90) bg-success
+                                    @elseif($health['health_percentage'] >= 70) bg-warning
                                     @else bg-danger
                                     @endif" 
                                     role="progressbar" 
-                                    style="width: {{ $health['percentage_synced'] }}%">
-                                    {{ $health['percentage_synced'] }}%
+                                    style="width: {{ $health['health_percentage'] }}%">
+                                    {{ $health['health_percentage'] }}%
                                 </div>
                             </div>
-                            <small class="text-muted">Sync Coverage</small>
+                            <small class="text-muted">Health Score</small>
                         </div>
                     </div>
                 </div>
@@ -80,32 +86,42 @@
     
     {{-- Statistics Cards --}}
     <div class="row mb-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card text-center">
                 <div class="card-body">
-                    <i class="fas fa-list-alt fa-3x text-primary mb-3"></i>
-                    <h3 class="mb-0">{{ number_format($stats['total_ptkp']) }}</h3>
-                    <p class="text-muted mb-0">Total PTKP</p>
+                    <i class="fas fa-database fa-3x text-primary mb-3"></i>
+                    <h3 class="mb-0">{{ number_format($stats['total']) }}</h3>
+                    <p class="text-muted mb-0">Total Jenis TER</p>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card text-center">
                 <div class="card-body">
-                    <i class="fas fa-trash fa-3x text-danger mb-3"></i>
-                    <h3 class="mb-0">{{ number_format($stats['soft_deleted']) }}</h3>
-                    <p class="text-muted mb-0">Soft Deleted</p>
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h3 class="mb-0">{{ number_format($stats['active']) }}</h3>
+                    <p class="text-muted mb-0">Active</p>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card text-center">
                 <div class="card-body">
-                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
-                    <h3 class="mb-0">{{ number_format($stats['never_synced']) }}</h3>
-                    <p class="text-muted mb-0">Never Synced</p>
+                    <i class="fas fa-trash-alt fa-3x text-danger mb-3"></i>
+                    <h3 class="mb-0">{{ number_format($stats['deleted']) }}</h3>
+                    <p class="text-muted mb-0">Deleted</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-sync-alt fa-3x text-warning mb-3"></i>
+                    <h3 class="mb-0">{{ number_format($stats['needs_sync']) }}</h3>
+                    <p class="text-muted mb-0">Needs Sync</p>
                 </div>
             </div>
         </div>
@@ -121,25 +137,23 @@
                         <tr>
                             <td><i class="fas fa-clock text-primary"></i> Last Sync</td>
                             <td class="text-end">
-                                @if($stats['last_sync_time'])
-                                    <strong>{{ \Carbon\Carbon::parse($stats['last_sync_time'])->diffForHumans() }}</strong>
+                                @if($stats['last_sync'])
+                                    <strong>{{ $stats['last_sync_human'] }}</strong>
                                     <br>
-                                    <small class="text-muted">{{ \Carbon\Carbon::parse($stats['last_sync_time'])->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $stats['last_sync'] }}</small>
                                 @else
                                     <span class="badge bg-secondary">Never Synced</span>
                                 @endif
                             </td>
                         </tr>
+                        @if($stats['never_synced'] > 0)
                         <tr>
-                            <td><i class="fas fa-history text-warning"></i> Oldest Sync</td>
+                            <td><i class="fas fa-exclamation-triangle text-warning"></i> Never Synced</td>
                             <td class="text-end">
-                                @if($stats['oldest_sync_time'])
-                                    <small class="text-muted">{{ \Carbon\Carbon::parse($stats['oldest_sync_time'])->format('d M Y H:i') }}</small>
-                                @else
-                                    <span class="badge bg-secondary">N/A</span>
-                                @endif
+                                <span class="badge bg-warning">{{ number_format($stats['never_synced']) }} items</span>
                             </td>
                         </tr>
+                        @endif
                     </table>
                 </div>
             </div>
@@ -150,11 +164,11 @@
                 <div class="card-body">
                     <h5 class="card-title">Manual Sinkronisasi</h5>
                     <p class="text-muted">
-                        Klik tombol di bawah untuk menjalankan sinkronisasi manual PTKP. 
-                        Proses ini akan mengambil data terbaru dari aplikasi ABSEN.
+                        Klik tombol di bawah untuk menjalankan sinkronisasi manual Jenis TER. 
+                        Proses ini akan mengambil data terbaru dari Aplikasi Absen.
                     </p>
                     
-                    <form action="{{ route('ptkp.sync.trigger') }}" method="POST" id="syncForm" onsubmit="return confirmSync()">
+                    <form action="{{ route('jenis-ter.sync.trigger') }}" method="POST" id="syncForm" onsubmit="return confirmSync()">
                         @csrf
                         
                         <div class="mb-3">
@@ -168,10 +182,10 @@
                         
                         <div class="d-grid gap-2 d-md-flex">
                             <button type="submit" class="btn btn-primary btn-lg" id="syncButton">
-                                <i class="fas fa-sync"></i> Jalankan Sinkronisasi Sekarang
+                                <i class="fas fa-cloud-download-alt"></i> Jalankan Sinkronisasi Sekarang
                             </button>
                             
-                            <a href="{{ route('ptkp.sync.dashboard') }}" class="btn btn-secondary btn-lg">
+                            <a href="{{ route('jenis-ter.sync.dashboard') }}" class="btn btn-secondary btn-lg">
                                 <i class="fas fa-redo"></i> Refresh Page
                             </a>
                         </div>
@@ -186,7 +200,7 @@
                             <li>Proses sinkronisasi dapat memakan waktu beberapa menit</li>
                             <li>Jangan refresh atau tutup halaman selama proses berlangsung</li>
                             <li>Data yang sudah ada akan di-update otomatis jika ada perubahan</li>
-                            <li>PTKP yang tidak ada di API akan di-soft delete (jika tidak punya relasi)</li>
+                            <li>Jenis TER yang tidak ada di API akan di-soft delete</li>
                         </ul>
                     </div>
                 </div>
@@ -194,25 +208,21 @@
         </div>
     </div>
 
-    {{-- ========================================== --}}
-    {{-- SECTION: PTKP LIST (DATATABLES) --}}
-    {{-- ========================================== --}}
+    {{-- DataTable Section --}}
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
-                       📋 Daftar PTKP
+                        📋 Daftar Jenis TER
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table id="ptkpTable" class="table table-hover table-bordered" style="width:100%">
+                        <table id="jenisTerTable" class="table table-hover table-bordered" style="width:100%">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Kriteria</th>
-                                    <th>Status</th>
-                                    <th>Besaran PTKP</th>
+                                    <th>Absen ID</th>
                                     <th>Jenis TER</th>
                                     <th>Last Synced</th>
                                     <th>Created At</th>
@@ -233,9 +243,7 @@
 
 @endsection
 
-
 @push('scripts')
-
 <script>
 function confirmSync() {
     const force = document.getElementById('forceSync').checked;
@@ -253,7 +261,7 @@ function confirmSync() {
 }
 
 function refreshStats() {
-    fetch('{{ route("ptkp.sync.status") }}')
+    fetch('{{ route("jenis-ter.sync.status") }}')
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -268,12 +276,15 @@ function refreshStats() {
 
 // Initialize DataTables
 $(document).ready(function() {
-    $('#ptkpTable').DataTable({
+    $('#jenisTerTable').DataTable({
         processing: true,
         serverSide: true,
         ajax: {
-            url: '{{ route('ptkp.sync.datatable') }}',
+            url: '{{ route('jenis-ter.sync.datatable') }}',
             type: 'POST',
+            data: function(d) {
+                return d;
+            },
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
@@ -282,10 +293,8 @@ $(document).ready(function() {
             }
         },
         columns: [
-            { data: 'kriteria', name: 'kriteria', width: '150px' },
-            { data: 'status', name: 'status', width: '100px' },
-            { data: 'besaran_ptkp', name: 'besaran_ptkp', width: '150px' },
-            { data: 'jenis_ter', name: 'jenis_ter', width: '150px' }, // ✅ Column index 3
+            { data: 'absen_jenis_ter_id', name: 'absen_jenis_ter_id', width: '100px' },
+            { data: 'jenis_ter', name: 'jenis_ter', width: '200px' },
             { data: 'last_synced_at', name: 'last_synced_at', width: '150px' },
             { data: 'created_at', name: 'created_at', width: '150px' },
             { 
@@ -297,18 +306,18 @@ $(document).ready(function() {
                 width: '100px'
             }
         ],
-        order: [[0, 'asc']], // ✅ FIXED: Order by kriteria (column index 0)
+        order: [[0, 'desc']],
         pageLength: 25,
         lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
         language: {
             processing: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
             search: 'Cari:',
             lengthMenu: 'Tampilkan _MENU_ data',
-            info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ PTKP',
+            info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ Jenis TER',
             infoEmpty: 'Tidak ada data',
-            infoFiltered: '(difilter dari _MAX_ total PTKP)',
+            infoFiltered: '(difilter dari _MAX_ total Jenis TER)',
             zeroRecords: 'Tidak ada data yang cocok',
-            emptyTable: 'Tidak ada PTKP tersedia',
+            emptyTable: 'Tidak ada Jenis TER tersedia',
             paginate: {
                 first: 'Pertama',
                 last: 'Terakhir',

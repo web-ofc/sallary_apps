@@ -1,21 +1,24 @@
 <?php
+// app/Models/JenisTer.php
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\RangeBruto;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-class ListPtkp extends Model
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+class JenisTer extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'list_ptkps';
+    protected $table = 'jenis_ters';
     protected $guarded = ['id'];
     
     protected $dates = ['deleted_at'];
     
     /**
-     * Scope: PTKP yang perlu sync
+     * Scope: Jenis TER yang perlu sync
      */
     public function scopeNeedsSync($query, $hoursAgo = 24)
     {
@@ -26,23 +29,18 @@ class ListPtkp extends Model
     }
     
     /**
-     * Relasi ke Karyawan (jika ada FK ptkp_id di karyawan)
+     * Relasi ke Range Bruto
      */
-    public function karyawan()
+    public function rangeBrutos()
     {
-        return $this->hasMany(Karyawan::class, 'ptkp_id');
-    }
-
-    public function jenisTer()
-    {
-        return $this->belongsTo(JenisTer::class, 'absen_jenis_ter_id', 'absen_jenis_ter_id');
+        return $this->hasMany(RangeBruto::class, 'jenis_ter_id', 'absen_jenis_ter_id');
     }
     
     /**
-     * Check apakah PTKP punya karyawan
+     * Check apakah Jenis TER punya range bruto
      */
-    public function hasKaryawan()
+    public function hasRangeBrutos()
     {
-        return $this->karyawan()->exists();
+        return $this->rangeBrutos()->exists();
     }
 }

@@ -143,9 +143,15 @@ class PtkpSyncService
     /**
      * 🔄 SYNC SINGLE PTKP
      */
-    protected function syncSinglePtkp(array $apiData)
+        protected function syncSinglePtkp(array $apiData)
     {
         $absenPtkpId = $apiData['id'];
+        
+        // ✅ Debug log
+        Log::info('🔄 Starting sync single PTKP', [
+            'absen_ptkp_id' => $absenPtkpId,
+            'kriteria' => $apiData['kriteria'] ?? 'N/A'
+        ]);
         
         // Cari PTKP berdasarkan absen_ptkp_id
         $ptkp = ListPtkp::withTrashed()
@@ -154,37 +160,79 @@ class PtkpSyncService
         
         $preparedData = $this->preparePtkpData($apiData);
         
-        if ($ptkp) {
-            // UPDATE existing
-            
-            if ($ptkp->trashed()) {
-                $ptkp->restore();
-                Log::info("🔄 Restored PTKP", ['id' => $absenPtkpId]);
-            }
-            
-            $ptkp->update($preparedData);
-            
-            return [
-                'action' => 'updated',
-                'ptkp_id' => $ptkp->id,
-                'absen_ptkp_id' => $absenPtkpId
-            ];
-            
-        } else {
-            // INSERT new
-            $ptkp = ListPtkp::create($preparedData);
-            
-            Log::info("✅ Inserted new PTKP", [
-                'local_id' => $ptkp->id,
-                'absen_id' => $absenPtkpId,
-                'kriteria' => $ptkp->kriteria
+        // ✅ Validasi data sebelum save
+        if (empty($preparedData['absen_ptkp_id'])) {
+            Log::error('❌ Invalid data: absen_ptkp_id is empty', [
+                'api_data' => $apiData,
+                'prepared_data' => $preparedData
             ]);
-            
-            return [
-                'action' => 'inserted',
-                'ptkp_id' => $ptkp->id,
-                'absen_ptkp_id' => $absenPtkpId
-            ];
+            throw new \Exception('Invalid PTKP data: absen_ptkp_id is required');
+        }
+        
+        try {
+            if ($ptkp) {
+                // UPDATE existing
+                Log::info('📝 Updating existing PTKP', [
+                    'local_id' => $ptkp->id,
+                    'absen_id' => $absenPtkpId
+                ]);
+                
+                if ($ptkp->trashed()) {
+                    $ptkp->restore();
+                    Log::info("🔄 Restored PTKP", ['id' => $absenPtkpId]);
+                }
+                
+                $ptkp->update($preparedData);
+                
+                // ✅ Verify update
+                $ptkp->refresh();
+                Log::info('✅ PTKP updated successfully', [
+                    'local_id' => $ptkp->id,
+                    'kriteria' => $ptkp->kriteria,
+                    'status' => $ptkp->status,
+                    'besaran_ptkp' => $ptkp->besaran_ptkp,
+                    'absen_jenis_ter_id' => $ptkp->absen_jenis_ter_id
+                ]);
+                
+                return [
+                    'action' => 'updated',
+                    'ptkp_id' => $ptkp->id,
+                    'absen_ptkp_id' => $absenPtkpId
+                ];
+                
+            } else {
+                // INSERT new
+                Log::info('➕ Creating new PTKP', [
+                    'absen_id' => $absenPtkpId,
+                    'data' => $preparedData
+                ]);
+                
+                $ptkp = ListPtkp::create($preparedData);
+                
+                // ✅ Verify insert
+                Log::info("✅ Inserted new PTKP successfully", [
+                    'local_id' => $ptkp->id,
+                    'absen_id' => $absenPtkpId,
+                    'kriteria' => $ptkp->kriteria,
+                    'status' => $ptkp->status,
+                    'besaran_ptkp' => $ptkp->besaran_ptkp,
+                    'absen_jenis_ter_id' => $ptkp->absen_jenis_ter_id
+                ]);
+                
+                return [
+                    'action' => 'inserted',
+                    'ptkp_id' => $ptkp->id,
+                    'absen_ptkp_id' => $absenPtkpId
+                ];
+            }
+        } catch (\Exception $e) {
+            Log::error('❌ Error saving PTKP to database', [
+                'absen_ptkp_id' => $absenPtkpId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'prepared_data' => $preparedData
+            ]);
+            throw $e;
         }
     }
     
@@ -227,21 +275,40 @@ class PtkpSyncService
     /**
      * 📋 PREPARE DATA
      */
-    protected function preparePtkpData(array $apiData)
+        protected function preparePtkpData(array $apiData)
     {
-        return [
+        // ✅ Debug: Log data yang diterima dari API
+        Log::info('📥 Preparing PTKP data from API', [
+            'api_data' => $apiData
+        ]);
+        
+        $preparedData = [
             'absen_ptkp_id' => $apiData['id'],
             'kriteria' => $apiData['kriteria'] ?? null,
             'status' => $apiData['status'] ?? null,
             'besaran_ptkp' => $apiData['besaran_ptkp'] ?? null,
+            
+            // ✅ PENTING: Pastikan field ini ada di response API
+            // Bisa jadi 'jenis_ter_id' atau 'absen_jenis_ter_id'
+            'absen_jenis_ter_id' => $apiData['absen_jenis_ter_id'] ?? $apiData['jenis_ter_id'] ?? null,
+            
             'last_synced_at' => now(),
             'sync_metadata' => json_encode([
                 'synced_from' => 'api',
                 'api_id' => $apiData['id'],
                 'synced_at' => now()->toISOString(),
+                'raw_api_data' => $apiData // ✅ Simpan raw data untuk debug
             ])
         ];
+        
+        // ✅ Debug: Log data yang akan disimpan
+        Log::info('💾 Prepared data for database', [
+            'prepared_data' => $preparedData
+        ]);
+        
+        return $preparedData;
     }
+
     
     /**
      * 🔄 SYNC SPECIFIC PTKP BY ID

@@ -46,5 +46,14 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('periode-karyawan', function ($user) {
             return in_array($user->role, ['admin']);
         });
+        Gate::define('jenis-ter-sync', function ($user) {
+            return in_array($user->role, ['admin']);
+        });
+        Gate::define('range-bruto-sync', function ($user) {
+            return in_array($user->role, ['admin']);
+        });
+        Gate::define('pph21-tax-brackets', function ($user) {
+            return in_array($user->role, ['admin']);
+        });
     }
 }

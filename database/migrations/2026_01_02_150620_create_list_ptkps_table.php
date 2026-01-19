@@ -20,7 +20,8 @@ return new class extends Migration
             // Data PTKP (sesuai struktur dari API ABSEN)
             $table->string('kriteria')->nullable();
             $table->string('status')->nullable();
-            $table->string('besaran_ptkp')->nullable();
+            $table->integer('besaran_ptkp')->nullable();
+            $table->unsignedBigInteger('absen_jenis_ter_id');
             
             // Sync metadata
             $table->timestamp('last_synced_at')->nullable(); // Kapan terakhir di-sync

@@ -32,7 +32,7 @@
                         <!-- Upload Card -->
                         <div class="card mb-5" id="uploadCard">
                             <div class="card-header">
-                                <h3 class="card-title">📁 Upload File Excel</h3>
+                                <h3 class="card-title">Upload File Excel</h3>
                             </div>
                             <div class="card-body">
                                 <div class="row">
@@ -56,17 +56,17 @@
                                     </div>
                                     
                                     <div class="col-md-4">
-                                        <div class="bg-light-info p-4 rounded">
-                                            <h5 class="fw-bold mb-3">📋 Format Excel</h5>
+                                        <div class="border border-gray-300 p-4 rounded">
+                                            <h5 class="fw-bold mb-3">Format Excel</h5>
                                             <ul class="mb-0" style="font-size: 0.9rem;">
-                                                <li><strong>periode:</strong> YYYY-MM (Required)</li>
-                                                <li><strong>karyawan_id:</strong> ID dari sheet Karyawans (Required)</li>
-                                                <li><strong>company_id:</strong> ID dari sheet Companies (Optional)</li>
+                                                <li>periode: YYYY-MM (Required)</li>
+                                                <li>karyawan_id: ID dari sheet Karyawans (Required)</li>
+                                                <li>company_id: ID dari sheet Companies (Optional)</li>
                                                 <li>Field numerik: angka positif</li>
-                                                <li><strong>salary_type:</strong> gross/nett</li>
+                                                <li>salary_type: gross/nett</li>
                                             </ul>
                                             <div class="alert alert-warning mt-3 mb-0" style="font-size: 0.85rem;">
-                                                <i class="fas fa-info-circle"></i> <strong>Penting:</strong> Template punya 3 sheets - gunakan sheet "Karyawans" dan "Companies" untuk cek ID
+                                                Template memiliki 3 sheets - gunakan sheet "Karyawans" dan "Companies" untuk referensi ID
                                             </div>
                                         </div>
                                     </div>
@@ -77,43 +77,43 @@
                         <!-- Validation Results Card -->
                         <div class="card" id="resultsCard" style="display: none;">
                             <div class="card-header">
-                                <h3 class="card-title">📊 Hasil Validasi</h3>
+                                <h3 class="card-title">Hasil Validasi</h3>
                             </div>
                             <div class="card-body">
-                                <!-- Summary (Clickable Cards) -->
+                                <!-- Summary -->
                                 <div class="row mb-5" id="summarySection">
                                     <div class="col-md-4">
-                                        <div class="card bg-light-primary card-summary">
+                                        <div class="card border border-primary">
                                             <div class="card-body text-center">
-                                                <h1 class="fw-bold text-primary" id="totalRows">0</h1>
-                                                <p class="text-muted mb-0">Total Baris</p>
+                                                <div class="fs-2x fw-bold text-primary" id="totalRows">0</div>
+                                                <div class="text-gray-600 mt-1">Total Baris</div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="card bg-light-success card-summary clickable" onclick="showValidData()" style="cursor: pointer;">
+                                        <div class="card border border-success clickable" onclick="showValidData()" style="cursor: pointer;">
                                             <div class="card-body text-center">
-                                                <h1 class="fw-bold text-success" id="validRows">0</h1>
-                                                <p class="text-muted mb-0">Baris Valid</p>
-                                                <small class="text-success"><i class="fas fa-hand-pointer"></i> Klik untuk lihat</small>
+                                                <div class="fs-2x fw-bold text-success" id="validRows">0</div>
+                                                <div class="text-gray-600 mt-1">Baris Valid</div>
+                                                <small class="text-muted">Klik untuk lihat detail</small>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="card bg-light-danger card-summary clickable" onclick="showErrorData()" style="cursor: pointer;">
+                                        <div class="card border border-danger clickable" onclick="showErrorData()" style="cursor: pointer;">
                                             <div class="card-body text-center">
-                                                <h1 class="fw-bold text-danger" id="errorRows">0</h1>
-                                                <p class="text-muted mb-0">Baris Error</p>
-                                                <small class="text-danger"><i class="fas fa-hand-pointer"></i> Klik untuk lihat</small>
+                                                <div class="fs-2x fw-bold text-danger" id="errorRows">0</div>
+                                                <div class="text-gray-600 mt-1">Baris Error</div>
+                                                <small class="text-muted">Klik untuk lihat detail</small>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <!-- ✅ ERROR SECTION - DataTables -->
+                                <!-- Error Section -->
                                 <div id="errorSection" style="display: none;">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h4 class="text-danger mb-0">⚠️ Error Ditemukan</h4>
+                                        <h4 class="mb-0">Data dengan Error</h4>
                                         <button type="button" class="btn btn-sm btn-light-danger" onclick="downloadErrors()">
                                             <i class="fas fa-download"></i> Download Error Report
                                         </button>
@@ -135,9 +135,9 @@
                                     </div>
                                 </div>
                                 
-                                <!-- ✅ SUCCESS SECTION - DataTables with ALL Columns -->
+                                <!-- Success Section -->
                                 <div id="successSection" style="display: none;">
-                                    <h4 class="text-success mb-3">✅ Data Valid</h4>
+                                    <h4 class="mb-3">Data Valid</h4>
                                     
                                     <div class="table-responsive">
                                         <table class="table table-bordered table-sm table-hover nowrap" id="validTable" style="width:100%">
@@ -175,14 +175,13 @@
                                                     <th>BPJS TK JP 1%</th>
                                                     <th>BPJS Kes 4%</th>
                                                     <th>BPJS Kes 1%</th>
-                                                    <th>PPh 21</th>
+                                                    <th class="bg-light">PPh 21</th>
                                                     <th>GLH</th>
                                                     <th>LM</th>
                                                     <th>Lainnya</th>
-                                                    <th class="bg-light-success">Total Penerimaan</th>
-                                                    <th class="bg-light-danger">Total Potongan</th>
-                                                    <th class="bg-light-primary">Gaji Bersih</th>
-                                                    
+                                                    <th class="bg-light">Total Penerimaan</th>
+                                                    <th class="bg-light">Total Potongan</th>
+                                                    <th class="bg-light">Gaji Bersih</th>
                                                 </tr>
                                             </thead>
                                             <tbody></tbody>
@@ -192,9 +191,21 @@
                                 
                                 <!-- Action Buttons -->
                                 <div class="d-flex gap-3 mt-5">
-                                    <button type="button" class="btn btn-success" id="btnImport" style="display: none;" onclick="processImport()">
-                                        <i class="fas fa-check"></i> Import Data Valid (<span id="validCount">0</span> baris)
+                                    <!-- Tombol Hitung PPh21 Bulanan (existing) -->
+                                    <button type="button" class="btn btn-warning" id="btnCalculatePph21" style="display: none;" onclick="calculatePph21()">
+                                        <i class="fas fa-calculator"></i> Hitung PPh21 Bulanan (<span id="validCountCalc">0</span> data)
                                     </button>
+                                    
+                                    <!-- Tombol Import Biasa (existing) -->
+                                    <button type="button" class="btn btn-success" id="btnImport" style="display: none;" onclick="processImport()">
+                                        <i class="fas fa-check"></i> Import ke Database (<span id="validCount">0</span> baris)
+                                    </button>
+                                    
+                                    <!-- 🆕 TOMBOL BARU: Import untuk PPh21 Tahunan -->
+                                    <button type="button" class="btn btn-info" id="btnImportAnnual" style="display: none;" onclick="processImportAnnual()">
+                                        <i class="fas fa-calendar-check"></i> Import PPh21 Tahunan (<span id="validCountAnnual">0</span> baris)
+                                    </button>
+                                    
                                     <button type="button" class="btn btn-light" onclick="resetForm()">
                                         <i class="fas fa-redo"></i> Upload File Baru
                                     </button>
@@ -209,8 +220,35 @@
     </div>
 </div>
 
+<!-- Modal Progress PPh21 -->
+<div class="modal fade" id="pph21ProgressModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Menghitung PPh21</h5>
+            </div>
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <div class="fs-5 mb-2" id="pph21ProgressText">Memproses data...</div>
+                <div class="text-muted" id="pph21ProgressDetail">Mohon tunggu</div>
+                
+                <!-- Progress Bar -->
+                <div class="progress mt-4" style="height: 20px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         id="pph21ProgressBar" 
+                         role="progressbar" 
+                         style="width: 0%">
+                        <span id="pph21ProgressPercent">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 let validTable;
 let errorTable;
@@ -235,7 +273,7 @@ function validateFile() {
     formData.append('file', fileInput.files[0]);
     
     Swal.fire({
-        title: 'Memvalidasi...',
+        title: 'Memvalidasi File',
         html: 'Mohon tunggu, sedang memproses file Excel',
         allowOutsideClick: false,
         didOpen: () => {
@@ -264,6 +302,432 @@ function validateFile() {
     });
 }
 
+// Function baru untuk import annual
+function processImportAnnual() {
+    Swal.fire({
+        title: 'Konfirmasi Import PPh21 Tahunan',
+        html: `
+            <div class="text-start">
+                <p>Import <strong>${$('#validCountAnnual').text()}</strong> data sebagai <strong>periode akhir tahun</strong>?</p>
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Catatan:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Data akan di-set sebagai <code>is_last_period = 1</code></li>
+                        <li>Anda akan diarahkan ke halaman perhitungan PPh21 Tahunan</li>
+                        <li>PPh21 akan dihitung berdasarkan PKP setahun penuh</li>
+                    </ul>
+                </div>
+            </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Import untuk Tahunan',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#0dcaf0',
+        cancelButtonColor: '#6c757d',
+        width: '600px'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            executeImportAnnual();
+        }
+    });
+}
+function executeImportAnnual() {
+    Swal.fire({
+        title: 'Mengimport Data',
+        html: 'Mohon tunggu, sedang memvalidasi dan menyimpan data...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    $.ajax({
+        url: '{{ route("payrolls.import.process-annual") }}',
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        success: function(response) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Import Berhasil',
+                html: `
+                    <div class="text-start">
+                        <p>${response.imported_count} data berhasil diimport sebagai periode akhir tahun</p>
+                        <div class="alert alert-success mt-3">
+                            <i class="fas fa-arrow-right me-2"></i>
+                            Anda akan diarahkan ke halaman perhitungan PPh21 Tahunan
+                        </div>
+                    </div>
+                `,
+                confirmButtonText: 'Lanjut ke Perhitungan',
+                confirmButtonColor: '#0dcaf0'
+            }).then(() => {
+                window.location.href = '{{ route("payrolls.calculate-annual.index") }}';
+            });
+        },
+        error: function(xhr) {
+            Swal.close();
+            
+            // ✅ HANDLE VALIDATION ERRORS (422)
+            if (xhr.status === 422) {
+                const response = xhr.responseJSON;
+                
+                // ✅ CEK APAKAH ADA KOMBINASI ERROR
+                const hasPtkpErrors = response.has_ptkp_errors;
+                const hasBracketErrors = response.has_bracket_errors;
+                
+                if (hasPtkpErrors && hasBracketErrors) {
+                    // ✅ TAMPILKAN KEDUA ERROR SEKALIGUS
+                    showCombinedValidationErrors(response);
+                } else if (hasPtkpErrors) {
+                    // ✅ HANYA ERROR PTKP
+                    showPtkpValidationErrors(response.ptkp_errors, response.ptkp_summary);
+                } else if (hasBracketErrors) {
+                    // ✅ HANYA ERROR BRACKET
+                    showBracketValidationErrors(response.bracket_errors, response.bracket_summary);
+                }
+            } else {
+                const error = xhr.responseJSON?.message || 'Error saat import data';
+                Swal.fire('Error', error, 'error');
+            }
+        }
+    });
+}
+
+
+// ✅ BARU: Function untuk show GABUNGAN PTKP & BRACKET validation errors
+function showCombinedValidationErrors(response) {
+    const ptkpErrors = response.ptkp_errors || [];
+    const bracketErrors = response.bracket_errors || [];
+    const ptkpSummary = response.ptkp_summary || {};
+    const bracketSummary = response.bracket_summary || {};
+    
+    let html = `
+        <div class="text-start">
+            <!-- HEADER -->
+            <div class="alert alert-danger mb-4">
+                <h5 class="mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Validasi Import Gagal</h5>
+                <p class="mb-0">Ditemukan beberapa masalah yang harus diperbaiki sebelum import dapat dilanjutkan:</p>
+                <ul class="mb-0 mt-2">
+                    ${ptkpErrors.length > 0 ? '<li><strong>Data PTKP tidak lengkap</strong></li>' : ''}
+                    ${bracketErrors.length > 0 ? '<li><strong>Bracket PPh21 belum tersedia</strong></li>' : ''}
+                </ul>
+            </div>
+    `;
+    
+    // ============ SECTION 1: BRACKET ERRORS ============
+    if (bracketErrors.length > 0) {
+        html += `
+            <div class="card border-danger mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0"><i class="fas fa-calculator me-2"></i>1. Masalah Bracket PPh21</h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning mb-3">
+                        <h6 class="mb-2"><strong>Tahun yang Dicek:</strong></h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            ${bracketSummary.years_checked.map(year => 
+                                `<span class="badge ${bracketSummary.years_missing_bracket.includes(year) ? 'bg-danger' : 'bg-success'}">${year}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center">Tahun</th>
+                                    <th class="text-center">Tanggal Dicek</th>
+                                    <th>Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+        `;
+        
+        bracketErrors.forEach(error => {
+            html += `
+                <tr>
+                    <td class="text-center fw-bold">${error.year}</td>
+                    <td class="text-center">${error.date_checked}</td>
+                    <td class="text-danger">${error.message}</td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // ============ SECTION 2: PTKP ERRORS ============
+    if (ptkpErrors.length > 0) {
+        html += `
+            <div class="card border-danger mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0"><i class="fas fa-users me-2"></i>2. Masalah Data PTKP Karyawan</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive mb-3">
+                        <table class="table table-sm">
+                            <tr class="table-light">
+                                <td class="fw-bold">Total Data Import</td>
+                                <td class="text-end">${ptkpSummary.total}</td>
+                            </tr>
+                            <tr class="table-success">
+                                <td class="fw-bold">✓ Valid (Punya PTKP)</td>
+                                <td class="text-end">${ptkpSummary.valid}</td>
+                            </tr>
+                            <tr class="table-danger">
+                                <td class="fw-bold">✗ Invalid (Tidak Ada PTKP)</td>
+                                <td class="text-end">${ptkpSummary.invalid_ptkp}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <h6 class="fw-bold mb-2">Detail Karyawan yang Bermasalah:</h6>
+                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                        <table class="table table-sm table-bordered mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Baris</th>
+                                    <th>Karyawan</th>
+                                    <th>Periode</th>
+                                    <th>Tahun</th>
+                                    <th>Error</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+        `;
+        
+        ptkpErrors.forEach(error => {
+            html += `
+                <tr>
+                    <td class="text-center">${error.row_index}</td>
+                    <td>
+                        ${error.karyawan_nama}<br>
+                        <small class="text-muted">ID: ${error.karyawan_id}</small>
+                    </td>
+                    <td class="text-center">${error.periode}</td>
+                    <td class="text-center">${error.year}</td>
+                    <td class="text-danger small">${error.message}</td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // ============ FOOTER: SOLUSI ============
+    html += `
+            <div class="alert alert-info mb-0">
+                <h6 class="mb-2"><i class="fas fa-lightbulb me-2"></i><strong>Langkah Perbaikan:</strong></h6>
+                <ol class="mb-0">
+    `;
+    
+    if (bracketErrors.length > 0) {
+        html += `
+            <li>
+                <strong>Tambahkan Bracket PPh21:</strong>
+                <ul>
+                    <li>Pastikan bracket PPh21 sudah diinput untuk tahun <strong>${bracketSummary.years_missing_bracket.join(', ')}</strong></li>
+                    <li>Bracket harus memiliki <code>effective_start_date</code> yang valid</li>
+                    <li>Untuk tahun yang masih berlaku, <code>effective_end_date</code> boleh kosong (NULL)</li>
+                </ul>
+            </li>
+        `;
+    }
+    
+    if (ptkpErrors.length > 0) {
+        html += `
+            <li>
+                <strong>Lengkapi Data PTKP:</strong>
+                <ul>
+                    <li>Pastikan setiap karyawan memiliki data PTKP untuk tahun yang relevan</li>
+                    <li>Total <strong>${ptkpSummary.invalid_ptkp}</strong> karyawan memerlukan data PTKP</li>
+                </ul>
+            </li>
+        `;
+    }
+    
+    html += `
+                    <li><strong>Ulangi proses import</strong> setelah semua data lengkap</li>
+                </ol>
+            </div>
+        </div>
+    `;
+    
+    Swal.fire({
+        icon: 'error',
+        title: 'Import Dibatalkan',
+        html: html,
+        width: '950px',
+        confirmButtonText: 'Tutup',
+        confirmButtonColor: '#f1416c',
+        customClass: {
+            htmlContainer: 'text-start'
+        }
+    });
+}
+
+
+// ✅ Function untuk show PTKP validation errors (individual)
+function showPtkpValidationErrors(errors, summary) {
+    let html = `
+        <div class="text-start">
+            <div class="alert alert-danger mb-4">
+                <h5 class="mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Validasi PTKP Gagal</h5>
+                <p class="mb-0">Beberapa karyawan tidak memiliki data PTKP untuk tahun yang diimport. Silakan lengkapi data PTKP terlebih dahulu.</p>
+            </div>
+            
+            <div class="table-responsive mb-4">
+                <table class="table table-sm">
+                    <tr class="table-light">
+                        <td class="fw-bold">Total Data</td>
+                        <td class="text-end">${summary.total}</td>
+                    </tr>
+                    <tr class="table-success">
+                        <td class="fw-bold">✓ Valid (Punya PTKP)</td>
+                        <td class="text-end">${summary.valid}</td>
+                    </tr>
+                    <tr class="table-danger">
+                        <td class="fw-bold">✗ Invalid (Tidak Ada PTKP)</td>
+                        <td class="text-end">${summary.invalid_ptkp}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <h6 class="fw-bold mb-2">Detail Data yang Bermasalah:</h6>
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th>Baris</th>
+                            <th>Karyawan</th>
+                            <th>Periode</th>
+                            <th>Tahun</th>
+                            <th>Error</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    `;
+    
+    errors.forEach(error => {
+        html += `
+            <tr>
+                <td class="text-center">${error.row_index}</td>
+                <td>
+                    ${error.karyawan_nama}<br>
+                    <small class="text-muted">ID: ${error.karyawan_id}</small>
+                </td>
+                <td class="text-center">${error.periode}</td>
+                <td class="text-center">${error.year}</td>
+                <td class="text-danger small">${error.message}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="alert alert-info mt-3 mb-0">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Solusi:</strong> Pastikan setiap karyawan memiliki data PTKP untuk tahun yang relevan sebelum melakukan import PPh21 Tahunan.
+            </div>
+        </div>
+    `;
+    
+    Swal.fire({
+        icon: 'error',
+        title: 'Import Dibatalkan',
+        html: html,
+        width: '900px',
+        confirmButtonText: 'Tutup',
+        confirmButtonColor: '#f1416c'
+    });
+}
+
+function showBracketValidationErrors(errors, summary) {
+    let html = `
+        <div class="text-start">
+            <div class="alert alert-danger mb-4">
+                <h5 class="mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Validasi Bracket PPh21 Gagal</h5>
+                <p class="mb-0">Bracket PPh21 tidak ditemukan untuk beberapa tahun yang diimport. Silakan tambahkan bracket PPh21 terlebih dahulu.</p>
+            </div>
+            
+            <div class="alert alert-info mb-4">
+                <h6 class="mb-2"><strong>Tahun yang Dicek:</strong></h6>
+                <div class="d-flex flex-wrap gap-2">
+                    ${summary.years_checked.map(year => 
+                        `<span class="badge ${summary.years_missing_bracket.includes(year) ? 'bg-danger' : 'bg-success'}">${year}</span>`
+                    ).join('')}
+                </div>
+            </div>
+            
+            <h6 class="fw-bold mb-2">Detail Tahun yang Bermasalah:</h6>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-center">Tahun</th>
+                            <th class="text-center">Tanggal Dicek</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    `;
+    
+    errors.forEach(error => {
+        html += `
+            <tr>
+                <td class="text-center fw-bold">${error.year}</td>
+                <td class="text-center">${error.date_checked}</td>
+                <td class="text-danger">${error.message}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="alert alert-warning mt-3 mb-0">
+                <i class="fas fa-lightbulb me-2"></i>
+                <strong>Solusi:</strong> 
+                <ul class="mb-0 mt-2">
+                    <li>Pastikan bracket PPh21 sudah diinput untuk tahun ${summary.years_missing_bracket.join(', ')}</li>
+                    <li>Bracket harus memiliki <code>effective_start_date</code> yang valid</li>
+                    <li>Untuk tahun yang masih berlaku, <code>effective_end_date</code> boleh kosong (NULL)</li>
+                </ul>
+            </div>
+        </div>
+    `;
+    
+    Swal.fire({
+        icon: 'error',
+        title: 'Import Dibatalkan',
+        html: html,
+        width: '800px',
+        confirmButtonText: 'Tutup',
+        confirmButtonColor: '#f1416c'
+    });
+}
+
 function displayValidationResults(response) {
     validationErrors = response.errors || [];
     
@@ -273,18 +737,26 @@ function displayValidationResults(response) {
     $('#validRows').text(response.summary.valid_rows);
     $('#errorRows').text(response.summary.error_rows);
     $('#validCount').text(response.summary.valid_rows);
+    $('#validCountCalc').text(response.summary.valid_rows);
+    $('#validCountAnnual').text(response.summary.valid_rows); // 🆕 SET COUNT ANNUAL
     
     if (response.summary.error_rows > 0) {
         showErrorData();
         
         if (response.summary.valid_rows > 0) {
-            $('#btnImport').show();
-        } else {
+            $('#btnCalculatePph21').show();
             $('#btnImport').hide();
+            $('#btnImportAnnual').show(); // 🆕 SHOW TOMBOL ANNUAL
+        } else {
+            $('#btnCalculatePph21').hide();
+            $('#btnImport').hide();
+            $('#btnImportAnnual').hide();
         }
     } else {
         showValidData();
-        $('#btnImport').show();
+        $('#btnCalculatePph21').show();
+        $('#btnImport').hide();
+        $('#btnImportAnnual').show(); // 🆕 SHOW TOMBOL ANNUAL
     }
     
     $('html, body').animate({
@@ -292,17 +764,162 @@ function displayValidationResults(response) {
     }, 500);
 }
 
-// ✅ Show Valid Data with DataTables
+
+function calculatePph21() {
+    Swal.fire({
+        title: 'Konfirmasi',
+        html: `Hitung PPh21 untuk ${$('#validCountCalc').text()} data?<br><small class="text-muted">Proses ini akan menghitung PPh21 berdasarkan TER dan PTKP karyawan.</small>`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Hitung',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#009ef7',
+        cancelButtonColor: '#f1416c'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            executePph21Calculation();
+        }
+    });
+}
+
+function executePph21Calculation() {
+    $('#pph21ProgressModal').modal('show');
+    $('#pph21ProgressText').text('Menghitung PPh21...');
+    $('#pph21ProgressDetail').text('Mohon tunggu');
+    $('#pph21ProgressBar').css('width', '0%');
+    $('#pph21ProgressPercent').text('0%');
+    
+    $.ajax({
+        url: '{{ route("payrolls.import.calculate-pph21") }}',
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        xhr: function() {
+            var xhr = new window.XMLHttpRequest();
+            
+            var progress = 0;
+            var progressInterval = setInterval(function() {
+                progress += Math.random() * 15;
+                if (progress > 90) {
+                    progress = 90;
+                    clearInterval(progressInterval);
+                }
+                updateProgress(progress);
+            }, 300);
+            
+            return xhr;
+        },
+        success: function(response) {
+            updateProgress(100);
+            
+            setTimeout(function() {
+                $('#pph21ProgressModal').modal('hide');
+                
+                if (response.success) {
+                    let alertClass = response.results.failed > 0 ? 'warning' : 'success';
+                    let alertIcon = response.results.failed > 0 ? 'warning' : 'success';
+                    
+                    Swal.fire({
+                        icon: alertIcon,
+                        title: 'Perhitungan Selesai',
+                        html: `
+                            <div class="text-start">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>Berhasil</td>
+                                        <td class="text-end">${response.results.success} data</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Gagal</td>
+                                        <td class="text-end">${response.results.failed} data</td>
+                                    </tr>
+                                    <tr class="fw-bold border-top">
+                                        <td>Total</td>
+                                        <td class="text-end">${response.results.total} data</td>
+                                    </tr>
+                                </table>
+                                ${response.results.failed > 0 ? 
+                                    '<div class="alert alert-warning mt-2 mb-0"><small>Beberapa data gagal dihitung. Periksa detail error.</small></div>' 
+                                    : ''}
+                            </div>
+                        `,
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        if (validTable) {
+                            validTable.ajax.reload();
+                        }
+                        
+                        $('#btnImport').show();
+                        $('#btnCalculatePph21').hide();
+                        
+                        if (response.results.failed > 0) {
+                            showCalculationErrors(response.results.details);
+                        }
+                    });
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                }
+            }, 500);
+        },
+        error: function(xhr) {
+            $('#pph21ProgressModal').modal('hide');
+            const error = xhr.responseJSON?.message || 'Error menghitung PPh21';
+            Swal.fire('Error', error, 'error');
+        }
+    });
+}
+
+function showCalculationErrors(details) {
+    const failedDetails = details.filter(d => d.status === 'failed');
+    
+    if (failedDetails.length === 0) return;
+    
+    let html = '<div class="table-responsive"><table class="table table-sm table-bordered">';
+    html += '<thead><tr><th>Periode</th><th>Karyawan ID</th><th>Error</th></tr></thead><tbody>';
+    
+    failedDetails.forEach(detail => {
+        html += `<tr>
+            <td>${detail.periode}</td>
+            <td>${detail.karyawan_id}</td>
+            <td class="text-danger">${detail.message}</td>
+        </tr>`;
+    });
+    
+    html += '</tbody></table></div>';
+    
+    Swal.fire({
+        title: 'Detail Error Perhitungan',
+        html: html,
+        width: '800px',
+        confirmButtonText: 'Tutup'
+    });
+}
+
+function updateProgress(percent) {
+    percent = Math.min(100, Math.max(0, percent));
+    $('#pph21ProgressBar').css('width', percent + '%');
+    $('#pph21ProgressPercent').text(Math.round(percent) + '%');
+    
+    if (percent < 30) {
+        $('#pph21ProgressDetail').text('Memuat data PTKP dan TER');
+    } else if (percent < 60) {
+        $('#pph21ProgressDetail').text('Menghitung total bruto dasar');
+    } else if (percent < 90) {
+        $('#pph21ProgressDetail').text('Menerapkan formula gross-up');
+    } else {
+        $('#pph21ProgressDetail').text('Menyimpan hasil perhitungan');
+    }
+}
+
 function showValidData() {
     $('#errorSection').hide();
     $('#successSection').show();
     
-    // Destroy existing DataTable
     if (validTable) {
         validTable.destroy();
     }
     
-    // Initialize DataTables
     validTable = $('#validTable').DataTable({
         processing: true,
         serverSide: true,
@@ -318,16 +935,14 @@ function showValidData() {
             { 
                 data: null,
                 render: function(data) {
-                    return `<strong>${data.karyawan_nama}</strong><br>
-                            <small class="text-muted">ID: ${data.absen_karyawan_id} | NIK: ${data.karyawan_nik}</small>`;
+                    return `${data.karyawan_nama}<br><small class="text-muted">ID: ${data.absen_karyawan_id} | NIK: ${data.karyawan_nik}</small>`;
                 },
                 orderable: false
             },
             { 
                 data: null,
                 render: function(data) {
-                    return `<strong>${data.company_name || '-'}</strong><br>
-                            <small class="text-muted">ID: ${data.absen_company_id || '-'} | Code: ${data.company_code || '-'}</small>`;
+                    return `${data.company_name || '-'}<br><small class="text-muted">ID: ${data.absen_company_id || '-'} | Code: ${data.company_code || '-'}</small>`;
                 },
                 orderable: false
             },
@@ -360,14 +975,29 @@ function showValidData() {
             { data: 'bpjs_tk_jp_1_percent', render: formatRupiah, className: 'text-end' },
             { data: 'bpjs_kes_4_percent', render: formatRupiah, className: 'text-end' },
             { data: 'bpjs_kes_1_percent', render: formatRupiah, className: 'text-end' },
-            { data: 'pph_21', render: formatRupiah, className: 'text-end' },
+            { 
+                data: 'pph_21', 
+                render: function(data, type, row) {
+                    // Cek apakah belum dihitung sama sekali (null/undefined)
+                    if (data === null || data === undefined) {
+                        return '<span class="badge badge-light-secondary">Belum Dihitung</span>';
+                    }
+                    
+                    // Jika sudah dihitung (bisa 0 atau lebih)
+                    if (data === 0) {
+                        return '<span class="badge badge-light-success">Rp 0</span>';
+                    }
+                    
+                    return formatRupiah(data);
+                }, 
+                className: 'text-end bg-light' 
+            },
             { data: 'glh', render: formatRupiah, className: 'text-end' },
             { data: 'lm', render: formatRupiah, className: 'text-end' },
             { data: 'lainnya', render: formatRupiah, className: 'text-end' },
-            { data: 'total_penerimaan', render: formatRupiahBold, className: 'text-end bg-light-success' },
-            { data: 'total_potongan', render: formatRupiahBold, className: 'text-end bg-light-danger' },
-            { data: 'gaji_bersih', render: formatRupiahBold, className: 'text-end bg-light-primary' },
-            
+            { data: 'total_penerimaan', render: formatRupiah, className: 'text-end bg-light fw-bold' },
+            { data: 'total_potongan', render: formatRupiah, className: 'text-end bg-light fw-bold' },
+            { data: 'gaji_bersih', render: formatRupiah, className: 'text-end bg-light fw-bold' },
         ],
         scrollX: true,
         scrollCollapse: true,
@@ -378,15 +1008,15 @@ function showValidData() {
         lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
         order: [[0, 'asc']],
         language: {
-            processing: '<i class="fas fa-spinner fa-spin fa-2x"></i><br>Loading...',
+            processing: 'Loading...',
             lengthMenu: 'Show _MENU_ entries',
             info: 'Showing _START_ to _END_ of _TOTAL_ entries',
-            search: '🔍 Search:',
+            search: 'Search:',
             paginate: {
-                first: '«',
-                last: '»',
-                next: '›',
-                previous: '‹'
+                first: 'First',
+                last: 'Last',
+                next: 'Next',
+                previous: 'Previous'
             }
         }
     });
@@ -396,7 +1026,6 @@ function showValidData() {
     }, 500);
 }
 
-// ✅ Show Error Data with DataTables
 function showErrorData() {
     if (validationErrors.length === 0) {
         Swal.fire('Info', 'Tidak ada error ditemukan', 'info');
@@ -406,12 +1035,10 @@ function showErrorData() {
     $('#successSection').hide();
     $('#errorSection').show();
     
-    // Destroy existing DataTable
     if (errorTable) {
         errorTable.destroy();
     }
     
-    // Initialize DataTables
     errorTable = $('#errorTable').DataTable({
         processing: true,
         serverSide: true,
@@ -462,15 +1089,15 @@ function showErrorData() {
         lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
         order: [[0, 'asc']],
         language: {
-            processing: '<i class="fas fa-spinner fa-spin fa-2x"></i><br>Loading...',
+            processing: 'Loading...',
             lengthMenu: 'Show _MENU_ entries',
             info: 'Showing _START_ to _END_ of _TOTAL_ entries',
-            search: '🔍 Search:',
+            search: 'Search:',
             paginate: {
-                first: '«',
-                last: '»',
-                next: '›',
-                previous: '‹'
+                first: 'First',
+                last: 'Last',
+                next: 'Next',
+                previous: 'Previous'
             }
         }
     });
@@ -483,12 +1110,12 @@ function showErrorData() {
 function processImport() {
     Swal.fire({
         title: 'Konfirmasi Import',
-        html: `Apakah Anda yakin ingin import <strong>${$('#validCount').text()} data</strong> payroll?`,
+        html: `Import ${$('#validCount').text()} data payroll ke database?`,
         icon: 'question',
         showCancelButton: true,
-        confirmButtonText: 'Ya, Import!',
+        confirmButtonText: 'Ya, Import',
         cancelButtonText: 'Batal',
-        confirmButtonColor: '#50cd89',
+        confirmButtonColor: '#009ef7',
         cancelButtonColor: '#f1416c'
     }).then((result) => {
         if (result.isConfirmed) {
@@ -499,7 +1126,7 @@ function processImport() {
 
 function executeImport() {
     Swal.fire({
-        title: 'Mengimport...',
+        title: 'Mengimport Data',
         html: 'Mohon tunggu, sedang menyimpan data ke database',
         allowOutsideClick: false,
         didOpen: () => {
@@ -516,8 +1143,8 @@ function executeImport() {
         success: function(response) {
             Swal.fire({
                 icon: 'success',
-                title: 'Import Berhasil!',
-                html: `<strong>${response.imported_count} data</strong> payroll berhasil diimport`,
+                title: 'Import Berhasil',
+                html: `${response.imported_count} data payroll berhasil diimport`,
                 confirmButtonText: 'OK'
             }).then(() => {
                 window.location.href = '{{ route("payrolls.index") }}';
@@ -572,6 +1199,9 @@ function downloadErrors() {
 function resetForm() {
     $('#uploadForm')[0].reset();
     $('#resultsCard').hide();
+    $('#btnCalculatePph21').hide();
+    $('#btnImport').hide();
+    $('#btnImportAnnual').hide(); // 🆕 HIDE TOMBOL ANNUAL
     validationErrors = [];
     
     if (validTable) {
@@ -593,49 +1223,33 @@ function formatRupiah(data) {
     if (data === 0 || data === null || data === undefined) return '-';
     return 'Rp ' + new Intl.NumberFormat('id-ID').format(data);
 }
-
-function formatRupiahBold(data) {
-    if (data === 0 || data === null || data === undefined) return '-';
-    return '<strong>Rp ' + new Intl.NumberFormat('id-ID').format(data) + '</strong>';
-}
 </script>
 @endpush
 
 @push('styles')
 <style>
 .card-summary.clickable {
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease;
 }
 
 .card-summary.clickable:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
-
-.card-summary.clickable:active {
     transform: translateY(-2px);
 }
 
-/* DataTables Custom Styling */
 .dataTables_wrapper .dataTables_length,
 .dataTables_wrapper .dataTables_filter {
     margin-bottom: 1rem;
 }
 
-.dataTables_wrapper .dataTables_info {
-    padding-top: 1rem;
-}
-
+.dataTables_wrapper .dataTables_info,
 .dataTables_wrapper .dataTables_paginate {
     padding-top: 1rem;
 }
 
-/* Fixed Columns */
 .DTFC_LeftBodyLiner {
     background-color: white !important;
 }
 
-/* Scroll Enhancement */
 .dataTables_scrollBody::-webkit-scrollbar {
     height: 8px;
 }
@@ -653,23 +1267,13 @@ function formatRupiahBold(data) {
     background: #555;
 }
 
-/* Table hover effect */
 #validTable tbody tr:hover,
 #errorTable tbody tr:hover {
     background-color: rgba(0, 158, 247, 0.05) !important;
 }
 
-/* Highlight calculated columns */
-.bg-light-success {
-    background-color: rgba(80, 205, 137, 0.1) !important;
-}
-
-.bg-light-danger {
-    background-color: rgba(241, 65, 108, 0.1) !important;
-}
-
-.bg-light-primary {
-    background-color: rgba(0, 158, 247, 0.1) !important;
+.bg-light {
+    background-color: #f5f8fa !important;
 }
 </style>
 @endpush

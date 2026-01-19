@@ -1,23 +1,23 @@
 <?php
-// app/Http/Controllers/PtkpSyncController.php (DI APLIKASI GAJI)
+// app/Http/Controllers/JenisTerSyncController.php
 
 namespace App\Http\Controllers;
 
-use App\Services\PtkpSyncService;
+use App\Services\JenisTerSyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Gate;
 
-class PtkpSyncController extends Controller
+class JenisTerSyncController extends Controller
 {
     protected $syncService;
     
-    public function __construct(PtkpSyncService $syncService)
+    public function __construct(JenisTerSyncService $syncService)
     {
         $this->syncService = $syncService;
 
         $this->middleware(function ($request, $next) {
-            if (Gate::denies('ptkp-sync')) {
+            if (Gate::denies('jenis-ter-sync')) {
                 abort(403, 'Unauthorized action.');
             }
 
@@ -28,42 +28,30 @@ class PtkpSyncController extends Controller
     /**
      * 📡 DATATABLE SERVER-SIDE (POST)
      */
-        public function datatable(Request $request)
+    public function datatable(Request $request)
     {
-        $query = \App\Models\ListPtkp::with('jenisTer'); // ✅ Eager load jenisTer
+        $query = \App\Models\JenisTer::query();
         
         // Search
         if ($request->filled('search.value')) {
             $search = $request->input('search.value');
             $query->where(function($q) use ($search) {
-                $q->where('kriteria', 'like', "%{$search}%")
-                ->orWhere('status', 'like', "%{$search}%")
-                ->orWhere('absen_ptkp_id', 'like', "%{$search}%")
-                ->orWhere('besaran_ptkp', 'like', "%{$search}%")
-                ->orWhereHas('jenisTer', function($q) use ($search) {
-                    $q->where('jenis_ter', 'like', "%{$search}%");
-                });
+                $q->where('jenis_ter', 'like', "%{$search}%")
+                  ->orWhere('absen_jenis_ter_id', 'like', "%{$search}%");
             });
         }
 
         // Total records
-        $totalRecords = \App\Models\ListPtkp::count();
+        $totalRecords = \App\Models\JenisTer::count();
         $filteredRecords = $query->count();
 
         // Ordering
         $orderColumnIndex = $request->input('order.0.column', 0);
         $orderDir = $request->input('order.0.dir', 'desc');
-        $columns = ['absen_ptkp_id', 'kriteria', 'status', 'besaran_ptkp', 'jenis_ter', 'last_synced_at', 'created_at', 'status_badge'];
-        $orderColumn = $columns[$orderColumnIndex] ?? 'absen_ptkp_id';
+        $columns = ['absen_jenis_ter_id', 'jenis_ter', 'last_synced_at', 'created_at', 'status_badge'];
+        $orderColumn = $columns[$orderColumnIndex] ?? 'absen_jenis_ter_id';
         
-        // ✅ Handle sorting for jenis_ter relation
-        if ($orderColumn === 'jenis_ter') {
-            $query->join('jenis_ters', 'list_ptkps.absen_jenis_ter_id', '=', 'jenis_ters.absen_jenis_ter_id')
-                ->orderBy('jenis_ters.jenis_ter', $orderDir)
-                ->select('list_ptkps.*');
-        } else {
-            $query->orderBy($orderColumn, $orderDir);
-        }
+        $query->orderBy($orderColumn, $orderDir);
 
         // Pagination
         $start = $request->input('start', 0);
@@ -72,20 +60,17 @@ class PtkpSyncController extends Controller
         $data = $query->skip($start)->take($length)->get();
 
         // Format data
-        $formattedData = $data->map(function($ptkp) {
+        $formattedData = $data->map(function($jenisTer) {
             return [
-                'absen_ptkp_id' => $ptkp->absen_ptkp_id,
-                'kriteria' => $ptkp->kriteria ?? '-',
-                'status' => $ptkp->status ?? '-',
-                'besaran_ptkp' => 'Rp ' . number_format($ptkp->besaran_ptkp ?? 0, 0, ',', '.'),
-                'jenis_ter' => $ptkp->jenisTer->jenis_ter ?? '-', // ✅ FIXED: dari $rangeBruto jadi $ptkp
-                'last_synced_at' => $ptkp->last_synced_at 
-                    ? \Carbon\Carbon::parse($ptkp->last_synced_at)->format('d M Y H:i') 
+                'absen_jenis_ter_id' => $jenisTer->absen_jenis_ter_id,
+                'jenis_ter' => $jenisTer->jenis_ter ?? '-',
+                'last_synced_at' => $jenisTer->last_synced_at 
+                    ? \Carbon\Carbon::parse($jenisTer->last_synced_at)->format('d M Y H:i') 
                     : '-',
-                'created_at' => $ptkp->created_at 
-                    ? \Carbon\Carbon::parse($ptkp->created_at)->format('d M Y H:i') 
+                'created_at' => $jenisTer->created_at 
+                    ? \Carbon\Carbon::parse($jenisTer->created_at)->format('d M Y H:i') 
                     : '-',
-                'status_badge' => $ptkp->deleted_at 
+                'status_badge' => $jenisTer->deleted_at 
                     ? '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Deleted</span>' 
                     : '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Active</span>',
             ];
@@ -107,7 +92,7 @@ class PtkpSyncController extends Controller
         try {
             $forceRefresh = $request->boolean('force', false);
             
-            Log::info('Manual PTKP sync triggered', [
+            Log::info('Manual Jenis TER sync triggered', [
                 'user' => auth()->user()->email ?? 'unknown',
                 'force' => $forceRefresh
             ]);
@@ -117,7 +102,7 @@ class PtkpSyncController extends Controller
             return response()->json($result);
             
         } catch (\Exception $e) {
-            Log::error('Manual PTKP sync failed', [
+            Log::error('Manual Jenis TER sync failed', [
                 'error' => $e->getMessage()
             ]);
             
@@ -129,12 +114,12 @@ class PtkpSyncController extends Controller
     }
     
     /**
-     * 🔄 SYNC SPECIFIC PTKP
+     * 🔄 SYNC SPECIFIC JENIS TER
      */
-    public function syncById($absenPtkpId)
+    public function syncById($absenJenisTerId)
     {
         try {
-            $result = $this->syncService->syncById($absenPtkpId);
+            $result = $this->syncService->syncById($absenJenisTerId);
             return response()->json($result);
         } catch (\Exception $e) {
             return response()->json([
@@ -165,7 +150,7 @@ class PtkpSyncController extends Controller
         $stats = $this->syncService->getSyncStats();
         $health = $this->syncService->checkSyncHealth(24);
         
-        return view('dashboard.dashboard-admin.ptkp.sync', compact('stats', 'health'));
+        return view('dashboard.dashboard-admin.jenis-ter.sync', compact('stats', 'health'));
     }
     
     /**
@@ -176,7 +161,7 @@ class PtkpSyncController extends Controller
         try {
             $forceRefresh = $request->boolean('force', false);
             
-            Log::info('Manual PTKP sync triggered via web', [
+            Log::info('Manual Jenis TER sync triggered via web', [
                 'user' => auth()->user()->name ?? 'unknown',
                 'force' => $forceRefresh,
                 'ip' => $request->ip()
@@ -186,24 +171,24 @@ class PtkpSyncController extends Controller
             
             if ($result['success']) {
                 return redirect()
-                    ->route('ptkp.sync.dashboard')
+                    ->route('jenis-ter.sync.dashboard')
                     ->with('success', 'Sinkronisasi berhasil! ' . 
                         $result['stats']['new_inserted'] . ' inserted, ' .
                         $result['stats']['updated'] . ' updated, ' .
                         $result['stats']['deleted'] . ' deleted.');
             } else {
                 return redirect()
-                    ->route('ptkp.sync.dashboard')
+                    ->route('jenis-ter.sync.dashboard')
                     ->with('error', 'Sinkronisasi gagal: ' . $result['message']);
             }
             
         } catch (\Exception $e) {
-            Log::error('Manual PTKP sync failed via web', [
+            Log::error('Manual Jenis TER sync failed via web', [
                 'error' => $e->getMessage()
             ]);
             
             return redirect()
-                ->route('ptkp.sync.dashboard')
+                ->route('jenis-ter.sync.dashboard')
                 ->with('error', 'Error: ' . $e->getMessage());
         }
     }
