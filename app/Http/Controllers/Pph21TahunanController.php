@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
-use App\Models\Karyawan;
+use App\Models\PeriodeKaryawanMasaJabatan;
 use App\Services\Pph21CalculationService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
+use App\Exports\Pph21TahunanExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Log;
 
 class Pph21TahunanController extends Controller
 {
@@ -25,7 +27,7 @@ class Pph21TahunanController extends Controller
     {
         $companies = Company::orderBy('company_name')->get();
         
-        // Ambil bracket info untuk header (default: sekarang)
+        // Ambil bracket info untuk header (default: tahun sekarang)
         $bracketHeaders = $this->pph21Service->formatBracketHeaderInfo();
         
         return view('dashboard.pph21-tahunan.index', compact('companies', 'bracketHeaders'));
@@ -49,66 +51,77 @@ class Pph21TahunanController extends Controller
      */
     public function getData(Request $request)
     {
-        $query = DB::table('periode_karyawan_masa_jabatans as pkm')
-            ->join('karyawans as k', 'pkm.karyawan_id', '=', 'k.absen_karyawan_id')
-            ->join('companies as c', 'pkm.company_id', '=', 'c.absen_company_id')
-            ->select(
-                'pkm.*',
-                'k.nama_lengkap as karyawan_nama',
-                'k.nik as karyawan_nik',
-                'c.company_name'
-            );
-        
-        // Filter by year
+        $query = PeriodeKaryawanMasaJabatan::query()
+        ->with(['karyawan:absen_karyawan_id,nama_lengkap,nik', 'company:absen_company_id,company_name,code']);
+    
+        // Filter by year (periode)
         if ($request->filled('year')) {
-            $query->where('pkm.periode', $request->year);
+            $query->where('periode', $request->year);
         }
         
+         
         // Filter by company
         if ($request->filled('company_id')) {
-            $query->where('pkm.company_id', $request->company_id);
+            $query->where('company_id', $request->company_id);
         }
         
-        // Filter by search
+        // Filter by search (nama karyawan atau NIK)
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('k.nama_lengkap', 'like', "%{$search}%")
-                  ->orWhere('k.nik', 'like', "%{$search}%");
+                $q->whereHas('karyawan', function($query) use ($search) {
+                    $query->where('nama_lengkap', 'like', "%{$search}%")
+                        ->orWhere('nik', 'like', "%{$search}%");
+                });
             });
         }
         
         return DataTables::of($query)
+            ->addColumn('karyawan_nama', function($row) {
+                return $row->karyawan->nama_lengkap ?? '-';
+            })
+            ->addColumn('karyawan_nik', function($row) {
+                return $row->karyawan->nik ?? '-';
+            })
+            ->addColumn('company_name', function($row) {
+                return $row->company->company_name ?? '-';
+            })
+            // Bracket 1
             ->addColumn('bracket_1_pkp', function($row) {
                 return $this->calculateBracketData($row, 1)['pkp'];
             })
             ->addColumn('bracket_1_pph21', function($row) {
                 return $this->calculateBracketData($row, 1)['pph21'];
             })
+            // Bracket 2
             ->addColumn('bracket_2_pkp', function($row) {
                 return $this->calculateBracketData($row, 2)['pkp'];
             })
             ->addColumn('bracket_2_pph21', function($row) {
                 return $this->calculateBracketData($row, 2)['pph21'];
             })
+            // Bracket 3
             ->addColumn('bracket_3_pkp', function($row) {
                 return $this->calculateBracketData($row, 3)['pkp'];
             })
             ->addColumn('bracket_3_pph21', function($row) {
                 return $this->calculateBracketData($row, 3)['pph21'];
             })
+            // Bracket 4
             ->addColumn('bracket_4_pkp', function($row) {
                 return $this->calculateBracketData($row, 4)['pkp'];
             })
             ->addColumn('bracket_4_pph21', function($row) {
                 return $this->calculateBracketData($row, 4)['pph21'];
             })
+            // Bracket 5
             ->addColumn('bracket_5_pkp', function($row) {
                 return $this->calculateBracketData($row, 5)['pkp'];
             })
             ->addColumn('bracket_5_pph21', function($row) {
                 return $this->calculateBracketData($row, 5)['pph21'];
             })
+            // PPh21 Tahunan
             ->addColumn('pph21_tahunan', function($row) {
                 $lastPeriodDate = $this->pph21Service->getLastPeriodDate(
                     $row->karyawan_id, 
@@ -122,7 +135,23 @@ class Pph21TahunanController extends Controller
                 
                 return $pph21Data['total_pph21_tahunan'];
             })
-            ->rawColumns(['karyawan_nama'])
+            // PPh21 Masa (dari tunj_pph_21)
+            ->addColumn('pph21_masa', function($row) {
+                return $row->tunj_pph_21;
+            })
+            // PPh21 Akhir (dari tunj_pph21_akhir)
+            ->addColumn('pph21_akhir', function($row) {
+                return $row->tunj_pph21_akhir;
+            })
+                // ✅ FIX: Gunakan orderColumn untuk kolom yang pakai relationship
+            ->orderColumn('karyawan_nama', function ($query, $order) {
+                // Tidak perlu ordering di sini karena kita query langsung dari view
+                return $query;
+            })
+            ->orderColumn('company_name', function ($query, $order) {
+                // Tidak perlu ordering di sini karena kita query langsung dari view
+                return $query;
+            })
             ->make(true);
     }
     
@@ -150,49 +179,49 @@ class Pph21TahunanController extends Controller
     }
     
     /**
-     * Get detail for modal
+     * Export to Excel
      */
-    public function getDetail(Request $request)
+    public function export(Request $request)
     {
-        $karyawanId = $request->karyawan_id;
-        $year = $request->year;
-        
-        $payroll = DB::table('periode_karyawan_masa_jabatans as pkm')
-            ->join('karyawans as k', 'pkm.karyawan_id', '=', 'k.absen_karyawan_id')
-            ->select('pkm.*', 'k.nama_lengkap as karyawan_nama', 'k.nik as karyawan_nik')
-            ->where('pkm.karyawan_id', $karyawanId)
-            ->where('pkm.periode', $year)
-            ->first();
-        
-        if (!$payroll) {
-            return response()->json(['message' => 'Data not found'], 404);
+        try {
+            set_time_limit(300); // 5 menit
+            ini_set('memory_limit', '512M');
+
+            // Collect filters
+            $filters = [
+                'year' => $request->input('year') ?? date('Y'),
+                'company_id' => $request->input('company_id'),
+                'search' => $request->input('search'),
+            ];
+
+            // Generate filename dengan timestamp
+            $timestamp = now()->format('Y-m-d_His');
+            $filename = "laporan_pph21_tahunan_{$timestamp}.xlsx";
+
+            // Log export activity
+            Log::info('Export PPh21 Tahunan initiated', [
+                'user_id' => auth()->id(),
+                'filters' => $filters,
+                'timestamp' => $timestamp
+            ]);
+
+            // Export langsung
+            return Excel::download(
+                new Pph21TahunanExport($filters, $this->pph21Service), 
+                $filename,
+                \Maatwebsite\Excel\Excel::XLSX
+            );
+
+        } catch (\Exception $e) {
+            Log::error('Export PPh21 Tahunan failed: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Export gagal: ' . $e->getMessage()
+            ], 500);
         }
-        
-        $lastPeriodDate = $this->pph21Service->getLastPeriodDate($karyawanId, $year);
-        
-        $pph21Data = $this->pph21Service->calculatePph21Tahunan(
-            (float) $payroll->pkp, 
-            $lastPeriodDate
-        );
-        
-        return response()->json([
-            'karyawan_nama' => $payroll->karyawan_nama,
-            'karyawan_nik' => $payroll->karyawan_nik,
-            'periode' => $payroll->periode,
-            'last_period' => date('F Y', strtotime($lastPeriodDate)),
-            'ptkp_status' => $payroll->status . ' - ' . $payroll->kriteria,
-            'total_bruto' => $payroll->total_bruto,
-            'salary' => $payroll->salary,
-            'overtime' => $payroll->overtime,
-            'tunjangan' => $payroll->tunjangan,
-            'thr_bonus' => $payroll->thr_bonus,
-            'biaya_jabatan' => $payroll->biaya_jabatan,
-            'iuran_jht' => $payroll->iuran_jht,
-            'besaran_ptkp' => $payroll->besaran_ptkp,
-            'pkp' => $payroll->pkp,
-            'pph21_tahunan' => $pph21Data['total_pph21_tahunan'],
-            'bracket_details' => $pph21Data['breakdown'],
-            'period_date' => $pph21Data['period_date'],
-        ]);
     }
 }

@@ -1,12 +1,12 @@
 @extends('layouts.master')
 
-@section('title', 'Payroll Management')
+@section('title', 'Payroll Fake Management')
 
 @push('css')
 <style>
-    #payrollTablePending tbody td, th,
-    #payrollTableReleased tbody td,
-    #payrollTableReleasedSlip tbody td {
+    #payrollFakeTablePending tbody td, th,
+    #payrollFakeTableReleased tbody td,
+    #payrollFakeTableReleasedSlip tbody td {
         padding: 6px 6px !important;
         font-size: 11px !important;
         line-height: 1.2 !important;
@@ -28,8 +28,8 @@
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
-    
 </style>
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
 @endpush
@@ -41,26 +41,23 @@
             
             <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
                 <!-- Toolbar -->
-                <div class="toolbar" id="kt_toolbar">
+                  <div class="toolbar" id="kt_toolbar">
                     <div id="kt_toolbar_container" class="container-fluid d-flex flex-stack mb-5">
                         <div class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
-                            <h1 class="d-flex text-dark fw-bold fs-3 align-items-center my-1">Payroll Management
+                            <h1 class="d-flex text-dark fw-bold fs-3 align-items-center my-1">Payroll Fake Management
                                 <span class="h-20px border-gray-300 border-start ms-3 mx-2"></span>
-                                <small class="text-muted fs-7 fw-semibold my-1 ms-1">Kelola data payroll karyawan</small>
+                                <small class="text-muted fs-7 fw-semibold my-1 ms-1">Kelola data payroll fake karyawan</small>
                             </h1>
                         </div>
                         <div class="d-flex align-items-center gap-2">
-                            <a href="{{ route('payrolls.import') }}" class="btn btn-sm btn-light-success">
+                            <a href="{{ route('payrollsfake.import.index') }}" class="btn btn-sm btn-light-success">
                                 <i class="ki-outline ki-file-up fs-3"></i>
                                 Import Excel
-                            </a>
-                            <a href="{{ route('payrolls.create') }}" class="btn btn-sm btn-primary">
-                                <i class="ki-outline ki-plus fs-3"></i>
-                                Tambah Payroll
                             </a>
                         </div>
                     </div>
                 </div>
+
 
                 <!-- Post -->
                 <div class="post d-flex flex-column-fluid" id="kt_post">
@@ -68,6 +65,7 @@
 
                         <!--begin::Statistics Cards-->
                         <div class="row g-5 mb-5">
+                            <!-- Filter Periode untuk Cards -->
                             <!-- Filter Periode untuk Cards -->
                             <div class="col-12">
                                 <div class="card shadow-sm">
@@ -93,7 +91,7 @@
                                     </div>
                                 </div>
                             </div>
-
+                            
                             <!-- Card 1: Pending -->
                             <div class="col-md-4">
                                 <div class="card shadow-sm h-100">
@@ -155,6 +153,7 @@
                             </div>
                         </div>
                         <!--end::Statistics Cards-->
+                        
                         <!--begin::Tab Card-->
                         <div class="card">
                             <div class="card-header border-0 pt-6">
@@ -190,7 +189,7 @@
                             </div>
                             
                             <div class="card-body pt-0 mt-3">
-                                <div class="tab-content" id="payrollTabContent">
+                                <div class="tab-content" id="payrollFakeTabContent">
                                     
                                     @if($pendingCount > 0)
                                     <!-- 🔥 TAB PENDING -->
@@ -219,7 +218,7 @@
                                         </div>
                                         
                                         <div class="table-responsive">
-                                            <table id="payrollTablePending" class="table table-hover table-striped table-bordered table-sm align-middle gs-0 gy-4">
+                                            <table id="payrollFakeTablePending" class="table table-hover table-striped table-bordered table-sm align-middle gs-0 gy-4">
                                                 <thead class="bg-light">
                                                     <tr>
                                                         <th rowspan="2" class="text-center align-middle">
@@ -286,6 +285,7 @@
                                         </div>
                                     </div>
                                     @endif
+                                    
                                     @if($releasedCount > 0)
                                     <!-- 🔥 TAB RELEASED -->
                                     <div class="tab-pane fade {{ $pendingCount == 0 ? 'show active' : '' }}" id="tab_released" role="tabpanel">
@@ -313,7 +313,8 @@
                                         </div>
                                         
                                         <div class="table-responsive">
-                                            <table id="payrollTableReleased" class="table table-hover table-striped table-bordered table-sm align-middle gs-0 gy-4">
+                                            <table id="payrollFakeTableReleased" class="table table-hover table-striped table-bordered table-sm align-middle gs-0 gy-4">
+                                                <!-- Same thead as pending -->
                                                 <thead class="bg-light">
                                                     <tr>
                                                         <th rowspan="2" class="text-center align-middle">
@@ -391,15 +392,19 @@
                                                     <input type="text" id="searchReleasedSlip" class="form-control form-control-solid w-250px ps-13" placeholder="Cari..." />
                                                 </div>
                                                 <input type="text" id="filterPeriodeReleasedSlip" class="form-control form-control-solid w-150px" placeholder="Periode" readonly />
+                                                <button type="button" class="btn btn-sm btn-light-primary" id="btnResetFilterReleasedSlip">
+                                                    <i class="ki-outline ki-arrows-circle fs-5"></i>
+                                                </button>
                                             </div>
                                             <button type="button" class="btn btn-sm btn-light-success" id="btnExportReleasedSlip">
                                                 <i class="ki-outline ki-file-down fs-3"></i>
-                                                Export
+                                                Export Released Slip
                                             </button>
                                         </div>
                                         
                                         <div class="table-responsive">
-                                            <table id="payrollTableReleasedSlip" class="table table-hover table-striped table-bordered table-sm align-middle gs-0 gy-4">
+                                            <table id="payrollFakeTableReleasedSlip" class="table table-hover table-striped table-bordered table-sm align-middle gs-0 gy-4">
+                                                <!-- Same thead as released but without checkbox -->
                                                 <thead class="bg-light">
                                                     <tr>
                                                         <th rowspan="2" class="text-center align-middle">#</th>
@@ -582,6 +587,8 @@
 
 @endsection
 
+
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
@@ -590,20 +597,21 @@
 $(document).ready(function() {
     'use strict';
 
-    // 🔥 KONFIGURASI
+    // 🔥 KONFIGURASI - GANTI SEMUA ROUTE KE PAYROLLS-FAKE
     const CONFIG = {
         routes: {
-            pending: '{{ route("payrollsdatatablepending") }}',
-            released: '{{ route("payrollsdatatablereleased") }}',
-            releasedSlip: '{{ route("payrollsdatatablereleasedslip") }}',
-            release: '{{ route("payrolls.release") }}',
-            destroy: '{{ route("payrolls.destroy", ":id") }}',
-            statistics: '{{ route("payrolls.statistics") }}',
-            export: '{{ route("payrolls.export") }}'
+            pending: '{{ route("payrollsfakedatatablepending") }}',
+            released: '{{ route("payrollsfakedatatablereleased") }}',
+            releasedSlip: '{{ route("payrollsfakedatatablereleasedslip") }}',
+            release: '{{ route("payrolls-fake.release") }}',
+            destroy: '{{ route("payrolls-fake.destroy", ":id") }}',
+            statistics: '{{ route("payrolls-fake.statistics") }}',
+            export: '{{ route("payrolls-fake.export") }}'
         },
         csrfToken: '{{ csrf_token() }}'
     };
-      // 🔥 INIT FLATPICKR - Filter Statistik Bulan
+
+    // 🔥 INIT FLATPICKR - Filter Statistik Bulan
     $("#filterStatisticsPeriode").flatpickr({
         plugins: [new monthSelectPlugin({ shorthand: true, dateFormat: "Y-m", altFormat: "F Y" })],
         locale: "id",
@@ -615,13 +623,14 @@ $(document).ready(function() {
         }
     });
 
-    // 🔥 INIT SELECT - Filter Statistik Tahun
+    // 🔥 INIT FLATPICKR - Filter Statistik Tahun
     $('#filterStatisticsYear').on('change', function() {
         const year = $(this).val();
         if (year) {
             updateStatistics(year);
         }
     });
+
 
     // 🔥 INIT FLATPICKR - Filter Periode Pending
     $("#filterPeriodePending").flatpickr({
@@ -710,90 +719,67 @@ $(document).ready(function() {
 
     // 🔥 DEFINE COLUMNS (sama untuk semua tab)
     const columns = [
-        { 
-            data: 'checkbox', 
-            name: 'checkbox', 
-            orderable: false, 
-            searchable: false,
-            className: 'text-center'
-        },
-        { 
-            data: 'DT_RowIndex', 
-            name: 'DT_RowIndex', 
-            orderable: false, 
-            searchable: false,
-            className: 'text-center'
-        },
+        { data: 'checkbox', name: 'checkbox', orderable: false, searchable: false, className: 'text-center' },
+        { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false, className: 'text-center' },
         { data: 'periode', name: 'periode', className: 'text-center' },
         { data: 'karyawan_nik', name: 'karyawan.nik', className: 'text-center' },
         { data: 'karyawan_nama', name: 'karyawan.nama_lengkap' },
         { data: 'company_nama', name: 'company.company_name' },
         { data: 'salary_type', name: 'salary_type', className: 'text-center' },
-        { 
-            data: 'gaji_pokok_formatted', 
-            name: 'gaji_pokok',
-            className: 'text-end',
-            render: (data) => formatRupiah(data)
-        },
+        { data: 'gaji_pokok_formatted', name: 'gaji_pokok', className: 'text-center', render: (data) => formatRupiah(data) },
         // Monthly Insentif
-        { data: 'monthly_kpi', name: 'monthly_kpi', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'overtime', name: 'overtime', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'medical_reimbursement', name: 'medical_reimbursement', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'insentif_sholat', name: 'insentif_sholat', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'monthly_bonus', name: 'monthly_bonus', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'rapel', name: 'rapel', className: 'text-end', render: (data) => formatRupiah(data) },
+        { data: 'monthly_kpi', name: 'monthly_kpi', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'overtime', name: 'overtime', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'medical_reimbursement', name: 'medical_reimbursement', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'insentif_sholat', name: 'insentif_sholat', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'monthly_bonus', name: 'monthly_bonus', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'rapel', name: 'rapel', className: 'text-center', render: (data) => formatRupiah(data) },
         // Monthly Allowance
-        { data: 'tunjangan_pulsa', name: 'tunjangan_pulsa', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'tunjangan_kehadiran', name: 'tunjangan_kehadiran', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'tunjangan_transport', name: 'tunjangan_transport', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'tunjangan_lainnya', name: 'tunjangan_lainnya', className: 'text-end', render: (data) => formatRupiah(data) },
+        { data: 'tunjangan_pulsa', name: 'tunjangan_pulsa', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'tunjangan_kehadiran', name: 'tunjangan_kehadiran', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'tunjangan_transport', name: 'tunjangan_transport', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'tunjangan_lainnya', name: 'tunjangan_lainnya', className: 'text-center', render: (data) => formatRupiah(data) },
         // Yearly Benefit
-        { data: 'yearly_bonus', name: 'yearly_bonus', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'thr', name: 'thr', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'other', name: 'other', className: 'text-end', render: (data) => formatRupiah(data) },
+        { data: 'yearly_bonus', name: 'yearly_bonus', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'thr', name: 'thr', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'other', name: 'other', className: 'text-center', render: (data) => formatRupiah(data) },
         // Potongan
-        { data: 'ca_corporate', name: 'ca_corporate', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'ca_personal', name: 'ca_personal', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'ca_kehadiran', name: 'ca_kehadiran', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'bpjs_tenaga_kerja', name: 'bpjs_tenaga_kerja', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'bpjs_kesehatan', name: 'bpjs_kesehatan', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'pph_21_deduction', name: 'pph_21_deduction', className: 'text-end', render: (data) => formatRupiah(data) },
+        { data: 'ca_corporate', name: 'ca_corporate', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'ca_personal', name: 'ca_personal', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'ca_kehadiran', name: 'ca_kehadiran', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'bpjs_tenaga_kerja', name: 'bpjs_tenaga_kerja', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'bpjs_kesehatan', name: 'bpjs_kesehatan', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'pph_21_deduction', name: 'pph_21_deduction', className: 'text-center', render: (data) => formatRupiah(data) },
         // BPJS TK
-        { data: 'bpjs_tk_jht_3_7_percent', name: 'bpjs_tk_jht_3_7_percent', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'bpjs_tk_jht_2_percent', name: 'bpjs_tk_jht_2_percent', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'bpjs_tk_jkk_0_24_percent', name: 'bpjs_tk_jkk_0_24_percent', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'bpjs_tk_jkm_0_3_percent', name: 'bpjs_tk_jkm_0_3_percent', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'bpjs_tk_jp_2_percent', name: 'bpjs_tk_jp_2_percent', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'bpjs_tk_jp_1_percent', name: 'bpjs_tk_jp_1_percent', className: 'text-end', render: (data) => formatRupiah(data) },
+        { data: 'bpjs_tk_jht_3_7_percent', name: 'bpjs_tk_jht_3_7_percent', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'bpjs_tk_jht_2_percent', name: 'bpjs_tk_jht_2_percent', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'bpjs_tk_jkk_0_24_percent', name: 'bpjs_tk_jkk_0_24_percent', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'bpjs_tk_jkm_0_3_percent', name: 'bpjs_tk_jkm_0_3_percent', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'bpjs_tk_jp_2_percent', name: 'bpjs_tk_jp_2_percent', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'bpjs_tk_jp_1_percent', name: 'bpjs_tk_jp_1_percent', className: 'text-center', render: (data) => formatRupiah(data) },
         // BPJS KES
-        { data: 'bpjs_kes_4_percent', name: 'bpjs_kes_4_percent', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'bpjs_kes_1_percent', name: 'bpjs_kes_1_percent', className: 'text-end', render: (data) => formatRupiah(data) },
+        { data: 'bpjs_kes_4_percent', name: 'bpjs_kes_4_percent', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'bpjs_kes_1_percent', name: 'bpjs_kes_1_percent', className: 'text-center', render: (data) => formatRupiah(data) },
         // Lainnya
-        { data: 'pph_21', name: 'pph_21', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'glh', name: 'glh', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'lm', name: 'lm', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'lainnya', name: 'lainnya', className: 'text-end', render: (data) => formatRupiah(data) },
-        { data: 'tunjangan', name: 'tunjangan', className: 'text-end', render: (data) => formatRupiah(data) },
+        { data: 'pph_21', name: 'pph_21', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'glh', name: 'glh', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'lm', name: 'lm', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'lainnya', name: 'lainnya', className: 'text-center', render: (data) => formatRupiah(data) },
+        { data: 'tunjangan', name: 'tunjangan', className: 'text-center', render: (data) => formatRupiah(data) },
         // Summary
-        { data: 'salary_formatted', name: 'salary', className: 'text-end fw-bold', render: (data) => formatRupiah(data) },
-        { data: 'total_penerimaan_formatted', name: 'total_penerimaan', className: 'text-end fw-bold', render: (data) => formatRupiah(data) },
-        { data: 'total_potongan_formatted', name: 'total_potongan', className: 'text-end fw-bold', render: (data) => formatRupiah(data) },
-        { data: 'gaji_bersih_formatted', name: 'gaji_bersih', className: 'text-end fw-bold', render: (data) => formatRupiah(data) },
-        { 
-            data: 'action', 
-            name: 'action', 
-            orderable: false, 
-            searchable: false,
-            className: 'text-center'
-        }
+        { data: 'salary_formatted', name: 'salary', className: 'text-center fw-bold', render: (data) => formatRupiah(data) },
+        { data: 'total_penerimaan_formatted', name: 'total_penerimaan', className: 'text-center fw-bold', render: (data) => formatRupiah(data) },
+        { data: 'total_potongan_formatted', name: 'total_potongan', className: 'text-center fw-bold', render: (data) => formatRupiah(data) },
+        { data: 'gaji_bersih_formatted', name: 'gaji_bersih', className: 'text-center fw-bold', render: (data) => formatRupiah(data) },
+        { data: 'action', name: 'action', orderable: false, searchable: false, className: 'text-center' }
     ];
 
     // 🔥 COLUMNS RELEASED SLIP (tanpa checkbox)
     const columnsReleasedSlip = columns.filter(col => col.data !== 'checkbox');
 
-    // 🔥 INIT DATATABLE PENDING
-    if ($('#payrollTablePending').length) {
-        tablePending = $('#payrollTablePending').DataTable({
+    // 🔥 INIT DATATABLE PENDING - GANTI ID TABEL
+    if ($('#payrollFakeTablePending').length) {
+        tablePending = $('#payrollFakeTablePending').DataTable({
             processing: true,
             serverSide: true,
             deferRender: true,
@@ -801,215 +787,145 @@ $(document).ready(function() {
                 url: CONFIG.routes.pending,
                 type: 'POST',
                 headers: { 'X-CSRF-TOKEN': CONFIG.csrfToken },
-                data: function(d) {
-                    d.periode = $('#filterPeriodePending').val();
-                }
+                data: function(d) { d.periode = $('#filterPeriodePending').val(); }
             },
             columns: columns,
             order: [[2, 'desc']],
-            scrollCollapse: true,
             pageLength: 25,
             lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Semua']],
             scrollX: true,
-            fixedColumns: {
-                leftColumns: 5
-            }
+            fixedColumns: { leftColumns: 5 }
         });
     }
 
-    // 🔥 INIT DATATABLE RELEASED
-    if ($('#payrollTableReleased').length) {
-        tableReleased = $('#payrollTableReleased').DataTable({
+    // 🔥 INIT DATATABLE RELEASED - GANTI ID TABEL
+    if ($('#payrollFakeTableReleased').length) {
+        tableReleased = $('#payrollFakeTableReleased').DataTable({
             processing: true,
             serverSide: true,
             ajax: {
                 url: CONFIG.routes.released,
                 type: 'POST',
                 headers: { 'X-CSRF-TOKEN': CONFIG.csrfToken },
-                data: function(d) {
-                    d.periode = $('#filterPeriodeReleased').val();
-                }
+                data: function(d) { d.periode = $('#filterPeriodeReleased').val(); }
             },
             columns: columns,
             order: [[2, 'desc']],
             pageLength: 25,
             lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Semua']],
             scrollX: true,
-            fixedColumns: {
-                leftColumns: 5
-            }
+            fixedColumns: { leftColumns: 5 }
         });
     }
 
-    // 🔥 INIT DATATABLE RELEASED SLIP
-    if ($('#payrollTableReleasedSlip').length) {
-        tableReleasedSlip = $('#payrollTableReleasedSlip').DataTable({
+    // 🔥 INIT DATATABLE RELEASED SLIP - GANTI ID TABEL
+    if ($('#payrollFakeTableReleasedSlip').length) {
+        tableReleasedSlip = $('#payrollFakeTableReleasedSlip').DataTable({
             processing: true,
             serverSide: true,
             ajax: {
                 url: CONFIG.routes.releasedSlip,
                 type: 'POST',
                 headers: { 'X-CSRF-TOKEN': CONFIG.csrfToken },
-                data: function(d) {
-                    d.periode = $('#filterPeriodeReleasedSlip').val();
-                }
+                data: function(d) { d.periode = $('#filterPeriodeReleasedSlip').val(); }
             },
             columns: columnsReleasedSlip,
             order: [[1, 'desc']],
             pageLength: 25,
             lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Semua']],
             scrollX: true,
-            fixedColumns: {
-                leftColumns: 5
-            }
+            fixedColumns: { leftColumns: 5 }
         });
     }
 
-    // 🔥 SEARCH PENDING
-    $('#searchPending').on('keyup', function() {
-        if (tablePending) {
-            tablePending.search(this.value).draw();
-        }
-    });
-
-   
-
+    // 🔥 SEARCH & FILTER HANDLERS (sama seperti payrolls biasa)
+    $('#searchPending').on('keyup', function() { if (tablePending) tablePending.search(this.value).draw(); });
     $('#btnResetFilterPending').on('click', function() {
-        $('#filterPeriodePending')[0]._flatpickr.clear();
-        $('#searchPending').val('');
-        if (tablePending) {
-            tablePending.search('').ajax.reload();
-        }
-    });
+    $('#filterPeriodePending')[0]._flatpickr.clear();
+    $('#searchPending').val('');
+    if (tablePending) tablePending.search('').ajax.reload();
+});
 
-    // 🔥 SEARCH RELEASED
-    $('#searchReleased').on('keyup', function() {
-        if (tableReleased) {
-            tableReleased.search(this.value).draw();
-        }
-    });
+$('#btnResetFilterReleased').on('click', function() {
+    $('#filterPeriodeReleased')[0]._flatpickr.clear();
+    $('#searchReleased').val('');
+    if (tableReleased) tableReleased.search('').ajax.reload();
+});
 
-   
+$('#btnResetFilterReleasedSlip').on('click', function() {
+    $('#filterPeriodeReleasedSlip')[0]._flatpickr.clear();
+    $('#searchReleasedSlip').val('');
+    if (tableReleasedSlip) tableReleasedSlip.search('').ajax.reload();
+});
 
-   $('#btnResetFilterReleased').on('click', function() {
-        $('#filterPeriodeReleased')[0]._flatpickr.clear();
-        $('#searchReleased').val('');
-        if (tableReleased) {
-            tableReleased.search('').ajax.reload();
-        }
-    });
+$('#btnResetStatistics').on('click', function() {
+    $('#filterStatisticsPeriode')[0]._flatpickr.clear();
+    $('#filterStatisticsYear').val('');
+    updateStatistics();
+});
 
-
-    // 🔥 SEARCH RELEASED SLIP
-    $('#searchReleasedSlip').on('keyup', function() {
-        if (tableReleasedSlip) {
-            tableReleasedSlip.search(this.value).draw();
-        }
-    });
-
- 
-
-    $('#btnResetFilterReleasedSlip').on('click', function() {
-        $('#filterPeriodeReleasedSlip')[0]._flatpickr.clear();
-        $('#searchReleasedSlip').val('');
-        if (tableReleasedSlip) {
-            tableReleasedSlip.search('').ajax.reload();
-        }
-    });
-
-    // 🔥 CHECKBOX: Check All Pending
+    // 🔥 CHECKBOX HANDLERS
     $('#checkAllPending').on('change', function() {
-        const isChecked = $(this).is(':checked');
-        $('.row-checkbox').prop('checked', isChecked);
+        $('.row-checkbox').prop('checked', $(this).is(':checked'));
         updateSelectedIds();
     });
-
-    // 🔥 CHECKBOX: Individual Pending
-    $(document).on('change', '.row-checkbox', function() {
-        updateSelectedIds();
-    });
-
+    $(document).on('change', '.row-checkbox', updateSelectedIds);
+    
     function updateSelectedIds() {
-        selectedIds = $('.row-checkbox:checked').map(function() {
-            return $(this).val();
-        }).get();
-
+        selectedIds = $('.row-checkbox:checked').map(function() { return $(this).val(); }).get();
         $('#selectedCount').text(selectedIds.length);
         $('#btnReleaseSelected').toggle(selectedIds.length > 0);
-        
-        const allChecked = $('.row-checkbox').length === $('.row-checkbox:checked').length;
-        $('#checkAllPending').prop('checked', allChecked);
+        $('#checkAllPending').prop('checked', $('.row-checkbox').length === selectedIds.length);
     }
 
-    // 🔥 CHECKBOX: Check All Released
     $('#checkAllReleased').on('change', function() {
-        const isChecked = $(this).is(':checked');
-        $('.row-checkbox-released').prop('checked', isChecked);
+        $('.row-checkbox-released').prop('checked', $(this).is(':checked'));
         updateSelectedReleasedIds();
     });
-
-    // 🔥 CHECKBOX: Individual Released
-    $(document).on('change', '.row-checkbox-released', function() {
-        updateSelectedReleasedIds();
-    });
-
+    $(document).on('change', '.row-checkbox-released', updateSelectedReleasedIds);
+    
     function updateSelectedReleasedIds() {
-        selectedReleasedIds = $('.row-checkbox-released:checked').map(function() {
-            return $(this).val();
-        }).get();
-
+        selectedReleasedIds = $('.row-checkbox-released:checked').map(function() { return $(this).val(); }).get();
         $('#selectedReleasedCount').text(selectedReleasedIds.length);
         $('#btnReleaseSlipSelected').toggle(selectedReleasedIds.length > 0);
-        
-        const allChecked = $('.row-checkbox-released').length === $('.row-checkbox-released:checked').length;
-        $('#checkAllReleased').prop('checked', allChecked);
+        $('#checkAllReleased').prop('checked', $('.row-checkbox-released').length === selectedReleasedIds.length);
     }
 
-    // 🔥 BTN: Release Selected (Pending → Released or Released Slip)
+    // 🔥 RELEASE HANDLERS
     $('#btnReleaseSelected').on('click', function() {
         $('#releaseCountText').text(selectedIds.length);
         $('#releaseSlipCheck').prop('checked', false);
         $('#modalReleaseConfirm').modal('show');
     });
 
-    // 🔥 BTN: Release Slip Selected (Released → Released Slip)
     $('#btnReleaseSlipSelected').on('click', function() {
         $('#releaseSlipCountText').text(selectedReleasedIds.length);
         $('#modalReleaseSlipConfirm').modal('show');
     });
 
-    // 🔥 CONFIRM RELEASE (from Pending)
     $('#btnConfirmRelease').on('click', function() {
         const releaseSlip = $('#releaseSlipCheck').is(':checked');
-        
         $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Processing...');
         
         $.ajax({
             url: CONFIG.routes.release,
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': CONFIG.csrfToken },
-            data: {
-                ids: selectedIds,
-                release_slip: releaseSlip ? '1' : '0'
-            },
+            data: { ids: selectedIds, release_slip: releaseSlip ? '1' : '0' },
             success: function(response) {
                 $('#modalReleaseConfirm').modal('hide');
                 showToast(response.message, 'success');
-                
                 if (tablePending) tablePending.ajax.reload();
                 if (tableReleased) tableReleased.ajax.reload();
                 if (tableReleasedSlip) tableReleasedSlip.ajax.reload();
-                
                 updateStatistics();
-                
                 selectedIds = [];
                 $('#selectedCount').text(0);
                 $('#btnReleaseSelected').hide();
                 $('#checkAllPending').prop('checked', false);
             },
             error: function(xhr) {
-                const message = xhr.responseJSON?.message || 'Gagal merilis payroll';
-                showToast(message, 'error');
+                showToast(xhr.responseJSON?.message || 'Gagal merilis payroll', 'error');
             },
             complete: function() {
                 $('#btnConfirmRelease').prop('disabled', false).html('<i class="ki-outline ki-check-circle fs-2"></i> Ya, Release Sekarang');
@@ -1017,7 +933,6 @@ $(document).ready(function() {
         });
     });
 
-    // 🔥 CONFIRM RELEASE SLIP (from Released)
     $('#btnConfirmReleaseSlip').on('click', function() {
         $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Processing...');
         
@@ -1025,27 +940,20 @@ $(document).ready(function() {
             url: CONFIG.routes.release,
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': CONFIG.csrfToken },
-            data: {
-                ids: selectedReleasedIds,
-                release_slip: '1'
-            },
+            data: { ids: selectedReleasedIds, release_slip: '1' },
             success: function(response) {
                 $('#modalReleaseSlipConfirm').modal('hide');
                 showToast(response.message, 'success');
-                
                 if (tableReleased) tableReleased.ajax.reload();
                 if (tableReleasedSlip) tableReleasedSlip.ajax.reload();
-                
                 updateStatistics();
-                
                 selectedReleasedIds = [];
                 $('#selectedReleasedCount').text(0);
                 $('#btnReleaseSlipSelected').hide();
                 $('#checkAllReleased').prop('checked', false);
             },
             error: function(xhr) {
-                const message = xhr.responseJSON?.message || 'Gagal merilis slip gaji';
-                showToast(message, 'error');
+                showToast(xhr.responseJSON?.message || 'Gagal merilis slip gaji', 'error');
             },
             complete: function() {
                 $('#btnConfirmReleaseSlip').prop('disabled', false).html('<i class="ki-outline ki-double-check fs-2"></i> Ya, Release Slip Sekarang');
@@ -1053,19 +961,15 @@ $(document).ready(function() {
         });
     });
 
-    // 🔥 BTN: Delete
+    // 🔥 DELETE HANDLER
     $(document).on('click', '.btn-delete', function() {
         deletePayrollId = $(this).data('id');
-        const periode = $(this).data('periode');
-        
-        $('#deletePeriodeText').text(periode);
+        $('#deletePeriodeText').text($(this).data('periode'));
         $('#modalDeleteConfirm').modal('show');
     });
 
-    // 🔥 CONFIRM DELETE
     $('#btnConfirmDelete').on('click', function() {
         if (!deletePayrollId) return;
-        
         $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Menghapus...');
         
         $.ajax({
@@ -1075,14 +979,11 @@ $(document).ready(function() {
             success: function(response) {
                 $('#modalDeleteConfirm').modal('hide');
                 showToast(response.message, 'success');
-                
                 if (tablePending) tablePending.ajax.reload();
-                
                 updateStatistics();
             },
             error: function(xhr) {
-                const message = xhr.responseJSON?.message || 'Gagal menghapus payroll';
-                showToast(message, 'error');
+                showToast(xhr.responseJSON?.message || 'Gagal menghapus payroll', 'error');
             },
             complete: function() {
                 $('#btnConfirmDelete').prop('disabled', false).html('<i class="ki-outline ki-trash fs-2"></i> Ya, Hapus Sekarang');
@@ -1091,65 +992,37 @@ $(document).ready(function() {
         });
     });
 
+    
 
-    // Ganti bagian FILTER STATISTICS
     $('#btnResetStatistics').on('click', function() {
-        $('#filterStatisticsPeriode')[0]._flatpickr.clear();
+        $('#filterStatisticsPeriode').val('');
         $('#filterStatisticsYear').val('');
         updateStatistics();
     });
 
-    // 🔥 EXPORT PENDING
     $('#btnExportPending').on('click', function() {
         const periode = $('#filterPeriodePending').val();
-        let url = CONFIG.routes.export + '?status=pending';
-        
-        if (periode) {
-            url += '&periode=' + periode;
-        }
-        
-        window.location.href = url;
+        window.location.href = CONFIG.routes.export + '?status=pending' + (periode ? '&periode=' + periode : '');
     });
 
-    // 🔥 EXPORT RELEASED (tanpa slip)
     $('#btnExportReleased').on('click', function() {
         const periode = $('#filterPeriodeReleased').val();
-        let url = CONFIG.routes.export + '?status=released';
-        
-        if (periode) {
-            url += '&periode=' + periode;
-        }
-        
-        window.location.href = url;
+        window.location.href = CONFIG.routes.export + '?status=released' + (periode ? '&periode=' + periode : '');
     });
 
-    // 🔥 EXPORT RELEASED SLIP
     $('#btnExportReleasedSlip').on('click', function() {
         const periode = $('#filterPeriodeReleasedSlip').val();
-        let url = CONFIG.routes.export + '?status=released_slip';
-        
-        if (periode) {
-            url += '&periode=' + periode;
-        }
-        
-        window.location.href = url;
+        window.location.href = CONFIG.routes.export + '?status=released_slip' + (periode ? '&periode=' + periode : '');
     });
 
-    // 🔥 TAB SWITCH: Reload table when tab is shown
-    $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e)
-    {
+    // 🔥 TAB SWITCH
+    $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
         const target = $(e.target).attr('href');
-        
-        if (target === '#tab_pending' && tablePending) {
-            tablePending.columns.adjust().draw();
-        } else if (target === '#tab_released' && tableReleased) {
-            tableReleased.columns.adjust().draw();
-        } else if (target === '#tab_released_slip' && tableReleasedSlip) {
-            tableReleasedSlip.columns.adjust().draw();
-        }
+        if (target === '#tab_pending' && tablePending) tablePending.columns.adjust().draw();
+        else if (target === '#tab_released' && tableReleased) tableReleased.columns.adjust().draw();
+        else if (target === '#tab_released_slip' && tableReleasedSlip) tableReleasedSlip.columns.adjust().draw();
     });
 
-    // 🔥 RESPONSIVE: Adjust table on window resize
     $(window).on('resize', function() {
         if (tablePending) tablePending.columns.adjust();
         if (tableReleased) tableReleased.columns.adjust();

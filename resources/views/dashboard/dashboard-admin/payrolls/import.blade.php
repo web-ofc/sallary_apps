@@ -179,6 +179,7 @@
                                                     <th>GLH</th>
                                                     <th>LM</th>
                                                     <th>Lainnya</th>
+                                                    <th>Tunjangan</th>
                                                     <th class="bg-light">Total Penerimaan</th>
                                                     <th class="bg-light">Total Potongan</th>
                                                     <th class="bg-light">Gaji Bersih</th>
@@ -995,6 +996,7 @@ function showValidData() {
             { data: 'glh', render: formatRupiah, className: 'text-end' },
             { data: 'lm', render: formatRupiah, className: 'text-end' },
             { data: 'lainnya', render: formatRupiah, className: 'text-end' },
+            { data: 'tunjangan', render: formatRupiah, className: 'text-end' },
             { data: 'total_penerimaan', render: formatRupiah, className: 'text-end bg-light fw-bold' },
             { data: 'total_potongan', render: formatRupiah, className: 'text-end bg-light fw-bold' },
             { data: 'gaji_bersih', render: formatRupiah, className: 'text-end bg-light fw-bold' },

@@ -12,6 +12,7 @@ use App\Http\Controllers\CompanySyncController;
 use App\Http\Controllers\CompanyViewController;
 use App\Http\Controllers\JenisTerSyncController;
 use App\Http\Controllers\KaryawanSyncController;
+use App\Http\Controllers\PayrollsFakeController;
 use App\Http\Controllers\Pph21TahunanController;
 use App\Http\Controllers\MutasiCompanyController;
 use App\Http\Controllers\PayrollAnnualController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\PayrollImportController;
 use App\Http\Controllers\Api\PayrollApiController;
 use App\Http\Controllers\RangeBrutoSyncController;
 use App\Http\Controllers\Pph21TaxBracketController;
+use App\Http\Controllers\PayrollFakeImportController;
 use App\Http\Controllers\KaryawanPtkpHistorySyncController;
 use App\Http\Controllers\PeriodeKaryawanMasaJabatanController;
 
@@ -132,10 +134,14 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // PAYROLL ROUTES (existing)
     // ========================================
     Route::post('/payrolls/datatable/pending', [PayrollController::class, 'datatablePending'])
-        ->name('payrollsdatatablepending');
-        
+    ->name('payrollsdatatablepending');
+    
     Route::post('/payrolls/datatable/released', [PayrollController::class, 'datatableReleased'])
         ->name('payrollsdatatablereleased');
+
+    // 🔥 TAMBAHKAN ROUTE INI (yang kurang)
+    Route::post('/payrolls/datatable/released-slip', [PayrollController::class, 'datatableReleasedSlip'])
+        ->name('payrollsdatatablereleasedslip');
 
     // Release batch action
     Route::post('/payrolls/release', [PayrollController::class, 'releaseData'])
@@ -149,11 +155,46 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/payrolls/export', [PayrollController::class, 'export'])
         ->name('payrolls.export');
         
+    // Statistics
+    Route::post('/payrolls/statistics', [PayrollController::class, 'getStatistics'])
+        ->name('payrolls.statistics');
+
     // Resource routes
     Route::resource('payrolls', PayrollController::class);
+        
 
-    
-    
+    // -------------------------------------------------
+
+    // PAYROLLS FAKE ROUTES
+    Route::post('/payrolls-fake/datatable/pending', [PayrollsFakeController::class, 'datatablePending'])
+        ->name('payrollsfakedatatablepending');
+        
+    Route::post('/payrolls-fake/datatable/released', [PayrollsFakeController::class, 'datatableReleased'])
+        ->name('payrollsfakedatatablereleased');
+
+    Route::post('/payrolls-fake/datatable/released-slip', [PayrollsFakeController::class, 'datatableReleasedSlip'])
+        ->name('payrollsfakedatatablereleasedslip');
+
+    // Release batch action
+    Route::post('/payrolls-fake/release', [PayrollsFakeController::class, 'releaseData'])
+        ->name('payrolls-fake.release');
+
+    // Summary route
+    Route::get('/payrolls-fake/summary/{periode}', [PayrollsFakeController::class, 'summary'])
+        ->name('payrolls-fake.summary');
+
+    // Export payroll fake
+    Route::get('/payrolls-fake/export', [PayrollsFakeController::class, 'export'])
+        ->name('payrolls-fake.export');
+        
+    // Statistics
+    Route::post('/payrolls-fake/statistics', [PayrollsFakeController::class, 'getStatistics'])
+        ->name('payrolls-fake.statistics');
+
+    // Resource routes
+    Route::resource('payrolls-fake', PayrollsFakeController::class);
+
+
 
 
       // Halaman Dashboard Sync
@@ -286,13 +327,44 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::prefix('payroll')->name('pph21.tahunan.')->group(function () {
         Route::get('/pph21-tahunan', [Pph21TahunanController::class, 'index'])->name('index');
-        Route::get('/pph21-tahunan/data', [Pph21TahunanController::class, 'getData'])->name('data');
-        Route::get('/pph21-tahunan/detail', [Pph21TahunanController::class, 'getDetail'])->name('detail');
+        Route::post('/pph21-tahunan/data', [Pph21TahunanController::class, 'getData'])->name('data');
+        Route::get('/pph21-tahunan/bracket-headers', [Pph21TahunanController::class, 'getBracketHeaders'])->name('bracket-headers');
+        Route::get('/pph21-tahunan/export', [Pph21TahunanController::class, 'export'])->name('export');
     });
 
-    Route::get('/pph21-tahunan/bracket-headers', [Pph21TahunanController::class, 'getBracketHeaders'])
-        ->name('pph21.tahunan.bracket-headers');
+
+
+    // IMPORT ROUTES - NESTED di bawah /payrollsfake
+    Route::prefix('payrollsfake/import')->name('payrollsfake.import.')->group(function () {
         
+        // Halaman import
+        Route::get('/', [PayrollFakeImportController::class, 'index'])
+            ->name('index');
+        
+        // Download template Excel
+        Route::get('/template', [PayrollFakeImportController::class, 'downloadTemplate'])
+            ->name('template');
+        
+        // Validate Excel file
+        Route::post('/validate', [PayrollFakeImportController::class, 'validateExcel'])
+            ->name('validate');
+        
+        // DataTables untuk valid data
+        Route::post('/datatable/valid', [PayrollFakeImportController::class, 'validDataTable'])
+            ->name('datatable.valid');
+        
+        // DataTables untuk error data
+        Route::post('/datatable/errors', [PayrollFakeImportController::class, 'errorDataTable'])
+            ->name('datatable.errors');
+        
+        // Process import (insert ke database)
+        Route::post('/process', [PayrollFakeImportController::class, 'process'])
+            ->name('process');
+        
+        // Download error report
+        Route::post('/download-errors', [PayrollFakeImportController::class, 'downloadErrors'])
+            ->name('download-errors');
+    });
 });
 
 

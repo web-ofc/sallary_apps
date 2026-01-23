@@ -2,19 +2,21 @@
     {{-- Tambahkan baris ini --}}
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Haadhir Apps</title>
-    
+    <title>MyPayroll Apps</title>
+
     <meta charset="utf-8" />
-    <meta name="description" content="Haadhir.id adalah aplikasi absensi modern dengan teknologi face recognition. Memudahkan pencatatan kehadiran karyawan secara akurat, cepat, dan aman." />
-    <meta name="keywords" content="haadhir.id, absensi online, face recognition, aplikasi absensi, presensi wajah, kehadiran karyawan, sistem absensi, absen digital, attendance app, absensi kantor" />
+    <meta name="description" content="MyPayroll adalah aplikasi pencatatan dan pengelolaan gaji karyawan yang membantu perusahaan menghitung payroll, potongan, dan tunjangan secara akurat, cepat, dan aman." />
+    <meta name="keywords" content="mypayroll, aplikasi payroll, sistem penggajian, pencatatan gaji, slip gaji online, payroll karyawan, manajemen gaji, aplikasi HR, penggajian digital" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <meta property="og:locale" content="id_ID" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Haadhir.id — Aplikasi Absensi dengan Face Recognition" />
+    <meta property="og:title" content="MyPayroll — Aplikasi Pencatatan & Pengelolaan Gaji Karyawan" />
+
     <meta name="theme-color" content="#009ef7">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Haadhir">
+    <meta name="apple-mobile-web-app-title" content="MyPayroll">
     <meta name="mobile-web-app-capable" content="yes">
 
       <!-- ✅ CSRF Token Meta Tag -->

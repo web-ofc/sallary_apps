@@ -2,8 +2,26 @@
 
 @section('title', 'Laporan PPh 21 Tahunan')
 
-@push('styles')
+@push('css')
 <style>
+    /* Compact Table Styling */
+    #pph21-table tbody td, th,
+    #pph21-table thead th {
+        padding: 6px 6px !important;
+        font-size: 11px !important;
+        line-height: 1.2 !important;
+    }
+    
+    #pph21-table thead th {
+        font-weight: 600 !important;
+    }
+    
+    /* Badge compact */
+    #pph21-table .badge {
+        font-size: 10px !important;
+        padding: 2px 6px !important;
+    }
+    
     .bracket-header {
         background-color: #f3f6f9;
         font-weight: 600;
@@ -20,17 +38,17 @@
     .section-label {
         background-color: #e3f2fd;
         font-weight: 700;
-        font-size: 0.9rem;
+        font-size: 0.8rem !important;
         text-align: center;
         vertical-align: middle !important;
     }
     .bracket-column {
         text-align: center;
-        font-size: 0.8rem;
+        font-size: 0.7rem !important;
         border: 1px solid #e4e6ef;
     }
     .bracket-date {
-        font-size: 0.7rem;
+        font-size: 0.65rem !important;
         color: #7e8299;
         font-weight: normal;
     }
@@ -118,7 +136,7 @@
                 <!--begin::Card body-->
                 <div class="card-body pt-0">
                     <div class="table-responsive">
-                        <table class="table align-middle table-row-dashed fs-6 gy-5" id="pph21-table">
+                        <table class="table align-middle table-row-dashed table-striped gs-0 gy-3" id="pph21-table">
                             <thead id="table-header">
                                 <!-- Header akan di-generate dynamic -->
                             </thead>
@@ -134,27 +152,6 @@
     </div>
     <!--end::Content-->
 </div>
-
-<!--begin::Modal Detail-->
-<div class="modal fade" id="modal-detail" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered mw-900px">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="fw-bold">Detail Perhitungan PPh 21</h2>
-                <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
-                    <i class="ki-duotone ki-cross fs-1">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                    </i>
-                </div>
-            </div>
-            <div class="modal-body scroll-y mx-5 mx-xl-15 my-7">
-                <div id="detail-content"></div>
-            </div>
-        </div>
-    </div>
-</div>
-<!--end::Modal Detail-->
 @endsection
 
 @push('scripts')
@@ -164,19 +161,37 @@
 let table;
 let currentBrackets = @json($bracketHeaders);
 
-// Generate header berdasarkan bracket
+// Generate header berdasarkan bracket (COMPACT)
 function generateTableHeader(brackets) {
     let html = `
         <!-- Row 1: Main grouping -->
         <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
-            <th rowspan="3" class="min-w-125px">Karyawan</th>
-            <th rowspan="3" class="min-w-100px">Periode</th>
-            <th rowspan="3" class="min-w-100px">Masa Jabatan</th>
-            <th rowspan="3" class="min-w-125px">Total Bruto</th>
-            <th rowspan="3" class="min-w-100px">PKP</th>
+            <th rowspan="3" class="min-w-100px">Karyawan</th>
+            <th rowspan="3" class="min-w-80px">Company</th>
+            <th rowspan="3" class="min-w-70px">Periode</th>
+            <th rowspan="3" class="min-w-70px">Salary Type</th>
+            <th rowspan="3" class="min-w-80px">Salary</th>
+            <th rowspan="3" class="min-w-80px">Overtime</th>
+            <th rowspan="3" class="min-w-80px">Tunjangan</th>
+            <th rowspan="3" class="min-w-80px">Tunj PPh21 Masa</th>
+            <th rowspan="3" class="min-w-80px">Tunj PPh21 Akhir</th>
+            <th rowspan="3" class="min-w-80px">Tunj Asuransi</th>
+            <th rowspan="3" class="min-w-80px">Natura</th>
+            <th rowspan="3" class="min-w-80px">BPJS Asuransi</th>
+            <th rowspan="3" class="min-w-80px">THR & Bonus</th>
+            <th rowspan="3" class="min-w-100px">Total Bruto</th>
+            <th rowspan="3" class="min-w-70px">Masa Jabatan</th>
+            <th rowspan="3" class="min-w-80px">Premi Asuransi</th>
+            <th rowspan="3" class="min-w-80px">Biaya Jabatan</th>
+            <th rowspan="3" class="min-w-80px">Iuran JHT</th>
+            <th rowspan="3" class="min-w-70px">Status PTKP</th>
+            <th rowspan="3" class="min-w-80px">PTKP</th>
+            <th rowspan="3" class="min-w-80px">PKP</th>
             <th colspan="${brackets.length}" class="section-label pkp-section">PKP per Bracket</th>
             <th colspan="${brackets.length}" class="section-label tax-section">Pajak per Bracket</th>
-            <th rowspan="3" class="min-w-125px total-column">PPh 21 Tahunan</th>
+            <th rowspan="3" class="min-w-100px total-column">PPh 21 Tahunan</th>
+            <th rowspan="3" class="min-w-100px">PPh 21 Masa</th>
+            <th rowspan="3" class="min-w-100px bg-light">PPh 21 Akhir</th>
         </tr>
         
         <!-- Row 2: Bracket labels with dates -->
@@ -227,59 +242,170 @@ function generateTableHeader(brackets) {
     return html;
 }
 
-// Generate columns berdasarkan bracket
+// Generate columns berdasarkan bracket (COMPACT - NO DETAIL)
 function generateColumns(brackets) {
     let columns = [
+        // 1. Karyawan (simplified - no link)
         { 
-            data: 'karyawan_nama', 
-            name: 'k.nama_lengkap',
+            data: 'karyawan_nama',
+            name: 'karyawan_nama', // ✅ FIX: ganti dari 'k.nama_lengkap'
             render: function(data, type, row) {
                 return `
-                    <div class="d-flex align-items-center">
-                        <div class="d-flex flex-column">
-                            <a href="#" class="text-gray-800 text-hover-primary mb-1 view-detail" data-id="${row.karyawan_id}" data-year="${row.periode}">
-                                ${data}
-                            </a>
-                            <span class="text-muted fw-semibold text-muted d-block fs-7">
-                                NIK: ${row.karyawan_nik || '-'}
-                            </span>
-                        </div>
+                    <div class="d-flex flex-column">
+                        <span class="text-gray-800">${data}</span>
+                        <span class="text-muted fs-8">NIK: ${row.karyawan_nik || '-'}</span>
                     </div>
                 `;
             }
         },
+        // 2. Company
         { 
-            data: 'periode', 
+            data: 'company_name',
+            name: 'company_name' // ✅ FIX: ganti dari 'c.company_name'
+        },
+        // 3. Periode
+        { 
+            data: 'periode',
             name: 'periode',
             className: 'text-center'
         },
+        // 4. Salary Type
         { 
-            data: 'masa_jabatan', 
+            data: 'salary_type',
+            name: 'salary_type',
+            className: 'text-center',
+            render: function(data) {
+                return data === 'gross' 
+                    ? '<span class="badge badge-light-primary">GROSS</span>'
+                    : '<span class="badge badge-light-success">NETT</span>';
+            }
+        },
+        // 5. Salary
+        { 
+            data: 'salary',
+            name: 'salary',
+            className: 'text-center',
+            render: formatRupiah
+        },
+        // 6. Overtime
+        { 
+            data: 'overtime',
+            name: 'overtime',
+            className: 'text-center',
+            render: formatRupiah
+        },
+        // 7. Tunjangan
+        { 
+            data: 'tunjangan',
+            name: 'tunjangan',
+            className: 'text-center',
+            render: formatRupiah
+        },
+        // 8. Tunj PPh21 Masa
+        { 
+            data: 'tunj_pph_21',
+            name: 'tunj_pph_21',
+            className: 'text-center',
+            render: formatRupiah
+        },
+        // 9. Tunj PPh21 Akhir
+        { 
+            data: 'tunj_pph21_akhir',
+            name: 'tunj_pph21_akhir',
+            className: 'text-center',
+            render: formatRupiah
+        },
+        // 10. Tunj Asuransi
+        { 
+            data: 'tunjangan_asuransi',
+            name: 'tunjangan_asuransi',
+            className: 'text-center',
+            render: formatRupiah
+        },
+        // 11. Natura
+        { 
+            data: 'natura',
+            name: 'natura',
+            className: 'text-center',
+            render: formatRupiah
+        },
+        // 12. BPJS Asuransi
+        { 
+            data: 'bpjs_asuransi',
+            name: 'bpjs_asuransi',
+            className: 'text-center',
+            render: formatRupiah
+        },
+        // 13. THR & Bonus
+        { 
+            data: 'thr_bonus',
+            name: 'thr_bonus',
+            className: 'text-center',
+            render: formatRupiah
+        },
+        // 14. Total Bruto
+        { 
+            data: 'total_bruto',
+            name: 'total_bruto',
+            className: 'text-center fw-bold bg-light',
+            render: formatRupiah
+        },
+        // 15. Masa Jabatan
+        { 
+            data: 'masa_jabatan',
             name: 'masa_jabatan',
             className: 'text-center',
             render: function(data) {
-                return `${data} bulan`;
+                return `${data} bln`;
             }
         },
+        // 16. Premi Asuransi
         { 
-            data: 'total_bruto', 
-            name: 'total_bruto',
+            data: 'premi_asuransi',
+            name: 'premi_asuransi',
             className: 'text-center',
-            render: function(data) {
-                return formatRupiah(data);
+            render: formatRupiah
+        },
+        // 17. Biaya Jabatan
+        { 
+            data: 'biaya_jabatan',
+            name: 'biaya_jabatan',
+            className: 'text-center',
+            render: formatRupiah
+        },
+        // 18. Iuran JHT
+        { 
+            data: 'iuran_jht',
+            name: 'iuran_jht',
+            className: 'text-center',
+            render: formatRupiah
+        },
+        // 19. Status PTKP
+        { 
+            data: 'status',
+            name: 'status',
+            className: 'text-center',
+            render: function(data, type, row) {
+                return `${row.status || '-'}`;
             }
         },
+        // 20. PTKP
         { 
-            data: 'pkp', 
+            data: 'besaran_ptkp',
+            name: 'besaran_ptkp',
+            className: 'text-center',
+            render: formatRupiah
+        },
+        // 21. PKP
+        { 
+            data: 'pkp',
             name: 'pkp',
-            className: 'text-center',
-            render: function(data) {
-                return formatRupiah(data);
-            }
+            className: 'text-center fw-bold',
+            render: formatRupiah
         }
     ];
     
-    // Add PKP columns dynamically
+    // 22-26. PKP Brackets (dinamis)
     brackets.forEach((bracket) => {
         columns.push({
             data: `bracket_${bracket.order_index}_pkp`,
@@ -292,7 +418,7 @@ function generateColumns(brackets) {
         });
     });
     
-    // Add Tax columns dynamically
+    // 27-31. Tax Brackets (dinamis)
     brackets.forEach((bracket) => {
         columns.push({
             data: `bracket_${bracket.order_index}_pph21`,
@@ -305,11 +431,29 @@ function generateColumns(brackets) {
         });
     });
     
-    // Add total column
+    // 32. PPh21 Tahunan
     columns.push({
-        data: 'pph21_tahunan', 
+        data: 'pph21_tahunan',
         name: 'pph21_tahunan',
         className: 'text-center total-column',
+        render: function(data) {
+            return `<strong>${formatRupiah(data)}</strong>`;
+        }
+    });
+    
+    // 33. PPh21 Masa
+    columns.push({
+        data: 'tunj_pph_21',
+        name: 'tunj_pph_21',
+        className: 'text-center',
+        render: formatRupiah
+    });
+    
+    // 34. PPh21 Akhir
+    columns.push({
+        data: 'tunj_pph21_akhir',
+        name: 'tunj_pph21_akhir',
+        className: 'text-center bg-light fw-bold',
         render: function(data) {
             return `<strong>${formatRupiah(data)}</strong>`;
         }
@@ -329,7 +473,6 @@ $(document).ready(function() {
     $('#filter-year').change(function() {
         const year = $(this).val() || new Date().getFullYear();
         
-        // ✅ Show overlay loading
         Swal.fire({
             title: 'Memuat Bracket...',
             text: 'Mohon tunggu sebentar',
@@ -384,28 +527,11 @@ $(document).ready(function() {
             }
         }, 500);
     });
-    
-    // View detail handler
-    $(document).on('click', '.view-detail', function(e) {
-        e.preventDefault();
-        const karyawanId = $(this).data('id');
-        const year = $(this).data('year');
-        
-        $.ajax({
-            url: "{{ route('pph21.tahunan.detail') }}",
-            data: { karyawan_id: karyawanId, year: year },
-            success: function(response) {
-                showDetailModal(response);
-            },
-            error: function() {
-                Swal.fire('Error', 'Gagal memuat detail', 'error');
-            }
-        });
-    });
 });
 
+// Initialize DataTable with full columns
+// Initialize DataTable with full columns
 function initializeDataTable() {
-    // Generate columns based on current brackets
     const columns = generateColumns(currentBrackets);
     
     table = $('#pph21-table').DataTable({
@@ -413,6 +539,10 @@ function initializeDataTable() {
         serverSide: true,
         ajax: {
             url: "{{ route('pph21.tahunan.data') }}",
+            type: 'POST', // ⬅️ TAMBAHKAN INI
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // ⬅️ TAMBAHKAN INI
+            },
             data: function(d) {
                 d.year = $('#filter-year').val() || new Date().getFullYear();
                 d.company_id = $('#filter-company').val();
@@ -420,10 +550,14 @@ function initializeDataTable() {
             }
         },
         columns: columns,
-        order: [[1, 'desc'], [0, 'asc']],
+        order: [[2, 'desc'], [0, 'asc']],
         pageLength: 25,
-        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
         scrollX: true,
+        scrollCollapse: true,
+        fixedColumns: {
+            leftColumns: 4
+        },
         language: {
             processing: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
             emptyTable: "Tidak ada data",
@@ -440,131 +574,56 @@ function initializeDataTable() {
             },
             search: "Cari:",
             zeroRecords: "Data tidak ditemukan"
-        },
-        drawCallback: function() {
-            // Optional: Add any post-draw customizations
         }
     });
 }
 
 function formatRupiah(amount) {
+    if (amount === 0 || amount === null || amount === undefined) return 'Rp 0';
     return 'Rp ' + Number(amount).toLocaleString('id-ID');
 }
 
-function showDetailModal(data) {
-    let html = `
-        <div class="table-responsive">
-            <table class="table table-row-bordered">
-                <tr>
-                    <td class="fw-bold">Nama Karyawan</td>
-                    <td>${data.karyawan_nama}</td>
-                </tr>
-                <tr>
-                    <td class="fw-bold">NIK</td>
-                    <td>${data.karyawan_nik || '-'}</td>
-                </tr>
-                <tr>
-                    <td class="fw-bold">Periode</td>
-                    <td>${data.periode}</td>
-                </tr>
-                <tr>
-                    <td class="fw-bold">Periode Terakhir</td>
-                    <td>${data.last_period}</td>
-                </tr>
-                <tr>
-                    <td class="fw-bold">Status PTKP</td>
-                    <td>${data.ptkp_status}</td>
-                </tr>
-                <tr class="table-light">
-                    <td class="fw-bold">Total Bruto</td>
-                    <td class="text-center">${formatRupiah(data.total_bruto)}</td>
-                </tr>
-                <tr>
-                    <td class="fw-bold ps-8">- Salary</td>
-                    <td class="text-center">${formatRupiah(data.salary)}</td>
-                </tr>
-                <tr>
-                    <td class="fw-bold ps-8">- Overtime</td>
-                    <td class="text-center">${formatRupiah(data.overtime)}</td>
-                </tr>
-                <tr>
-                    <td class="fw-bold ps-8">- Tunjangan</td>
-                    <td class="text-center">${formatRupiah(data.tunjangan)}</td>
-                </tr>
-                <tr>
-                    <td class="fw-bold ps-8">- THR & Bonus</td>
-                    <td class="text-center">${formatRupiah(data.thr_bonus)}</td>
-                </tr>
-                <tr class="table-light">
-                    <td class="fw-bold">Biaya Jabatan (5%)</td>
-                    <td class="text-center">${formatRupiah(data.biaya_jabatan)}</td>
-                </tr>
-                <tr class="table-light">
-                    <td class="fw-bold">Iuran JHT</td>
-                    <td class="text-center">${formatRupiah(data.iuran_jht)}</td>
-                </tr>
-                <tr class="table-light">
-                    <td class="fw-bold">PTKP</td>
-                    <td class="text-center">${formatRupiah(data.besaran_ptkp)}</td>
-                </tr>
-                <tr class="table-primary">
-                    <td class="fw-bold">PKP</td>
-                    <td class="text-center fw-bold">${formatRupiah(data.pkp)}</td>
-                </tr>
-            </table>
-
-            <h5 class="mt-8 mb-4">Breakdown PPh 21 per Bracket:</h5>
-            <div class="alert alert-info d-flex align-items-center mb-4">
-                <i class="ki-duotone ki-information-5 fs-2tx text-info me-4">
-                    <span class="path1"></span>
-                    <span class="path2"></span>
-                    <span class="path3"></span>
-                </i>
-                <div class="d-flex flex-column">
-                    <h5 class="mb-1">Periode Berlaku: ${data.period_date ? new Date(data.period_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long' }) : '-'}</h5>
-                </div>
-            </div>
-            <table class="table table-row-bordered">
-                <thead>
-                    <tr class="fw-bold">
-                        <th>Bracket</th>
-                        <th class="text-center">PKP</th>
-                        <th class="text-center">Rate</th>
-                        <th class="text-center">PPh 21</th>
-                        <th class="text-center">Periode Berlaku</th>
-                    </tr>
-                </thead>
-                <tbody>
-    `;
+// Export Excel handler
+$('#export-excel').on('click', function(e) {
+    e.preventDefault();
     
-    data.bracket_details.forEach((bracket, index) => {
-        const startDate = bracket.effective_start_date ? new Date(bracket.effective_start_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'short' }) : '-';
-        const endDate = bracket.effective_end_date ? new Date(bracket.effective_end_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'short' }) : 'Sekarang';
-        
-        html += `
-            <tr ${bracket.pkp_in_bracket > 0 ? '' : 'class="text-muted"'}>
-                <td>${bracket.description || `Bracket ${bracket.order_index}`}</td>
-                <td class="text-center">${bracket.pkp_in_bracket > 0 ? formatRupiah(bracket.pkp_in_bracket) : '-'}</td>
-                <td class="text-center">${bracket.rate_percent}%</td>
-                <td class="text-center">${bracket.pkp_in_bracket > 0 ? formatRupiah(bracket.pph21_in_bracket) : '-'}</td>
-                <td class="text-center"><small>${startDate} - ${endDate}</small></td>
-            </tr>
-        `;
+    Swal.fire({
+        title: 'Exporting...',
+        html: 'Mohon tunggu, sedang memproses export data',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
     });
-    
-    html += `
-                    <tr class="table-success">
-                        <td colspan="3" class="fw-bold">Total PPh 21 Tahunan</td>
-                        <td class="text-center fw-bold">${formatRupiah(data.pph21_tahunan)}</td>
-                        <td></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    `;
-    
-    $('#detail-content').html(html);
-    $('#modal-detail').modal('show');
-}
+
+    // Build export URL dengan filter
+    var params = new URLSearchParams({
+        year: $('#filter-year').val() || new Date().getFullYear(),
+        company_id: $('#filter-company').val() || '',
+        search: $('#search-input').val() || ''
+    });
+
+    var exportUrl = '{{ route("pph21.tahunan.export") }}?' + params.toString();
+
+    // Create temporary link untuk download
+    var link = document.createElement('a');
+    link.href = exportUrl;
+    link.download = 'laporan_pph21_tahunan.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Close loading setelah 2 detik
+    setTimeout(function() {
+        Swal.fire({
+            icon: 'success',
+            title: 'Export Berhasil!',
+            text: 'File Excel berhasil didownload',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    }, 2000);
+});
 </script>
 @endpush

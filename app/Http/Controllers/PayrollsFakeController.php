@@ -1,26 +1,25 @@
 <?php
-// app/Http/Controllers/PayrollController.php - OPTIMIZED WITH TABS VERSION
 
 namespace App\Http\Controllers;
 
 use App\Models\Company;
-use App\Models\Payroll;
+use App\Models\PayrollsFake;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
-use App\Exports\PayrollsExport;
-use App\Models\PayrollCalculation;
+use App\Exports\PayrollsFakeExport;
+use App\Models\PayrollCalculationFake;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 
-class PayrollController extends Controller
+class PayrollsFakeController extends Controller
 {
     public function index(Request $request)
     {
         // 🔥 OPTIMASI: Count semua status sekali jalan
-        $counts = DB::table('payrolls')
+        $counts = DB::table('payrolls_fakes')
             ->selectRaw('
                 SUM(CASE WHEN is_released = 0 THEN 1 ELSE 0 END) as pending_count,
                 SUM(CASE WHEN is_released = 1 AND is_released_slip = 0 THEN 1 ELSE 0 END) as released_count,
@@ -28,7 +27,7 @@ class PayrollController extends Controller
             ')
             ->first();
         
-        return view('dashboard.dashboard-admin.payrolls.index', [
+        return view('dashboard.dashboard-admin.payrolls-fake.index', [
             'pendingCount' => $counts->pending_count ?? 0,
             'releasedCount' => $counts->released_count ?? 0,
             'releasedSlipCount' => $counts->released_slip_count ?? 0,
@@ -41,7 +40,7 @@ class PayrollController extends Controller
     public function datatablePending(Request $request)
     {
         try {
-            $query = PayrollCalculation::query()
+            $query = PayrollCalculationFake::query()
                 ->select([
                     'id', 'karyawan_id', 'company_id', 'periode', 'salary_type',
                     'gaji_pokok', 'salary', 'total_penerimaan', 'total_potongan', 'gaji_bersih',
@@ -130,7 +129,7 @@ class PayrollController extends Controller
                 ->addColumn('action', function ($payroll) {
                     return '
                         <div class="d-flex gap-2">
-                            <a href="' . route('payrolls.edit', $payroll->id) . '" class="btn btn-sm btn-icon btn-light-primary">
+                            <a href="' . route('payrolls-fake.edit', $payroll->id) . '" class="btn btn-sm btn-icon btn-light-primary">
                                 <i class="ki-outline ki-pencil fs-5"></i>
                             </a>
                             <button type="button" class="btn btn-sm btn-icon btn-light-danger btn-delete" 
@@ -155,7 +154,7 @@ class PayrollController extends Controller
     public function datatableReleased(Request $request)
     {
         try {
-            $query = PayrollCalculation::query()
+            $query = PayrollCalculationFake::query()
                 ->select([
                     'id', 'karyawan_id', 'company_id', 'periode', 'salary_type',
                     'gaji_pokok', 'salary', 'total_penerimaan', 'total_potongan', 'gaji_bersih',
@@ -175,7 +174,7 @@ class PayrollController extends Controller
                     'company:absen_company_id,company_name'
                 ])
                 ->where('is_released', 1)
-                ->where('is_released_slip', 0); // 🔥 HANYA YANG BELUM SLIP
+                ->where('is_released_slip', 0);
             
             if ($request->filled('periode')) {
                 $query->where('periode', $request->periode);
@@ -206,7 +205,6 @@ class PayrollController extends Controller
                 ->addColumn('karyawan_nik', fn($p) => $p->karyawan?->nik ?? '-')
                 ->addColumn('company_nama', fn($p) => $p->company?->company_name ?? '-')
                 ->addColumn('gaji_pokok_formatted', fn($p) => $p->gaji_pokok ?? 0)
-                // ... semua kolom yang sama dengan pending ...
                 ->editColumn('monthly_kpi', fn($p) => $p->monthly_kpi ?? 0)
                 ->editColumn('overtime', fn($p) => $p->overtime ?? 0)
                 ->editColumn('medical_reimbursement', fn($p) => $p->medical_reimbursement ?? 0)
@@ -246,7 +244,7 @@ class PayrollController extends Controller
                 ->addColumn('action', function ($payroll) {
                     return '
                         <div class="d-flex gap-2">
-                            <a href="' . route('payrolls.show', $payroll->id) . '" class="btn btn-sm btn-icon btn-light-info">
+                            <a href="' . route('payrolls-fake.show', $payroll->id) . '" class="btn btn-sm btn-icon btn-light-info">
                                 <i class="ki-outline ki-eye fs-5"></i>
                             </a>
                         </div>
@@ -262,12 +260,12 @@ class PayrollController extends Controller
     }
     
     /**
-     * 🔥 NEW: DataTables RELEASED SLIP - Optimized POST (is_released=1, is_released_slip=1)
+     * 🔥 DataTables RELEASED SLIP - Optimized POST (is_released=1, is_released_slip=1)
      */
     public function datatableReleasedSlip(Request $request)
     {
         try {
-            $query = PayrollCalculation::query()
+            $query = PayrollCalculationFake::query()
                 ->select([
                     'id', 'karyawan_id', 'company_id', 'periode', 'salary_type',
                     'gaji_pokok', 'salary', 'total_penerimaan', 'total_potongan', 'gaji_bersih',
@@ -287,7 +285,7 @@ class PayrollController extends Controller
                     'company:absen_company_id,company_name'
                 ])
                 ->where('is_released', 1)
-                ->where('is_released_slip', 1); // 🔥 HANYA YANG SUDAH SLIP
+                ->where('is_released_slip', 1);
             
             if ($request->filled('periode')) {
                 $query->where('periode', $request->periode);
@@ -313,7 +311,6 @@ class PayrollController extends Controller
                 ->addColumn('karyawan_nik', fn($p) => $p->karyawan?->nik ?? '-')
                 ->addColumn('company_nama', fn($p) => $p->company?->company_name ?? '-')
                 ->addColumn('gaji_pokok_formatted', fn($p) => $p->gaji_pokok ?? 0)
-                // ... semua kolom yang sama ...
                 ->editColumn('monthly_kpi', fn($p) => $p->monthly_kpi ?? 0)
                 ->editColumn('overtime', fn($p) => $p->overtime ?? 0)
                 ->editColumn('medical_reimbursement', fn($p) => $p->medical_reimbursement ?? 0)
@@ -353,7 +350,7 @@ class PayrollController extends Controller
                 ->addColumn('action', function ($payroll) {
                     return '
                         <div class="d-flex gap-2">
-                            <a href="' . route('payrolls.show', $payroll->id) . '" class="btn btn-sm btn-icon btn-light-info">
+                            <a href="' . route('payrolls-fake.show', $payroll->id) . '" class="btn btn-sm btn-icon btn-light-info">
                                 <i class="ki-outline ki-eye fs-5"></i>
                             </a>
                         </div>
@@ -375,7 +372,7 @@ class PayrollController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'ids' => 'required|array|min:1',
-            'ids.*' => 'exists:payrolls,id',
+            'ids.*' => 'exists:payrolls_fakes,id',
             'release_slip' => 'required|in:0,1,true,false'
         ]);
 
@@ -386,8 +383,7 @@ class PayrollController extends Controller
         DB::beginTransaction();
         
         try {
-            // 🔥 Get payroll untuk validasi
-            $payrolls = Payroll::whereIn('id', $request->ids)->lockForUpdate()->get();
+            $payrolls = PayrollsFake::whereIn('id', $request->ids)->lockForUpdate()->get();
             
             $releaseSlip = filter_var($request->release_slip, FILTER_VALIDATE_BOOLEAN);
             
@@ -396,7 +392,7 @@ class PayrollController extends Controller
                 $dataToUpdate['is_released_slip'] = true;
             }
 
-            $updated = Payroll::whereIn('id', $payrolls->pluck('id'))->update($dataToUpdate);
+            $updated = PayrollsFake::whereIn('id', $payrolls->pluck('id'))->update($dataToUpdate);
 
             DB::commit();
 
@@ -414,7 +410,7 @@ class PayrollController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Release Payroll Error', ['error' => $e->getMessage()]);
+            Log::error('Release Payroll Fake Error', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
@@ -424,7 +420,7 @@ class PayrollController extends Controller
         try {
             $periode = $request->get('periode');
             
-            $query = PayrollCalculation::query();
+            $query = PayrollCalculationFake::query();
             
             if ($periode) {
                 if (strlen($periode) === 7) {
@@ -449,12 +445,12 @@ class PayrollController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            Log::error('Get Statistics Error', ['error' => $e->getMessage()]);
+            Log::error('Get Statistics Fake Error', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
-        public function export(Request $request)
+    public function export(Request $request)
     {
         set_time_limit(300);
         ini_set('memory_limit', '512M');
@@ -478,251 +474,27 @@ class PayrollController extends Controller
                 $isReleasedSlip = 1;
             }
 
-            $filename = 'payroll_' . $status . '_' . date('YmdHis') . '.xlsx';
+            $filename = 'payroll_fake_' . $status . '_' . date('YmdHis') . '.xlsx';
             
             if ($periode) {
-                $filename = 'payroll_' . $status . '_' . $periode . '_' . date('YmdHis') . '.xlsx';
+                $filename = 'payroll_fake_' . $status . '_' . $periode . '_' . date('YmdHis') . '.xlsx';
             }
 
             return Excel::download(
-                new PayrollsExport($periode, $companyId, $isReleased, $isReleasedSlip),
+                new PayrollsFakeExport($periode, $companyId, $isReleased, $isReleasedSlip),
                 $filename
             );
 
         } catch (\Exception $e) {
-            Log::error('Export Payroll Error', ['error' => $e->getMessage()]);
+            Log::error('Export Payroll Fake Error', ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal export data: ' . $e->getMessage());
         }
     }
-    public function create(Request $request)
-    {
-        $karyawanId = $request->get('karyawan_id');
-        $karyawan = null;
-        
-        if ($karyawanId) {
-            $karyawan = Karyawan::where('absen_karyawan_id', $karyawanId)
-                ->where('status_resign', false)
-                ->first();
-        }
-        
-        $karyawans = Karyawan::where('status_resign', false)
-            ->select('absen_karyawan_id', 'nik', 'nama_lengkap')
-            ->orderBy('nama_lengkap')
-            ->get()
-            ->map(function($k) {
-                return [
-                    'id' => $k->absen_karyawan_id,
-                    'nik' => $k->nik ?? '-',
-                    'nama_lengkap' => $k->nama_lengkap
-                ];
-            })
-            ->toArray();
-        
-        $companies = Company::select('absen_company_id', 'company_name', 'code')
-            ->orderBy('company_name')
-            ->get()
-            ->map(function($c) {
-                return [
-                    'id' => $c->absen_company_id,
-                    'company_name' => $c->company_name,
-                    'code' => $c->code ?? '-'
-                ];
-            })
-            ->toArray();
-        
-        return view('dashboard.dashboard-admin.payrolls.create', compact('karyawan', 'karyawans', 'companies'));
-    }
 
-    public function store(Request $request)
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'periode' => 'required|string',
-                'karyawan_id' => 'required|integer',
-                'company_id' => 'nullable|integer',
-                'gaji_pokok' => 'nullable|integer',
-                'monthly_kpi' => 'nullable|integer',
-                'overtime' => 'nullable|integer',
-                'medical_reimbursement' => 'nullable|integer',
-                'insentif_sholat' => 'nullable|integer',
-                'monthly_bonus' => 'nullable|integer',
-                'rapel' => 'nullable|integer',
-                'tunjangan_pulsa' => 'nullable|integer',
-                'tunjangan_kehadiran' => 'nullable|integer',
-                'tunjangan_transport' => 'nullable|integer',
-                'tunjangan_lainnya' => 'nullable|integer',
-                'yearly_bonus' => 'nullable|integer',
-                'thr' => 'nullable|integer',
-                'other' => 'nullable|integer',
-                'ca_corporate' => 'nullable|integer',
-                'ca_personal' => 'nullable|integer',
-                'ca_kehadiran' => 'nullable|integer',
-                'pph_21' => 'nullable|integer',
-                'pph_21_deduction' => 'nullable|integer',
-                'bpjs_tenaga_kerja' => 'nullable|integer',
-                'bpjs_kesehatan' => 'nullable|integer',
-                'bpjs_tk_jht_3_7_percent' => 'nullable|integer',
-                'bpjs_tk_jht_2_percent' => 'nullable|integer',
-                'bpjs_tk_jkk_0_24_percent' => 'nullable|integer',
-                'bpjs_tk_jkm_0_3_percent' => 'nullable|integer',
-                'bpjs_tk_jp_2_percent' => 'nullable|integer',
-                'bpjs_tk_jp_1_percent' => 'nullable|integer',
-                'bpjs_kes_4_percent' => 'nullable|integer',
-                'bpjs_kes_1_percent' => 'nullable|integer',
-                'salary_type' => 'nullable|in:gross,nett',
-                'glh' => 'nullable|integer',
-                'lm' => 'nullable|integer',
-                'lainnya' => 'nullable|integer',
-                'is_released' => 'nullable|boolean',
-            ]);
-            
-            if ($validator->fails()) {
-                return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
-            }
-            
-            $karyawan = Karyawan::where('absen_karyawan_id', $request->karyawan_id)
-                ->where('status_resign', false)
-                ->first();
-            
-            if (!$karyawan) {
-                return response()->json(['success' => false, 'message' => 'Karyawan tidak ditemukan'], 404);
-            }
-            
-            if ($request->filled('company_id')) {
-                $company = Company::where('absen_company_id', $request->company_id)->first();
-                if (!$company) {
-                    return response()->json(['success' => false, 'message' => 'Company tidak ditemukan'], 404);
-                }
-            }
-            
-            $exists = Payroll::where('periode', $request->periode)
-                ->where('karyawan_id', $request->karyawan_id)
-                ->exists();
-            
-            if ($exists) {
-                return response()->json(['success' => false, 'message' => 'Payroll sudah ada'], 409);
-            }
-            
-            $payroll = Payroll::create($request->all());
-            
-            return response()->json(['success' => true, 'message' => 'Payroll berhasil dibuat', 'data' => $payroll], 201);
-            
-        } catch (\Exception $e) {
-            Log::error('Error creating payroll', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
-        }
-    }
-
-    public function show($id)
-    {
-        try {
-            $payroll = PayrollCalculation::with(['karyawan', 'company'])->findOrFail($id);
-            $karyawan = $payroll->karyawan;
-            $company = $payroll->company;
-            
-            return view('dashboard.dashboard-admin.payrolls.show', compact('payroll', 'karyawan', 'company'));
-            
-        } catch (\Exception $e) {
-            abort(404, 'Payroll tidak ditemukan');
-        }
-    }
-
-    public function edit($id)
-    {
-        try {
-            $payroll = Payroll::findOrFail($id);
-            
-            $karyawan = null;
-            if ($payroll->karyawan_id) {
-                $karyawan = Karyawan::where('absen_karyawan_id', $payroll->karyawan_id)->first();
-            }
-            
-            $company = null;
-            if ($payroll->company_id) {
-                $company = Company::where('absen_company_id', $payroll->company_id)->first();
-            }
-            
-            $karyawans = Karyawan::where('status_resign', false)
-                ->select('absen_karyawan_id', 'nik', 'nama_lengkap')
-                ->orderBy('nama_lengkap')
-                ->get()
-                ->map(function($k) {
-                    return [
-                        'id' => $k->absen_karyawan_id,
-                        'nik' => $k->nik ?? '-',
-                        'nama_lengkap' => $k->nama_lengkap
-                    ];
-                })
-                ->toArray();
-            
-            $companies = Company::select('absen_company_id', 'company_name', 'code')
-                ->orderBy('company_name')
-                ->get()
-                ->map(function($c) {
-                    return [
-                        'id' => $c->absen_company_id,
-                        'company_name' => $c->company_name,
-                        'code' => $c->code ?? '-'
-                    ];
-                })
-                ->toArray();
-            
-            return view('dashboard.dashboard-admin.payrolls.edit', compact('payroll', 'karyawan', 'company', 'karyawans', 'companies'));
-            
-        } catch (\Exception $e) {
-            return redirect()->route('payrolls.index')->with('error', 'Payroll tidak ditemukan');
-        }
-    }
-
-    public function update(Request $request, $id)
-    {
-        try {
-            $payroll = Payroll::findOrFail($id);
-            
-            $validator = Validator::make($request->all(), [
-                'periode' => 'required|string',
-                'karyawan_id' => 'required|integer',
-                'company_id' => 'nullable|integer',
-                // ... semua validasi sama dengan store ...
-            ]);
-            
-            if ($validator->fails()) {
-                return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
-            }
-            
-            $payroll->update($request->all());
-            
-            return response()->json(['success' => true, 'message' => 'Payroll berhasil diupdate', 'data' => $payroll]);
-            
-        } catch (\Exception $e) {
-            Log::error('Error updating payroll', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
-        }
-    }
-
-    public function destroy($id)
-    {
-        try {
-            $payroll = Payroll::findOrFail($id);
-            
-            if ($payroll->is_released) {
-                return response()->json(['success' => false, 'message' => 'Tidak dapat menghapus payroll yang sudah dirilis'], 403);
-            }
-            
-            $payroll->delete();
-            
-            return response()->json(['success' => true, 'message' => 'Payroll berhasil dihapus']);
-            
-        } catch (\Exception $e) {
-            Log::error('Error deleting payroll', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
-        }
-    }
-    
     public function summary($periode)
     {
         try {
-            $payrolls = PayrollCalculation::where('periode', $periode)->get();
+            $payrolls = PayrollCalculationFake::where('periode', $periode)->get();
             
             if ($payrolls->isEmpty()) {
                 abort(404, 'Tidak ada data untuk periode ini');
@@ -738,7 +510,7 @@ class PayrollController extends Controller
                 'total_gaji_bersih' => $payrolls->sum('gaji_bersih'),
             ];
             
-            return view('dashboard.dashboard-admin.payrolls.summary', compact('summary', 'payrolls', 'periode'));
+            return view('dashboard.dashboard-admin.payrolls-fake.summary', compact('summary', 'payrolls', 'periode'));
             
         } catch (\Exception $e) {
             abort(500, 'Error loading summary: ' . $e->getMessage());

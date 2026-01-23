@@ -54,35 +54,15 @@
                         </div>
                     </div>
 
+                    {{-- ============================================
+                        USER MANAGEMENT
+                    ============================================ --}}
                     @can('manage-users')
                     <div class="menu-item">
-                        <a class="menu-link" href="{{ route('manage-user.index') }}">
+                        <a class="menu-link {{ request()->routeIs('manage-user.*') ? 'active' : '' }}" 
+                           href="{{ route('manage-user.index') }}">
                             <span class="menu-icon">
-                                <i class="ki-outline ki-people fs-2"></i>
-                            </span>
-                            <span class="menu-title">User</span>
-                        </a>
-                    </div>
-                    @endcan
-
-                    <div class="menu-item">
-                        <a class="menu-link" 
-                        href="{{ route('manage-mutasicompany.index') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-arrows-loop fs-2">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">Mutasi Company</span>
-                        </a>
-                    </div>
-
-                    @can('karyawan-sync')
-                    <div class="menu-item">
-                        <a class="menu-link" href="{{ route('karyawan.sync.dashboard') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-badge fs-2">
+                                <i class="ki-duotone ki-people fs-2">
                                     <span class="path1"></span>
                                     <span class="path2"></span>
                                     <span class="path3"></span>
@@ -90,140 +70,18 @@
                                     <span class="path5"></span>
                                 </i>
                             </span>
-                            <span class="menu-title">Karyawan</span>
-                        </a>
-                    </div>
-                    @endcan
-
-                    @can('jenis-ter-sync')
-                    <div class="menu-item">
-                        <a class="menu-link" href="{{ route('jenis-ter.sync.dashboard') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-badge fs-2">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                    <span class="path3"></span>
-                                    <span class="path4"></span>
-                                    <span class="path5"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">Jenis Ter</span>
-                        </a>
-                    </div>
-                    @endcan
-
-                    @can('range-bruto-sync')
-                    <div class="menu-item">
-                        <a class="menu-link" href="{{ route('range-bruto.sync.dashboard') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-badge fs-2">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                    <span class="path3"></span>
-                                    <span class="path4"></span>
-                                    <span class="path5"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">Range Bruto</span>
-                        </a>
-                    </div>
-                    @endcan
-                    
-                    <div class="menu-item">
-                        <a class="menu-link" href="{{ route('pph21.tahunan.index') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-badge fs-2">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                    <span class="path3"></span>
-                                    <span class="path4"></span>
-                                    <span class="path5"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">Laporan PPH 21 Tahunan</span>
-                        </a>
-                    </div>
-
-                    @can('pph21-tax-brackets')
-                    <div class="menu-item">
-                        <a class="menu-link" href="{{ route('pph21taxbrackets.index') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-badge fs-2">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                    <span class="path3"></span>
-                                    <span class="path4"></span>
-                                    <span class="path5"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">PPH21 Braket</span>
+                            <span class="menu-title">User Management</span>
                         </a>
                     </div>
                     @endcan
 
                     {{-- ============================================
-                        PTKP & PERIODE KARYAWAN GROUP (ACCORDION)
+                        COMPANY
                     ============================================ --}}
-                    @if(Gate::check('ptkp-sync') || Gate::check('ptkp-history-sync') || Gate::check('periode-karyawan'))
-                    <div data-kt-menu-trigger="click" 
-                         class="menu-item menu-accordion {{ request()->routeIs('ptkp.*') || request()->routeIs('periode-karyawan.*') ? 'here show' : '' }}">
-                        
-                        {{-- Parent Menu --}}
-                        <span class="menu-link">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-document fs-2">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">Data Karyawan</span>
-                            <span class="menu-arrow"></span>
-                        </span>
-
-                        {{-- Submenu --}}
-                        <div class="menu-sub menu-sub-accordion">
-                            @can('ptkp-sync')
-                            <div class="menu-item">
-                                <a class="menu-link {{ request()->routeIs('ptkp.sync.dashboard') ? 'active' : '' }}" 
-                                   href="{{ route('ptkp.sync.dashboard') }}">
-                                    <span class="menu-bullet">
-                                        <span class="bullet bullet-dot"></span>
-                                    </span>
-                                    <span class="menu-title">PTKP</span>
-                                </a>
-                            </div>
-                            @endcan
-
-                            @can('ptkp-history-sync')
-                            <div class="menu-item">
-                                <a class="menu-link {{ request()->routeIs('ptkp.history.sync.dashboard') ? 'active' : '' }}" 
-                                   href="{{ route('ptkp.history.sync.dashboard') }}">
-                                    <span class="menu-bullet">
-                                        <span class="bullet bullet-dot"></span>
-                                    </span>
-                                    <span class="menu-title">PTKP History</span>
-                                </a>
-                            </div>
-                            @endcan
-
-                            @can('periode-karyawan')
-                            <div class="menu-item">
-                                <a class="menu-link {{ request()->routeIs('periode-karyawan.*') ? 'active' : '' }}" 
-                                   href="{{ route('periode-karyawan.index') }}">
-                                    <span class="menu-bullet">
-                                        <span class="bullet bullet-dot"></span>
-                                    </span>
-                                    <span class="menu-title">Periode Karyawan</span>
-                                </a>
-                            </div>
-                            @endcan
-                        </div>
-                    </div>
-                    @endif
-
                     @can('company-sync')
                     <div class="menu-item">
-                        <a class="menu-link" href="{{ route('companies.sync.dashboard') }}">
+                        <a class="menu-link {{ request()->routeIs('companies.sync.*') ? 'active' : '' }}" 
+                           href="{{ route('companies.sync.dashboard') }}">
                             <span class="menu-icon">
                                 <i class="ki-duotone ki-office-bag fs-2">
                                     <span class="path1"></span>
@@ -238,11 +96,142 @@
                     @endcan
 
                     {{-- ============================================
+                        MUTASI COMPANY
+                    ============================================ --}}
+                    <div class="menu-item">
+                        <a class="menu-link {{ request()->routeIs('manage-mutasicompany.*') ? 'active' : '' }}" 
+                           href="{{ route('manage-mutasicompany.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-arrows-loop fs-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">Mutasi Company</span>
+                        </a>
+                    </div>
+
+                    {{-- ============================================
+                        DATA KARYAWAN GROUP (ACCORDION)
+                    ============================================ --}}
+                    @if(Gate::check('karyawan-sync') || Gate::check('ptkp-sync') || Gate::check('ptkp-history-sync') || Gate::check('periode-karyawan') || Gate::check('jenis-ter-sync') || Gate::check('range-bruto-sync'))
+                    <div data-kt-menu-trigger="click" 
+                         class="menu-item menu-accordion {{ request()->routeIs('karyawan.*') || request()->routeIs('ptkp.*') || request()->routeIs('periode-karyawan.*') || request()->routeIs('jenis-ter.*') || request()->routeIs('range-bruto.*') ? 'here show' : '' }}">
+                        
+                        {{-- Parent Menu --}}
+                        <span class="menu-link">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-profile-user fs-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                    <span class="path4"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">Data Karyawan</span>
+                            <span class="menu-arrow"></span>
+                        </span>
+
+                        {{-- Submenu --}}
+                        <div class="menu-sub menu-sub-accordion">
+                            
+                            {{-- Karyawan --}}
+                            @can('karyawan-sync')
+                            <div class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('karyawan.sync.*') ? 'active' : '' }}" 
+                                   href="{{ route('karyawan.sync.dashboard') }}">
+                                    <span class="menu-bullet">
+                                        <span class="bullet bullet-dot"></span>
+                                    </span>
+                                    <span class="menu-title">Karyawan</span>
+                                </a>
+                            </div>
+                            @endcan
+
+                            {{-- Periode Karyawan --}}
+                            @can('periode-karyawan')
+                            <div class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('periode-karyawan.*') ? 'active' : '' }}" 
+                                   href="{{ route('periode-karyawan.index') }}">
+                                    <span class="menu-bullet">
+                                        <span class="bullet bullet-dot"></span>
+                                    </span>
+                                    <span class="menu-title">Periode Karyawan</span>
+                                </a>
+                            </div>
+                            @endcan
+
+                            {{-- PTKP --}}
+                            @can('ptkp-sync')
+                            <div class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('ptkp.sync.dashboard') ? 'active' : '' }}" 
+                                   href="{{ route('ptkp.sync.dashboard') }}">
+                                    <span class="menu-bullet">
+                                        <span class="bullet bullet-dot"></span>
+                                    </span>
+                                    <span class="menu-title">PTKP</span>
+                                </a>
+                            </div>
+                            @endcan
+
+                            {{-- PTKP History --}}
+                            @can('ptkp-history-sync')
+                            <div class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('ptkp.history.sync.dashboard') ? 'active' : '' }}" 
+                                   href="{{ route('ptkp.history.sync.dashboard') }}">
+                                    <span class="menu-bullet">
+                                        <span class="bullet bullet-dot"></span>
+                                    </span>
+                                    <span class="menu-title">PTKP History</span>
+                                </a>
+                            </div>
+                            @endcan
+
+                            {{-- Jenis TER --}}
+                            @can('jenis-ter-sync')
+                            <div class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('jenis-ter.sync.*') ? 'active' : '' }}" 
+                                   href="{{ route('jenis-ter.sync.dashboard') }}">
+                                    <span class="menu-bullet">
+                                        <span class="bullet bullet-dot"></span>
+                                    </span>
+                                    <span class="menu-title">Jenis TER</span>
+                                </a>
+                            </div>
+                            @endcan
+
+                            {{-- Range Bruto --}}
+                            @can('range-bruto-sync')
+                            <div class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('range-bruto.sync.*') ? 'active' : '' }}" 
+                                   href="{{ route('range-bruto.sync.dashboard') }}">
+                                    <span class="menu-bullet">
+                                        <span class="bullet bullet-dot"></span>
+                                    </span>
+                                    <span class="menu-title">Range Bruto</span>
+                                </a>
+                            </div>
+                            @endcan
+
+                        </div>
+                    </div>
+                    @endif
+
+                    {{-- ============================================
+                        DIVIDER
+                    ============================================ --}}
+                    <div class="menu-item">
+                        <div class="menu-content pt-8 pb-2">
+                            <span class="menu-section text-muted text-uppercase fs-8 ls-1">Payroll & Tax</span>
+                        </div>
+                    </div>
+
+                    {{-- ============================================
                         PAYROLL MENU
                     ============================================ --}}
                     <div class="menu-item">
                         <a class="menu-link {{ request()->routeIs('payrolls.*') ? 'active' : '' }}" 
-                        href="{{ route('payrolls.index') }}">
+                           href="{{ route('payrolls.index') }}">
                             <span class="menu-icon">
                                 <i class="ki-duotone ki-wallet fs-2">
                                     <span class="path1"></span>
@@ -251,7 +240,70 @@
                                     <span class="path4"></span>
                                 </i>
                             </span>
-                            <span class="menu-title">Payroll</span>
+                            <span class="menu-title">Payroll Masa</span>
+                        </a>
+                    </div>
+
+                    {{-- ============================================
+                        PAYROLL MENU
+                    ============================================ --}}
+                    <div class="menu-item">
+                        <a class="menu-link {{ request()->routeIs('payrolls-fake.*') ? 'active' : '' }}" 
+                           href="{{ route('payrolls-fake.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-wallet fs-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                    <span class="path4"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">Payroll Akhir</span>
+                        </a>
+                    </div>
+
+                    {{-- ============================================
+                        PPH21 BRACKET
+                    ============================================ --}}
+                    @can('pph21-tax-brackets')
+                    <div class="menu-item">
+                        <a class="menu-link {{ request()->routeIs('pph21taxbrackets.*') ? 'active' : '' }}" 
+                           href="{{ route('pph21taxbrackets.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-chart-simple-3 fs-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                    <span class="path4"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">PPH21 Bracket</span>
+                        </a>
+                    </div>
+                    @endcan
+
+                    {{-- ============================================
+                        DIVIDER
+                    ============================================ --}}
+                    <div class="menu-item">
+                        <div class="menu-content pt-8 pb-2">
+                            <span class="menu-section text-muted text-uppercase fs-8 ls-1">Reports</span>
+                        </div>
+                    </div>
+
+                    {{-- ============================================
+                        LAPORAN PPH21 TAHUNAN
+                    ============================================ --}}
+                    <div class="menu-item">
+                        <a class="menu-link {{ request()->routeIs('pph21.tahunan.*') ? 'active' : '' }}" 
+                           href="{{ route('pph21.tahunan.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-document fs-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">PPH21 Tahunan</span>
                         </a>
                     </div>
 

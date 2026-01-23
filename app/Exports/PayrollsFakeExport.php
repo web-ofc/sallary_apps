@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\PayrollCalculation;
+use App\Models\PayrollCalculationFake;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -16,14 +16,14 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class PayrollsExport implements FromCollection, WithHeadings, WithMapping, WithColumnFormatting, WithStyles, WithEvents
+class PayrollsFakeExport implements FromCollection, WithHeadings, WithMapping, WithColumnFormatting, WithStyles, WithEvents
 {
     protected $periode;
     protected $companyId;
     protected $isReleased;
     protected $isReleasedSlip;
 
-        public function __construct($periode = null, $companyId = null, $isReleased = null, $isReleasedSlip = null)
+    public function __construct($periode = null, $companyId = null, $isReleased = null, $isReleasedSlip = null)
     {
         $this->periode = $periode;
         $this->companyId = $companyId;
@@ -31,9 +31,9 @@ class PayrollsExport implements FromCollection, WithHeadings, WithMapping, WithC
         $this->isReleasedSlip = $isReleasedSlip;
     }
 
-        public function collection()
+    public function collection()
     {
-        $query = PayrollCalculation::with([
+        $query = PayrollCalculationFake::with([
             'karyawan:absen_karyawan_id,nik,nama_lengkap',
             'company:absen_company_id,company_name'
         ]);
@@ -77,7 +77,7 @@ class PayrollsExport implements FromCollection, WithHeadings, WithMapping, WithC
                 'Potongan', '', '', '', '', '', // 6 columns
                 'BPJS TK', '', '', '', '', '', // 6 columns
                 'BPJS KES', '', // 2 columns
-                'Lainnya', '', '', // 3 columns
+                'Lainnya', '', '', '', // 4 columns (tambah 1 karena ada lainnya)
                 'Summary', '', '', '', // 4 columns
                 'Status'
             ],
@@ -117,10 +117,11 @@ class PayrollsExport implements FromCollection, WithHeadings, WithMapping, WithC
                 // BPJS KES (2)
                 'Kes 4%',
                 'Kes 1%',
-                // Lainnya (3)
+                // Lainnya (4)
                 'PPh 21',
                 'GLH',
                 'LM',
+                'Lainnya',
                 // Summary (4)
                 'Salary',
                 'Total Penerimaan',
@@ -173,10 +174,11 @@ class PayrollsExport implements FromCollection, WithHeadings, WithMapping, WithC
             // BPJS KES (2)
             $payroll->bpjs_kes_4_percent ?? 0,
             $payroll->bpjs_kes_1_percent ?? 0,
-            // Lainnya (3)
+            // Lainnya (4)
             $payroll->pph_21 ?? 0,
             $payroll->glh ?? 0,
             $payroll->lm ?? 0,
+            $payroll->lainnya ?? 0,
             // Summary (4)
             $payroll->salary ?? 0,
             $payroll->total_penerimaan ?? 0,
@@ -221,10 +223,11 @@ class PayrollsExport implements FromCollection, WithHeadings, WithMapping, WithC
             'AH' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1, // PPh 21
             'AI' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1, // GLH
             'AJ' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1, // LM
-            'AK' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1, // Salary
-            'AL' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1, // Total Penerimaan
-            'AM' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1, // Total Potongan
-            'AN' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1, // Gaji Bersih
+            'AK' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1, // Lainnya
+            'AL' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1, // Salary
+            'AM' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1, // Total Penerimaan
+            'AN' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1, // Total Potongan
+            'AO' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1, // Gaji Bersih
         ];
     }
 
@@ -272,9 +275,9 @@ class PayrollsExport implements FromCollection, WithHeadings, WithMapping, WithC
                     'T1:Y1',  // Potongan (6 cols)
                     'Z1:AE1', // BPJS TK (6 cols)
                     'AF1:AG1',// BPJS KES (2 cols)
-                    'AH1:AJ1',// Lainnya (3 cols)
-                    'AK1:AN1',// Summary (4 cols)
-                    'AO1:AO2' // Status
+                    'AH1:AK1',// Lainnya (4 cols - tambah 1)
+                    'AL1:AO1',// Summary (4 cols)
+                    'AP1:AP2' // Status
                 ];
 
                 foreach ($merges as $merge) {
@@ -311,8 +314,8 @@ class PayrollsExport implements FromCollection, WithHeadings, WithMapping, WithC
                     ['range' => 'T1:Y1', 'color' => 'FFCCBC'],   // Potongan - Orange
                     ['range' => 'Z1:AE1', 'color' => 'E1BEE7'],  // BPJS TK - Purple
                     ['range' => 'AF1:AG1', 'color' => 'F8BBD0'], // BPJS KES - Pink
-                    ['range' => 'AH1:AJ1', 'color' => 'B2DFDB'], // Lainnya - Teal
-                    ['range' => 'AK1:AN1', 'color' => 'CFD8DC'], // Summary - Grey
+                    ['range' => 'AH1:AK1', 'color' => 'B2DFDB'], // Lainnya - Teal
+                    ['range' => 'AL1:AO1', 'color' => 'CFD8DC'], // Summary - Grey
                 ];
 
                 foreach ($colorGroups as $group) {

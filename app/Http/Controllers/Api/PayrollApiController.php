@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\PayrollCalculation;
+use App\Models\PayrollCalculationsMerge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -12,12 +12,13 @@ class PayrollApiController extends Controller
     /**
      * GET /api/payrolls
      * List semua payroll calculations dengan filter & pagination
-     * ✅ ONLY SHOW RELEASED PAYROLLS
+     * ✅ ONLY SHOW RELEASED PAYROLLS (via VIEW)
      */
     public function index(Request $request)
     {
         try {
-            $query = PayrollCalculation::where('is_released', true); // ✅ FILTER RELEASED
+            // ✅ FIX: Pakai query() builder, bukan all()
+            $query = PayrollCalculationsMerge::query();
             
             // Filter by periode
             if ($request->filled('periode')) {
@@ -34,7 +35,7 @@ class PayrollApiController extends Controller
                 $query->where('karyawan_id', $request->karyawan_id);
             }
             
-            // Search by nama karyawan (need join)
+            // Search by nama karyawan
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->whereHas('karyawan', function($q) use ($search) {
@@ -46,16 +47,22 @@ class PayrollApiController extends Controller
             // Sorting
             $sortBy = $request->get('sort_by', 'periode');
             $sortDir = $request->get('sort_dir', 'desc');
+            
+            // ✅ Validasi sort_by untuk prevent SQL injection
+            $allowedSort = ['periode', 'gaji_bersih', 'total_penerimaan', 'total_potongan', 'karyawan_id', 'company_id'];
+            if (!in_array($sortBy, $allowedSort)) {
+                $sortBy = 'periode';
+            }
+            
             $query->orderBy($sortBy, $sortDir);
             
             // Pagination
-            $perPage = $request->get('per_page', 15);
+            $perPage = min($request->get('per_page', 15), 100); // ✅ Max 100
             $payrolls = $query->with([
-                'karyawan:id,absen_karyawan_id,nama_lengkap,nik', 
-                'company:id,absen_company_id,company_name,code,logo,ttd'
+                'karyawan:absen_karyawan_id,nama_lengkap,nik', 
+                'company:absen_company_id,company_name,code,logo,ttd'
             ])->paginate($perPage);
 
-            
             return response()->json([
                 'success' => true,
                 'message' => 'Data payroll calculations berhasil diambil',
@@ -63,6 +70,7 @@ class PayrollApiController extends Controller
             ]);
             
         } catch (\Exception $e) {
+            \Log::error('Payroll API Index Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data: ' . $e->getMessage()
@@ -78,9 +86,9 @@ class PayrollApiController extends Controller
     public function getPeriodes(Request $request)
     {
         try {
-            $query = DB::table('payroll_calculations')
+            // ✅ FIX: Pakai VIEW merge
+            $query = DB::table('payroll_calculations_merge')
                       ->select('periode')
-                      ->where('is_released', true) // ✅ FILTER RELEASED
                       ->distinct()
                       ->orderBy('periode', 'desc');
             
@@ -98,6 +106,7 @@ class PayrollApiController extends Controller
             ]);
             
         } catch (\Exception $e) {
+            \Log::error('Payroll API Get Periodes Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data: ' . $e->getMessage()
@@ -118,9 +127,8 @@ class PayrollApiController extends Controller
                 'karyawan_id' => 'required|integer'
             ]);
             
-            $exists = PayrollCalculation::where('periode', $request->periode)
+            $exists = PayrollCalculationsMerge::where('periode', $request->periode)
                                         ->where('karyawan_id', $request->karyawan_id)
-                                        ->where('is_released', true) // ✅ FILTER RELEASED
                                         ->exists();
             
             return response()->json([
@@ -140,6 +148,7 @@ class PayrollApiController extends Controller
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
+            \Log::error('Payroll API Check Exists Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal melakukan pengecekan: ' . $e->getMessage()
@@ -155,8 +164,8 @@ class PayrollApiController extends Controller
     public function summaryByPeriode($periode)
     {
         try {
-            $summary = PayrollCalculation::where('periode', $periode)
-                ->where('is_released', true) // ✅ FILTER RELEASED
+            // ✅ FIX: Hapus redundant filter is_released (VIEW udah filter)
+            $summary = PayrollCalculationsMerge::where('periode', $periode)
                 ->select([
                     DB::raw('COUNT(*) as total_karyawan'),
                     DB::raw('SUM(total_penerimaan) as total_penerimaan'),
@@ -166,8 +175,7 @@ class PayrollApiController extends Controller
                 ->first();
             
             // Get breakdown by company
-            $byCompany = PayrollCalculation::where('periode', $periode)
-                ->where('is_released', true) // ✅ FILTER RELEASED
+            $byCompany = PayrollCalculationsMerge::where('periode', $periode)
                 ->select([
                     'company_id',
                     DB::raw('COUNT(*) as total_karyawan'),
@@ -175,7 +183,7 @@ class PayrollApiController extends Controller
                     DB::raw('SUM(total_potongan) as total_potongan'),
                     DB::raw('SUM(gaji_bersih) as gaji_bersih')
                 ])
-                ->with('company:id,absen_company_id,company_name')
+                ->with('company:absen_company_id,company_name')
                 ->groupBy('company_id')
                 ->get();
             
@@ -190,6 +198,7 @@ class PayrollApiController extends Controller
             ]);
             
         } catch (\Exception $e) {
+            \Log::error('Payroll API Summary Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil summary: ' . $e->getMessage()
@@ -205,8 +214,7 @@ class PayrollApiController extends Controller
     public function byPeriode(Request $request, $periode)
     {
         try {
-            $query = PayrollCalculation::where('periode', $periode)
-                                       ->where('is_released', true); // ✅ FILTER RELEASED
+            $query = PayrollCalculationsMerge::where('periode', $periode);
             
             // Filter by company_id if needed
             if ($request->filled('company_id')) {
@@ -216,19 +224,27 @@ class PayrollApiController extends Controller
             // Sorting
             $sortBy = $request->get('sort_by', 'gaji_bersih');
             $sortDir = $request->get('sort_dir', 'desc');
+            
+            // ✅ Validasi sort column
+            $allowedSort = ['gaji_bersih', 'total_penerimaan', 'total_potongan', 'karyawan_id'];
+            if (!in_array($sortBy, $allowedSort)) {
+                $sortBy = 'gaji_bersih';
+            }
+            
             $query->orderBy($sortBy, $sortDir);
             
             // Pagination or all
             if ($request->boolean('all')) {
+                // ✅ Limit untuk prevent memory issue
                 $payrolls = $query->with([
-                    'karyawan:id,absen_karyawan_id,nama_lengkap,nik', 
-                    'company:id,absen_company_id,company_name,logo,ttd'
-                ])->get();
+                    'karyawan:absen_karyawan_id,nama_lengkap,nik', 
+                    'company:absen_company_id,company_name,logo,ttd'
+                ])->limit(1000)->get();
             } else {
-                $perPage = $request->get('per_page', 15);
+                $perPage = min($request->get('per_page', 15), 100);
                 $payrolls = $query->with([
-                    'karyawan:id,absen_karyawan_id,nama_lengkap,nik', 
-                    'company:id,absen_company_id,company_name,logo,ttd'
+                    'karyawan:absen_karyawan_id,nama_lengkap,nik', 
+                    'company:absen_company_id,company_name,logo,ttd'
                 ])->paginate($perPage);
             }
             
@@ -239,6 +255,7 @@ class PayrollApiController extends Controller
             ]);
             
         } catch (\Exception $e) {
+            \Log::error('Payroll API By Periode Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data: ' . $e->getMessage()
@@ -254,8 +271,7 @@ class PayrollApiController extends Controller
     public function byKaryawan(Request $request, $karyawan_id)
     {
         try {
-            $query = PayrollCalculation::where('karyawan_id', $karyawan_id)
-                                       ->where('is_released', true); // ✅ FILTER RELEASED
+            $query = PayrollCalculationsMerge::where('karyawan_id', $karyawan_id);
             
             // Filter by periode range
             if ($request->filled('start_periode')) {
@@ -271,19 +287,19 @@ class PayrollApiController extends Controller
             $query->orderBy($sortBy, $sortDir);
             
             $payrolls = $query->with([
-                'karyawan:id,absen_karyawan_id,nama_lengkap,nik', 
-                'company:id,absen_company_id,company_name,logo,ttd'
+                'karyawan:absen_karyawan_id,nama_lengkap,nik', 
+                'company:absen_company_id,company_name,logo,ttd'
             ])->get();
             
-            // ✅ ALWAYS return array, not pagination object
             return response()->json([
                 'success' => true,
                 'message' => "Data payroll karyawan ID {$karyawan_id} berhasil diambil",
-                'data' => $payrolls->toArray(),
+                'data' => $payrolls,
                 'total' => $payrolls->count()
             ]);
             
         } catch (\Exception $e) {
+            \Log::error('Payroll API By Karyawan Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data: ' . $e->getMessage()
@@ -299,10 +315,9 @@ class PayrollApiController extends Controller
     public function show($id)
     {
         try {
-            $payroll = PayrollCalculation::where('is_released', true) // ✅ FILTER RELEASED
-                ->with([
-                    'karyawan:id,absen_karyawan_id,nama_lengkap,nik,email_pribadi,telp_pribadi',
-                    'company:id,absen_company_id,company_name,code,logo,ttd'
+            $payroll = PayrollCalculationsMerge::with([
+                    'karyawan:absen_karyawan_id,nama_lengkap,nik,email_pribadi,telp_pribadi',
+                    'company:absen_company_id,company_name,code,logo,ttd'
                 ])
                 ->findOrFail($id);
             
@@ -318,6 +333,7 @@ class PayrollApiController extends Controller
                 'message' => 'Payroll tidak ditemukan atau belum dirilis'
             ], 404);
         } catch (\Exception $e) {
+            \Log::error('Payroll API Show Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data: ' . $e->getMessage()

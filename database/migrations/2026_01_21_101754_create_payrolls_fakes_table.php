@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('payrolls', function (Blueprint $table) {
+        Schema::create('payrolls_fakes', function (Blueprint $table) {
             $table->id();
             $table->string('periode'); // contoh: '2025-01'
             $table->foreignId('karyawan_id')->nullable()->onDelete('cascade');
@@ -74,6 +74,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('payrolls');
+        Schema::dropIfExists('payrolls_fakes');
     }
 };
