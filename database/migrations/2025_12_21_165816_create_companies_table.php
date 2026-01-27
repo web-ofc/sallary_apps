@@ -23,6 +23,8 @@ return new class extends Migration
             $table->string('company_name', 150);
             $table->string('logo', 150)->nullable();
             $table->string('ttd', 150)->nullable();
+            $table->string('nama_ttd', 150)->nullable();
+            $table->string('jabatan_ttd', 150)->nullable();
             
             // Sync metadata
             $table->timestamp('last_synced_at')->nullable(); // Kapan terakhir di-sync

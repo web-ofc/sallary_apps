@@ -103,63 +103,6 @@
         </div>
     </div>
 
-    <!-- Stats Cards Row 2 - Breakdown -->
-    <div class="row g-5 g-xl-8 mb-5">
-        <!-- Total Pendapatan -->
-        <div class="col-xl-4">
-            <div class="card card-xl-stretch mb-xl-8 bg-light-success">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <span class="text-success fw-semibold d-block fs-6 mb-1">
-                                <i class="fas fa-arrow-up me-2"></i>Total Salary
-                            </span>
-                            <span class="text-success fw-bold d-block fs-2x" id="totalIncome">
-                                <div class="spinner-border spinner-border-sm" role="status"></div>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Total Potongan -->
-        <div class="col-xl-4">
-            <div class="card card-xl-stretch mb-xl-8 bg-light-danger">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <span class="text-danger fw-semibold d-block fs-6 mb-1">
-                                <i class="fas fa-arrow-down me-2"></i>Total Potongan
-                            </span>
-                            <span class="text-danger fw-bold d-block fs-2x" id="totalDeduction">
-                                <div class="spinner-border spinner-border-sm" role="status"></div>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Total BPJS -->
-        <div class="col-xl-4">
-            <div class="card card-xl-stretch mb-xl-8 bg-light-primary">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <span class="text-primary fw-semibold d-block fs-6 mb-1">
-                                <i class="fas fa-shield-alt me-2"></i>Total BPJS
-                            </span>
-                            <span class="text-primary fw-bold d-block fs-2x" id="totalBPJS">
-                                <div class="spinner-border spinner-border-sm" role="status"></div>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Charts Row -->
     <div class="row g-5 g-xl-8 mb-5">
         <!-- Payroll by Company -->
@@ -204,8 +147,7 @@
             <div class="card card-xl-stretch mb-5 mb-xl-8">
                 <div class="card-header border-0 pt-5">
                     <h3 class="card-title align-items-start flex-column">
-                        <span class="card-label fw-bold text-gray-900">Breakdown Pendapatan</span>
-                        <span class="text-muted mt-1 fw-semibold fs-7">Komponen pendapatan karyawan</span>
+                        <span class="card-label fw-bold text-gray-900">Breakdown</span>
                     </h3>
                 </div>
                 <div class="card-body">
@@ -242,48 +184,6 @@
         </div>
     </div>
 
-    <!-- Recent Payrolls -->
-    <div class="row g-5 g-xl-8">
-        <div class="col-xl-12">
-            <div class="card card-xl-stretch mb-5 mb-xl-8">
-                <div class="card-header border-0 pt-5">
-                    <h3 class="card-title align-items-start flex-column">
-                        <span class="card-label fw-bold text-gray-900">Payroll Terbaru</span>
-                        <span class="text-muted mt-1 fw-semibold fs-7">10 payroll terakhir yang diinput</span>
-                    </h3>
-                    <div class="card-toolbar">
-                        <a href="{{ route('payrolls.index') }}" class="btn btn-sm btn-light-primary">
-                            <i class="fas fa-eye"></i> Lihat Semua
-                        </a>
-                    </div>
-                </div>
-                <div class="card-body py-3">
-                    <div class="table-responsive">
-                        <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
-                            <thead>
-                                <tr class="fw-bold text-muted">
-                                    <th class="min-w-100px">Periode</th>
-                                    <th class="min-w-150px">Karyawan</th>
-                                    <th class="min-w-120px">Company</th>
-                                    <th class="min-w-120px text-end">Gaji Pokok</th>
-                                    <th class="min-w-120px text-end">Take Home Pay</th>
-                                    <th class="min-w-80px">Status</th>
-                                    <th class="min-w-100px text-end">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="recentPayrolls">
-                                <tr>
-                                    <td colspan="7" class="text-center py-5">
-                                        <div class="spinner-border text-primary" role="status"></div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 @push('scripts')
@@ -343,7 +243,6 @@ function loadDashboardData() {
                 renderTopSalaries(response.data);
                 renderIncomeBreakdown(response.data);
                 renderDeductionBreakdown(response.data);
-                renderRecentPayrolls(response.data);
             }
         },
         error: function(xhr) {
@@ -582,46 +481,6 @@ function renderDeductionBreakdown(data) {
     $('#deductionBreakdown').html(html);
 }
 
-function renderRecentPayrolls(data) {
-    let recent = data.slice(0, 10);
-    
-    let html = '';
-    recent.forEach(function(p) {
-        let statusBadge = p.is_released 
-            ? '<span class="badge badge-success">Released</span>'
-            : '<span class="badge badge-warning">Draft</span>';
-        
-        let takeHomePay = calculateTakeHomePay(p);
-        
-        html += `
-            <tr>
-                <td class="fw-bold">${p.periode}</td>
-                <td>
-                    <div class="d-flex flex-column">
-                        <span class="text-gray-800 fw-bold">${p.karyawan?.nama_lengkap || 'Unknown'}</span>
-                        <span class="text-muted fs-7">${p.karyawan?.nik || '-'}</span>
-                    </div>
-                </td>
-                <td>${p.company?.company_name || '-'}</td>
-                <td class="text-end fw-bold">${formatRupiah(p.gaji_pokok)}</td>
-                <td class="text-end fw-bold text-success">${formatRupiah(takeHomePay)}</td>
-                <td>${statusBadge}</td>
-                <td class="text-end">
-                    <div class="btn-group btn-group-sm">
-                        <a href="/payrolls/${p.id}" class="btn btn-sm btn-light-primary">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <a href="/payrolls/${p.id}/edit" class="btn btn-sm btn-light-warning">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                    </div>
-                </td>
-            </tr>
-        `;
-    });
-    
-    $('#recentPayrolls').html(html);
-}
 
 function calculateTakeHomePay(p) {
     let income = (p.gaji_pokok || 0) +

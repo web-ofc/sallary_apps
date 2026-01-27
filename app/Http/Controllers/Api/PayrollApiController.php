@@ -60,7 +60,7 @@ class PayrollApiController extends Controller
             $perPage = min($request->get('per_page', 15), 100); // ✅ Max 100
             $payrolls = $query->with([
                 'karyawan:absen_karyawan_id,nama_lengkap,nik', 
-                'company:absen_company_id,company_name,code,logo,ttd'
+                'company:absen_company_id,company_name,code,logo,ttd,nama_ttd,jabatan_ttd',
             ])->paginate($perPage);
 
             return response()->json([
@@ -238,13 +238,13 @@ class PayrollApiController extends Controller
                 // ✅ Limit untuk prevent memory issue
                 $payrolls = $query->with([
                     'karyawan:absen_karyawan_id,nama_lengkap,nik', 
-                    'company:absen_company_id,company_name,logo,ttd'
+                    'company:absen_company_id,company_name,logo,ttd,nama_ttd,jabatan_ttd'
                 ])->limit(1000)->get();
             } else {
                 $perPage = min($request->get('per_page', 15), 100);
                 $payrolls = $query->with([
                     'karyawan:absen_karyawan_id,nama_lengkap,nik', 
-                    'company:absen_company_id,company_name,logo,ttd'
+                    'company:absen_company_id,company_name,logo,ttd,nama_ttd,jabatan_ttd'
                 ])->paginate($perPage);
             }
             
@@ -288,7 +288,7 @@ class PayrollApiController extends Controller
             
             $payrolls = $query->with([
                 'karyawan:absen_karyawan_id,nama_lengkap,nik', 
-                'company:absen_company_id,company_name,logo,ttd'
+                'company:absen_company_id,company_name,logo,ttd,nama_ttd,jabatan_ttd'
             ])->get();
             
             return response()->json([
@@ -317,7 +317,7 @@ class PayrollApiController extends Controller
         try {
             $payroll = PayrollCalculationsMerge::with([
                     'karyawan:absen_karyawan_id,nama_lengkap,nik,email_pribadi,telp_pribadi',
-                    'company:absen_company_id,company_name,code,logo,ttd'
+                    'company:absen_company_id,company_name,code,logo,ttd,nama_ttd,jabatan_ttd'
                 ])
                 ->findOrFail($id);
             

@@ -236,6 +236,8 @@ class CompanySyncService
             'company_name' => $apiData['company_name'] ?? 'Unknown',
             'logo' => $apiData['logo'] ?? null,
             'ttd' => $apiData['ttd'] ?? null,
+            'nama_ttd' => $apiData['nama_ttd'] ?? null,
+            'jabatan_ttd' => $apiData['jabatan_ttd'] ?? null,
             'last_synced_at' => now(),
             'sync_metadata' => json_encode([
                 'synced_from' => 'api',

@@ -20,6 +20,7 @@ use App\Http\Controllers\PayrollImportController;
 use App\Http\Controllers\Api\PayrollApiController;
 use App\Http\Controllers\RangeBrutoSyncController;
 use App\Http\Controllers\Pph21TaxBracketController;
+use App\Http\Controllers\Pph21MasaCompanyController;
 use App\Http\Controllers\PayrollFakeImportController;
 use App\Http\Controllers\KaryawanPtkpHistorySyncController;
 use App\Http\Controllers\PeriodeKaryawanMasaJabatanController;
@@ -365,6 +366,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::post('/download-errors', [PayrollFakeImportController::class, 'downloadErrors'])
             ->name('download-errors');
     });
+
+    Route::resource('/manage-pph21companyperiode', Pph21MasaCompanyController::class);
+    Route::get('pph21companyperiode/data', [Pph21MasaCompanyController::class, 'getData'])->name('pph21companyperiode.data');
+
 });
 
 
