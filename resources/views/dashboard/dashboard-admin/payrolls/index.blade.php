@@ -1065,42 +1065,69 @@ $(document).ready(function() {
         });
     });
 
-    // 🔥 EXPORT PENDING
-    $('#btnExportPending').on('click', function() {
-        const periode = $('#filterPeriodePending').val();
-        let url = CONFIG.routes.export + '?status=pending';
-        
-        if (periode) {
-            url += '&periode=' + periode;
+   // 🔥 EXPORT DENGAN AJAX + BLOB
+function downloadExport(status, periode = null) {
+    let url = CONFIG.routes.export + '?status=' + status;
+    if (periode) {
+        url += '&periode=' + periode;
+    }
+    
+    // Show loading
+    Swal.fire({
+        title: 'Mengexport...',
+        html: 'Mohon tunggu sebentar',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
         }
-        
-        window.location.href = url;
     });
-
-    // 🔥 EXPORT RELEASED (tanpa slip)
-    $('#btnExportReleased').on('click', function() {
-        const periode = $('#filterPeriodeReleased').val();
-        let url = CONFIG.routes.export + '?status=released';
-        
-        if (periode) {
-            url += '&periode=' + periode;
+    
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.blob();
+    })
+    .then(blob => {
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = downloadUrl;
+        a.download = 'payroll_' + status + '_' + new Date().getTime() + '.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(downloadUrl);
+        document.body.removeChild(a);
         
-        window.location.href = url;
+        Swal.close();
+        showToast('Export berhasil!', 'success');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.close();
+        showToast('Export gagal: ' + error.message, 'error');
     });
+}
 
-    // 🔥 EXPORT RELEASED SLIP
-    $('#btnExportReleasedSlip').on('click', function() {
-        const periode = $('#filterPeriodeReleasedSlip').val();
-        let url = CONFIG.routes.export + '?status=released_slip';
-        
-        if (periode) {
-            url += '&periode=' + periode;
-        }
-        
-        window.location.href = url;
-    });
+// Ganti event listener
+$('#btnExportPending').on('click', function(e) {
+    e.preventDefault();
+    downloadExport('pending', $('#filterPeriodePending').val());
+});
 
+$('#btnExportReleased').on('click', function(e) {
+    e.preventDefault();
+    downloadExport('released', $('#filterPeriodeReleased').val());
+});
+
+$('#btnExportReleasedSlip').on('click', function(e) {
+    e.preventDefault();
+    downloadExport('released_slip', $('#filterPeriodeReleasedSlip').val());
+});
     // 🔥 TAB SWITCH: Reload table when tab is shown
     $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
         const target = $(e.target).attr('href');
