@@ -590,6 +590,9 @@
 $(document).ready(function() {
     'use strict';
 
+ $('#btnExportPending').off('click');
+    $('#btnExportReleased').off('click');
+    $('#btnExportReleasedSlip').off('click');
     // 🔥 KONFIGURASI
     const CONFIG = {
         routes: {
@@ -1114,42 +1117,92 @@ if ($("#filterPeriodeReleasedSlip").length) {
     updateStatistics();
 });
 
-    // 🔥 EXPORT PENDING
-    $('#btnExportPending').on('click', function() {
-        const periode = $('#filterPeriodePending').val();
-        let url = CONFIG.routes.export + '?status=pending';
-        
-        if (periode) {
-            url += '&periode=' + periode;
-        }
-        
-        window.location.href = url;
+    // 🔥 EXPORT PENDING (Alternative Method)
+$('#btnExportPending').on('click', function(e) {
+    e.preventDefault();
+    
+    const periode = $('#filterPeriodePending').val();
+    
+    // Create hidden form
+    const form = $('<form>', {
+        'method': 'GET',
+        'action': CONFIG.routes.export
     });
+    
+    // Add hidden inputs
+    $('<input>').attr({
+        type: 'hidden',
+        name: 'status',
+        value: 'pending'
+    }).appendTo(form);
+    
+    if (periode) {
+        $('<input>').attr({
+            type: 'hidden',
+            name: 'periode',
+            value: periode
+        }).appendTo(form);
+    }
+    
+    // Submit form and remove it
+    form.appendTo('body').submit().remove();
+});
 
-    // 🔥 EXPORT RELEASED (tanpa slip)
-    $('#btnExportReleased').on('click', function() {
-        const periode = $('#filterPeriodeReleased').val();
-        let url = CONFIG.routes.export + '?status=released';
-        
-        if (periode) {
-            url += '&periode=' + periode;
-        }
-        
-        window.location.href = url;
+// 🔥 EXPORT RELEASED (Alternative Method)
+$('#btnExportReleased').on('click', function(e) {
+    e.preventDefault();
+    
+    const periode = $('#filterPeriodeReleased').val();
+    
+    const form = $('<form>', {
+        'method': 'GET',
+        'action': CONFIG.routes.export
     });
+    
+    $('<input>').attr({
+        type: 'hidden',
+        name: 'status',
+        value: 'released'
+    }).appendTo(form);
+    
+    if (periode) {
+        $('<input>').attr({
+            type: 'hidden',
+            name: 'periode',
+            value: periode
+        }).appendTo(form);
+    }
+    
+    form.appendTo('body').submit().remove();
+});
 
-    // 🔥 EXPORT RELEASED SLIP
-    $('#btnExportReleasedSlip').on('click', function() {
-        const periode = $('#filterPeriodeReleasedSlip').val();
-        let url = CONFIG.routes.export + '?status=released_slip';
-        
-        if (periode) {
-            url += '&periode=' + periode;
-        }
-        
-        window.location.href = url;
+// 🔥 EXPORT RELEASED SLIP (Alternative Method)
+$('#btnExportReleasedSlip').on('click', function(e) {
+    e.preventDefault();
+    
+    const periode = $('#filterPeriodeReleasedSlip').val();
+    
+    const form = $('<form>', {
+        'method': 'GET',
+        'action': CONFIG.routes.export
     });
-
+    
+    $('<input>').attr({
+        type: 'hidden',
+        name: 'status',
+        value: 'released_slip'
+    }).appendTo(form);
+    
+    if (periode) {
+        $('<input>').attr({
+            type: 'hidden',
+            name: 'periode',
+            value: periode
+        }).appendTo(form);
+    }
+    
+    form.appendTo('body').submit().remove();
+});
     // 🔥 TAB SWITCH: Reload table when tab is shown
     $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e)
     {
