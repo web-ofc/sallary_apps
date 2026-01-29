@@ -624,6 +624,8 @@ $(document).ready(function() {
     });
 
     // 🔥 INIT FLATPICKR - Filter Periode Pending
+   // 🔥 INIT FLATPICKR - Filter Periode Pending
+if ($("#filterPeriodePending").length) {
     $("#filterPeriodePending").flatpickr({
         plugins: [new monthSelectPlugin({ shorthand: true, dateFormat: "Y-m", altFormat: "F Y" })],
         locale: "id",
@@ -634,8 +636,10 @@ $(document).ready(function() {
             if (tablePending) tablePending.ajax.reload();
         }
     });
+}
 
-    // 🔥 INIT FLATPICKR - Filter Periode Released
+// 🔥 INIT FLATPICKR - Filter Periode Released
+if ($("#filterPeriodeReleased").length) {
     $("#filterPeriodeReleased").flatpickr({
         plugins: [new monthSelectPlugin({ shorthand: true, dateFormat: "Y-m", altFormat: "F Y" })],
         locale: "id",
@@ -646,8 +650,10 @@ $(document).ready(function() {
             if (tableReleased) tableReleased.ajax.reload();
         }
     });
+}
 
-    // 🔥 INIT FLATPICKR - Filter Periode Released Slip
+// 🔥 INIT FLATPICKR - Filter Periode Released Slip
+if ($("#filterPeriodeReleasedSlip").length) {
     $("#filterPeriodeReleasedSlip").flatpickr({
         plugins: [new monthSelectPlugin({ shorthand: true, dateFormat: "Y-m", altFormat: "F Y" })],
         locale: "id",
@@ -658,6 +664,7 @@ $(document).ready(function() {
             if (tableReleasedSlip) tableReleasedSlip.ajax.reload();
         }
     });
+}
 
     // 🔥 STATE MANAGEMENT
     let selectedIds = [];
@@ -875,12 +882,14 @@ $(document).ready(function() {
    
 
     $('#btnResetFilterPending').on('click', function() {
+    if ($('#filterPeriodePending').length && $('#filterPeriodePending')[0]._flatpickr) {
         $('#filterPeriodePending')[0]._flatpickr.clear();
-        $('#searchPending').val('');
-        if (tablePending) {
-            tablePending.search('').ajax.reload();
-        }
-    });
+    }
+    $('#searchPending').val('');
+    if (tablePending) {
+        tablePending.search('').ajax.reload();
+    }
+});
 
     // 🔥 SEARCH RELEASED
     $('#searchReleased').on('keyup', function() {
@@ -892,13 +901,14 @@ $(document).ready(function() {
    
 
    $('#btnResetFilterReleased').on('click', function() {
+    if ($('#filterPeriodeReleased').length && $('#filterPeriodeReleased')[0]._flatpickr) {
         $('#filterPeriodeReleased')[0]._flatpickr.clear();
-        $('#searchReleased').val('');
-        if (tableReleased) {
-            tableReleased.search('').ajax.reload();
-        }
-    });
-
+    }
+    $('#searchReleased').val('');
+    if (tableReleased) {
+        tableReleased.search('').ajax.reload();
+    }
+});
 
     // 🔥 SEARCH RELEASED SLIP
     $('#searchReleasedSlip').on('keyup', function() {
@@ -910,12 +920,15 @@ $(document).ready(function() {
  
 
     $('#btnResetFilterReleasedSlip').on('click', function() {
+    if ($('#filterPeriodeReleasedSlip').length && $('#filterPeriodeReleasedSlip')[0]._flatpickr) {
         $('#filterPeriodeReleasedSlip')[0]._flatpickr.clear();
-        $('#searchReleasedSlip').val('');
-        if (tableReleasedSlip) {
-            tableReleasedSlip.search('').ajax.reload();
-        }
-    });
+    }
+    $('#searchReleasedSlip').val('');
+    if (tableReleasedSlip) {
+        tableReleasedSlip.search('').ajax.reload();
+    }
+});
+
 
     // 🔥 CHECKBOX: Check All Pending
     $('#checkAllPending').on('change', function() {
@@ -1094,10 +1107,12 @@ $(document).ready(function() {
 
     // Ganti bagian FILTER STATISTICS
     $('#btnResetStatistics').on('click', function() {
+    if ($('#filterStatisticsPeriode').length && $('#filterStatisticsPeriode')[0]._flatpickr) {
         $('#filterStatisticsPeriode')[0]._flatpickr.clear();
-        $('#filterStatisticsYear').val('');
-        updateStatistics();
-    });
+    }
+    $('#filterStatisticsYear').val('');
+    updateStatistics();
+});
 
     // 🔥 EXPORT PENDING
     $('#btnExportPending').on('click', function() {

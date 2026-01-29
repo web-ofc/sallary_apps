@@ -149,10 +149,14 @@ return new class extends Migration
                 p.ca_kehadiran,
                 p.pph_21,
                 p.salary_type,
+
+                -- disimpan MINUS di tabel (ikut apa adanya)
                 p.bpjs_tenaga_kerja,
                 p.bpjs_kesehatan,
 
-                -- ✅ PPh21 yang ditampilkan di PDF harus POSITIF
+                /* =========================
+                PPh21 yang ditampilkan di PDF harus POSITIF
+                ========================= */
                 CASE
                     WHEN p.salary_type = 'nett' THEN COALESCE(p.pph_21, 0)
                     ELSE COALESCE(p.pph_21_deduction, 0)
@@ -176,151 +180,229 @@ return new class extends Migration
                 p.updated_at,
                 p.source_table,
 
-                -- Salary Calculation (biarin sesuai gaya lama)
-                COALESCE(p.gaji_pokok, 0) + COALESCE(p.pph_21_deduction, 0) + COALESCE(p.pph_21, 0) AS salary,
+                /* =========================
+                Salary Calculation (biarin gaya lama)
+                ========================= */
+                COALESCE(p.gaji_pokok, 0)
+                + COALESCE(p.pph_21_deduction, 0)
+                + COALESCE(p.pph_21, 0) AS salary,
 
-                -- Tunjangan (NETT)
-                CASE 
+                /* =========================
+                ⭐ Tunjangan (NETT)
+                ========================= */
+                CASE
                     WHEN p.salary_type = 'nett' THEN COALESCE(p.pph_21, 0)
                     ELSE 0
                 END AS tunjangan,
 
-                -- BPJS perusahaan income (tetap)
-                COALESCE(p.bpjs_tk_jht_3_7_percent, 0) + 
-                COALESCE(p.bpjs_tk_jkk_0_24_percent, 0) + 
-                COALESCE(p.bpjs_tk_jkm_0_3_percent, 0) + 
-                COALESCE(p.bpjs_tk_jp_2_percent, 0) AS bpjs_tenaga_kerja_perusahaan_income,
+                /* =========================
+                BPJS perusahaan income (tetap)
+                ========================= */
+                (
+                    COALESCE(p.bpjs_tk_jht_3_7_percent, 0)
+                    + COALESCE(p.bpjs_tk_jkk_0_24_percent, 0)
+                    + COALESCE(p.bpjs_tk_jkm_0_3_percent, 0)
+                    + COALESCE(p.bpjs_tk_jp_2_percent, 0)
+                ) AS bpjs_tenaga_kerja_perusahaan_income,
 
                 COALESCE(p.bpjs_kes_4_percent, 0) AS bpjs_kesehatan_perusahaan_income,
 
-                -- ✅ BPJS pegawai income: HANYA NETT, kalau GROSS jadi 0
+                /* =========================
+                ✅ BPJS pegawai income: HANYA NETT, kalau GROSS jadi 0
+                (kolom manual sudah MINUS -> ikut nilai tabel, tapi hanya NETT)
+                ========================= */
                 CASE
                     WHEN p.salary_type = 'nett' THEN
-                        COALESCE(p.bpjs_tk_jht_2_percent, 0) + 
-                        COALESCE(p.bpjs_tk_jp_1_percent, 0) + 
-                        COALESCE(p.bpjs_tenaga_kerja, 0)
+                        COALESCE(p.bpjs_tk_jht_2_percent, 0)
+                        + COALESCE(p.bpjs_tk_jp_1_percent, 0)
+                        + COALESCE(p.bpjs_tenaga_kerja, 0)
                     ELSE 0
                 END AS bpjs_tenaga_kerja_pegawai_income,
 
                 CASE
                     WHEN p.salary_type = 'nett' THEN
-                        COALESCE(p.bpjs_kes_1_percent, 0) + 
-                        COALESCE(p.bpjs_kesehatan, 0)
+                        COALESCE(p.bpjs_kes_1_percent, 0)
+                        + COALESCE(p.bpjs_kesehatan, 0)
                     ELSE 0
                 END AS bpjs_kesehatan_pegawai_income,
 
-                -- BPJS deduction (NEGATIF) - perusahaan
-                -(COALESCE(p.bpjs_tk_jht_3_7_percent, 0) + 
-                  COALESCE(p.bpjs_tk_jkk_0_24_percent, 0) + 
-                  COALESCE(p.bpjs_tk_jkm_0_3_percent, 0) + 
-                  COALESCE(p.bpjs_tk_jp_2_percent, 0)) AS bpjs_tenaga_kerja_perusahaan_deduction,
+                /* =========================
+                BPJS deduction (NEGATIF)
+                - perusahaan: minus total perusahaan
+                - pegawai: TETAP kepotong (gross & nett), tapi JANGAN pakai kolom manual
+                    karena kolom manual sudah MINUS di tabel -> bisa double minus
+                ========================= */
+                -(
+                    COALESCE(p.bpjs_tk_jht_3_7_percent, 0)
+                    + COALESCE(p.bpjs_tk_jkk_0_24_percent, 0)
+                    + COALESCE(p.bpjs_tk_jkm_0_3_percent, 0)
+                    + COALESCE(p.bpjs_tk_jp_2_percent, 0)
+                ) AS bpjs_tenaga_kerja_perusahaan_deduction,
 
                 -COALESCE(p.bpjs_kes_4_percent, 0) AS bpjs_kesehatan_perusahaan_deduction,
 
-                -- BPJS deduction (NEGATIF) - pegawai (tetap, biar gross tetap kepotong)
-                -(COALESCE(p.bpjs_tk_jht_2_percent, 0) + 
-                  COALESCE(p.bpjs_tk_jp_1_percent, 0) +
-                  COALESCE(p.bpjs_tenaga_kerja, 0)) AS bpjs_tenaga_kerja_pegawai_deduction,
+                -(
+                    COALESCE(p.bpjs_tk_jht_2_percent, 0)
+                    + COALESCE(p.bpjs_tk_jp_1_percent, 0)
+                ) AS bpjs_tenaga_kerja_pegawai_deduction,
 
-                -(COALESCE(p.bpjs_kes_1_percent, 0) +
-                  COALESCE(p.bpjs_kesehatan, 0)) AS bpjs_kesehatan_pegawai_deduction,
+                -COALESCE(p.bpjs_kes_1_percent, 0) AS bpjs_kesehatan_pegawai_deduction,
 
-                -- Total Penerimaan:
-                -- ✅ pegawai BPJS income hanya masuk kalau NETT
-                COALESCE(p.gaji_pokok, 0) + 
-                COALESCE(p.monthly_kpi, 0) + 
-                COALESCE(p.overtime, 0) + 
-                COALESCE(p.medical_reimbursement, 0) +
-
-                -- perusahaan income
-                (COALESCE(p.bpjs_tk_jht_3_7_percent, 0) + COALESCE(p.bpjs_tk_jkk_0_24_percent, 0) + COALESCE(p.bpjs_tk_jkm_0_3_percent, 0) + COALESCE(p.bpjs_tk_jp_2_percent, 0)) + 
-                COALESCE(p.bpjs_kes_4_percent, 0) +
-
-                -- pegawai income (nett only)
+                /* =========================
+                Total Penerimaan:
+                ✅ pegawai BPJS income hanya masuk kalau NETT
+                ========================= */
                 (
-                    CASE
-                        WHEN p.salary_type = 'nett' THEN
-                            (COALESCE(p.bpjs_tk_jht_2_percent, 0) + COALESCE(p.bpjs_tk_jp_1_percent, 0) + COALESCE(p.bpjs_tenaga_kerja, 0))
-                            +
-                            (COALESCE(p.bpjs_kes_1_percent, 0) + COALESCE(p.bpjs_kesehatan, 0))
-                        ELSE 0
-                    END
-                ) +
+                    COALESCE(p.gaji_pokok, 0)
+                    + COALESCE(p.monthly_kpi, 0)
+                    + COALESCE(p.overtime, 0)
+                    + COALESCE(p.medical_reimbursement, 0)
 
-                COALESCE(p.insentif_sholat, 0) + 
-                COALESCE(p.monthly_bonus, 0) + 
-                COALESCE(p.rapel, 0) + 
-                COALESCE(p.tunjangan_pulsa, 0) + 
-                COALESCE(p.tunjangan_kehadiran, 0) + 
-                COALESCE(p.tunjangan_transport, 0) + 
-                COALESCE(p.tunjangan_lainnya, 0) + 
-                COALESCE(p.yearly_bonus, 0) + 
-                COALESCE(p.thr, 0) + 
-                COALESCE(p.other, 0) +
+                    -- perusahaan income
+                    + (
+                        COALESCE(p.bpjs_tk_jht_3_7_percent, 0)
+                        + COALESCE(p.bpjs_tk_jkk_0_24_percent, 0)
+                        + COALESCE(p.bpjs_tk_jkm_0_3_percent, 0)
+                        + COALESCE(p.bpjs_tk_jp_2_percent, 0)
+                    )
+                    + COALESCE(p.bpjs_kes_4_percent, 0)
 
-                -- tunjangan pajak (nett only)
-                (CASE WHEN p.salary_type = 'nett' THEN COALESCE(p.pph_21, 0) ELSE 0 END)
-                AS total_penerimaan,
+                    -- pegawai income (nett only)
+                    + (
+                        CASE
+                            WHEN p.salary_type = 'nett' THEN
+                                (
+                                    COALESCE(p.bpjs_tk_jht_2_percent, 0)
+                                    + COALESCE(p.bpjs_tk_jp_1_percent, 0)
+                                    + COALESCE(p.bpjs_tenaga_kerja, 0)  -- minus ikut tabel
+                                )
+                                +
+                                (
+                                    COALESCE(p.bpjs_kes_1_percent, 0)
+                                    + COALESCE(p.bpjs_kesehatan, 0)     -- minus ikut tabel
+                                )
+                            ELSE 0
+                        END
+                    )
 
-                -- Total Potongan (negatif untuk THP):
-                -- PPh21: nett pakai -pph_21, gross pakai -pph_21_deduction
-                COALESCE(p.ca_corporate, 0) + 
-                COALESCE(p.ca_personal, 0) + 
-                COALESCE(p.ca_kehadiran, 0) + 
+                    + COALESCE(p.insentif_sholat, 0)
+                    + COALESCE(p.monthly_bonus, 0)
+                    + COALESCE(p.rapel, 0)
+                    + COALESCE(p.tunjangan_pulsa, 0)
+                    + COALESCE(p.tunjangan_kehadiran, 0)
+                    + COALESCE(p.tunjangan_transport, 0)
+                    + COALESCE(p.tunjangan_lainnya, 0)
+                    + COALESCE(p.yearly_bonus, 0)
+                    + COALESCE(p.thr, 0)
+                    + COALESCE(p.other, 0)
+
+                    -- tunjangan pajak (nett only)
+                    + (CASE WHEN p.salary_type = 'nett' THEN COALESCE(p.pph_21, 0) ELSE 0 END)
+                ) AS total_penerimaan,
+
+                /* =========================
+                Total Potongan (negatif untuk THP)
+                - PPh21: nett pakai -pph_21, gross pakai -pph_21_deduction
+                - BPJS pegawai potongan: persen doang (tanpa kolom manual)
+                ========================= */
                 (
-                    CASE
+                    COALESCE(p.ca_corporate, 0)
+                    + COALESCE(p.ca_personal, 0)
+                    + COALESCE(p.ca_kehadiran, 0)
+
+                    + CASE
                         WHEN p.salary_type = 'nett' THEN -COALESCE(p.pph_21, 0)
                         ELSE -COALESCE(p.pph_21_deduction, 0)
                     END
-                ) + 
-                (-(COALESCE(p.bpjs_tk_jht_3_7_percent, 0) + COALESCE(p.bpjs_tk_jkk_0_24_percent, 0) + COALESCE(p.bpjs_tk_jkm_0_3_percent, 0) + COALESCE(p.bpjs_tk_jp_2_percent, 0))) + 
-                (-(COALESCE(p.bpjs_tk_jht_2_percent, 0) + COALESCE(p.bpjs_tk_jp_1_percent, 0) + COALESCE(p.bpjs_tenaga_kerja, 0))) + 
-                (-COALESCE(p.bpjs_kes_4_percent, 0)) + 
-                (-(COALESCE(p.bpjs_kes_1_percent, 0) + COALESCE(p.bpjs_kesehatan, 0)))
-                AS total_potongan,
 
-                -- Gaji Bersih = total_penerimaan + total_potongan
+                    - (
+                        COALESCE(p.bpjs_tk_jht_3_7_percent, 0)
+                        + COALESCE(p.bpjs_tk_jkk_0_24_percent, 0)
+                        + COALESCE(p.bpjs_tk_jkm_0_3_percent, 0)
+                        + COALESCE(p.bpjs_tk_jp_2_percent, 0)
+                    )
+
+                    - (
+                        COALESCE(p.bpjs_tk_jht_2_percent, 0)
+                        + COALESCE(p.bpjs_tk_jp_1_percent, 0)
+                    )
+
+                    - COALESCE(p.bpjs_kes_4_percent, 0)
+                    - COALESCE(p.bpjs_kes_1_percent, 0)
+                ) AS total_potongan,
+
+                /* =========================
+                Gaji Bersih = total_penerimaan + total_potongan
+                ========================= */
                 (
-                    COALESCE(p.gaji_pokok, 0) + 
-                    COALESCE(p.monthly_kpi, 0) + 
-                    COALESCE(p.overtime, 0) + 
-                    COALESCE(p.medical_reimbursement, 0) +
-                    (COALESCE(p.bpjs_tk_jht_3_7_percent, 0) + COALESCE(p.bpjs_tk_jkk_0_24_percent, 0) + COALESCE(p.bpjs_tk_jkm_0_3_percent, 0) + COALESCE(p.bpjs_tk_jp_2_percent, 0)) + 
-                    COALESCE(p.bpjs_kes_4_percent, 0) +
                     (
-                        CASE
-                            WHEN p.salary_type = 'nett' THEN
-                                (COALESCE(p.bpjs_tk_jht_2_percent, 0) + COALESCE(p.bpjs_tk_jp_1_percent, 0) + COALESCE(p.bpjs_tenaga_kerja, 0))
-                                +
-                                (COALESCE(p.bpjs_kes_1_percent, 0) + COALESCE(p.bpjs_kesehatan, 0))
-                            ELSE 0
-                        END
-                    ) +
-                    COALESCE(p.insentif_sholat, 0) + 
-                    COALESCE(p.monthly_bonus, 0) + 
-                    COALESCE(p.rapel, 0) + 
-                    COALESCE(p.tunjangan_pulsa, 0) + 
-                    COALESCE(p.tunjangan_kehadiran, 0) + 
-                    COALESCE(p.tunjangan_transport, 0) + 
-                    COALESCE(p.tunjangan_lainnya, 0) + 
-                    COALESCE(p.yearly_bonus, 0) + 
-                    COALESCE(p.thr, 0) + 
-                    COALESCE(p.other, 0) +
-                    (CASE WHEN p.salary_type = 'nett' THEN COALESCE(p.pph_21, 0) ELSE 0 END)
-                ) + (
-                    COALESCE(p.ca_corporate, 0) + 
-                    COALESCE(p.ca_personal, 0) + 
-                    COALESCE(p.ca_kehadiran, 0) + 
+                        COALESCE(p.gaji_pokok, 0)
+                        + COALESCE(p.monthly_kpi, 0)
+                        + COALESCE(p.overtime, 0)
+                        + COALESCE(p.medical_reimbursement, 0)
+
+                        + (
+                            COALESCE(p.bpjs_tk_jht_3_7_percent, 0)
+                            + COALESCE(p.bpjs_tk_jkk_0_24_percent, 0)
+                            + COALESCE(p.bpjs_tk_jkm_0_3_percent, 0)
+                            + COALESCE(p.bpjs_tk_jp_2_percent, 0)
+                        )
+                        + COALESCE(p.bpjs_kes_4_percent, 0)
+
+                        + (
+                            CASE
+                                WHEN p.salary_type = 'nett' THEN
+                                    (
+                                        COALESCE(p.bpjs_tk_jht_2_percent, 0)
+                                        + COALESCE(p.bpjs_tk_jp_1_percent, 0)
+                                        + COALESCE(p.bpjs_tenaga_kerja, 0)
+                                    )
+                                    +
+                                    (
+                                        COALESCE(p.bpjs_kes_1_percent, 0)
+                                        + COALESCE(p.bpjs_kesehatan, 0)
+                                    )
+                                ELSE 0
+                            END
+                        )
+
+                        + COALESCE(p.insentif_sholat, 0)
+                        + COALESCE(p.monthly_bonus, 0)
+                        + COALESCE(p.rapel, 0)
+                        + COALESCE(p.tunjangan_pulsa, 0)
+                        + COALESCE(p.tunjangan_kehadiran, 0)
+                        + COALESCE(p.tunjangan_transport, 0)
+                        + COALESCE(p.tunjangan_lainnya, 0)
+                        + COALESCE(p.yearly_bonus, 0)
+                        + COALESCE(p.thr, 0)
+                        + COALESCE(p.other, 0)
+
+                        + (CASE WHEN p.salary_type = 'nett' THEN COALESCE(p.pph_21, 0) ELSE 0 END)
+                    )
+                    +
                     (
-                        CASE
+                        COALESCE(p.ca_corporate, 0)
+                        + COALESCE(p.ca_personal, 0)
+                        + COALESCE(p.ca_kehadiran, 0)
+
+                        + CASE
                             WHEN p.salary_type = 'nett' THEN -COALESCE(p.pph_21, 0)
                             ELSE -COALESCE(p.pph_21_deduction, 0)
                         END
-                    ) + 
-                    (-(COALESCE(p.bpjs_tk_jht_3_7_percent, 0) + COALESCE(p.bpjs_tk_jkk_0_24_percent, 0) + COALESCE(p.bpjs_tk_jkm_0_3_percent, 0) + COALESCE(p.bpjs_tk_jp_2_percent, 0))) + 
-                    (-(COALESCE(p.bpjs_tk_jht_2_percent, 0) + COALESCE(p.bpjs_tk_jp_1_percent, 0) + COALESCE(p.bpjs_tenaga_kerja, 0))) + 
-                    (-COALESCE(p.bpjs_kes_4_percent, 0)) + 
-                    (-(COALESCE(p.bpjs_kes_1_percent, 0) + COALESCE(p.bpjs_kesehatan, 0)))
+
+                        - (
+                            COALESCE(p.bpjs_tk_jht_3_7_percent, 0)
+                            + COALESCE(p.bpjs_tk_jkk_0_24_percent, 0)
+                            + COALESCE(p.bpjs_tk_jkm_0_3_percent, 0)
+                            + COALESCE(p.bpjs_tk_jp_2_percent, 0)
+                        )
+                        - (
+                            COALESCE(p.bpjs_tk_jht_2_percent, 0)
+                            + COALESCE(p.bpjs_tk_jp_1_percent, 0)
+                        )
+                        - COALESCE(p.bpjs_kes_4_percent, 0)
+                        - COALESCE(p.bpjs_kes_1_percent, 0)
+                    )
                 ) AS gaji_bersih
 
             FROM payrolls_merge p

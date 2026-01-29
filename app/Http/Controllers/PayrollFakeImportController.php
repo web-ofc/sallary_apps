@@ -146,203 +146,204 @@ class PayrollFakeImportController extends Controller
     }
     
     public function validDataTable(Request $request)
-    {
-        try {
-            $validRows = Session::get('payroll_fake_import_valid_rows', []);
-            
-            if (empty($validRows)) {
-                return response()->json([
-                    'draw' => intval($request->input('draw')),
-                    'recordsTotal' => 0,
-                    'recordsFiltered' => 0,
-                    'data' => []
-                ]);
-            }
-            
-            $collection = collect($validRows);
-            
-            // Search
-            $search = $request->input('search.value');
-            if (!empty($search)) {
-                $collection = $collection->filter(function($row) use ($search) {
-                    return stripos($row['periode'], $search) !== false ||
-                        stripos($row['karyawan_nama'] ?? '', $search) !== false ||
-                        stripos($row['karyawan_nik'] ?? '', $search) !== false ||
-                        stripos($row['company_name'] ?? '', $search) !== false ||
-                        stripos((string)($row['absen_karyawan_id'] ?? ''), $search) !== false ||
-                        stripos((string)($row['absen_company_id'] ?? ''), $search) !== false;
-                });
-            }
-            
-            $recordsFiltered = $collection->count();
-            $recordsTotal = count($validRows);
-            
-            // Ordering
-            $orderColumnIndex = $request->input('order.0.column');
-            $orderDir = $request->input('order.0.dir', 'asc');
-            
-            $columns = ['periode', 'karyawan_nama', 'company_name', 'gaji_pokok', 'total_penerimaan'];
-            $orderColumn = $columns[$orderColumnIndex] ?? 'periode';
-            
-            $collection = $collection->sortBy($orderColumn, SORT_REGULAR, $orderDir === 'desc');
-            
-            // Pagination
-            $start = $request->input('start', 0);
-            $length = $request->input('length', 10);
-            
-            $data = $collection->slice($start, $length)->values();
-            
-            // Calculate totals
-            $formattedData = $data->map(function($row) {
+{
+    try {
+        $validRows = Session::get('payroll_fake_import_valid_rows', []);
 
-    $salaryType = $row['salary_type'] ?? 'gross';
-
-    // =========================
-    // TUNJANGAN (NETT ONLY)
-    // =========================
-    $tunjangan = ($salaryType === 'nett')
-        ? ($row['pph_21'] ?? 0)
-        : 0;
-
-    // =========================
-    // PPH21 (DISPLAY POSITIF)
-    // =========================
-    $pph21DeductionDisplay = ($salaryType === 'nett')
-        ? ($row['pph_21'] ?? 0)
-        : ($row['pph_21_deduction'] ?? 0);
-
-    // =========================
-    // BPJS PERUSAHAAN (INCOME)
-    // =========================
-    $bpjsTkPerusahaanIncome =
-        ($row['bpjs_tk_jht_3_7_percent'] ?? 0) +
-        ($row['bpjs_tk_jkk_0_24_percent'] ?? 0) +
-        ($row['bpjs_tk_jkm_0_3_percent'] ?? 0) +
-        ($row['bpjs_tk_jp_2_percent'] ?? 0);
-
-    $bpjsKesPerusahaanIncome =
-        ($row['bpjs_kes_4_percent'] ?? 0);
-
-    // =========================
-    // BPJS PEGAWAI (INCOME NETT ONLY)
-    // =========================
-    $bpjsTkPegawaiIncome = ($salaryType === 'nett')
-        ? (
-            ($row['bpjs_tk_jht_2_percent'] ?? 0) +
-            ($row['bpjs_tk_jp_1_percent'] ?? 0) +
-            ($row['bpjs_tenaga_kerja'] ?? 0)
-        )
-        : 0;
-
-    $bpjsKesPegawaiIncome = ($salaryType === 'nett')
-        ? (
-            ($row['bpjs_kes_1_percent'] ?? 0) +
-            ($row['bpjs_kesehatan'] ?? 0)
-        )
-        : 0;
-
-    // =========================
-    // TOTAL PENERIMAAN (FINAL)
-    // =========================
-    $totalPenerimaan =
-        ($row['gaji_pokok'] ?? 0) +
-        ($row['monthly_kpi'] ?? 0) +
-        ($row['overtime'] ?? 0) +
-        ($row['medical_reimbursement'] ?? 0) +
-        $bpjsTkPerusahaanIncome +
-        $bpjsKesPerusahaanIncome +
-        $bpjsTkPegawaiIncome +
-        $bpjsKesPegawaiIncome +
-        ($row['insentif_sholat'] ?? 0) +
-        ($row['monthly_bonus'] ?? 0) +
-        ($row['rapel'] ?? 0) +
-        ($row['tunjangan_pulsa'] ?? 0) +
-        ($row['tunjangan_kehadiran'] ?? 0) +
-        ($row['tunjangan_transport'] ?? 0) +
-        ($row['tunjangan_lainnya'] ?? 0) +
-        ($row['yearly_bonus'] ?? 0) +
-        ($row['thr'] ?? 0) +
-        ($row['other'] ?? 0) +
-        $tunjangan;
-
-    // =========================
-    // PPH UNTUK POTONGAN (NEGATIF)
-    // =========================
-    $pphForPotongan = ($salaryType === 'nett')
-        ? -($row['pph_21'] ?? 0)
-        : -($row['pph_21_deduction'] ?? 0);
-
-    // =========================
-    // BPJS DEDUCTION (NEGATIF)
-    // =========================
-    $bpjsTkPerusahaanDeduction = -$bpjsTkPerusahaanIncome;
-
-    $bpjsTkPegawaiDeduction = -(
-        ($row['bpjs_tk_jht_2_percent'] ?? 0) +
-        ($row['bpjs_tk_jp_1_percent'] ?? 0) +
-        ($row['bpjs_tenaga_kerja'] ?? 0)
-    );
-
-    $bpjsKesPerusahaanDeduction = -($row['bpjs_kes_4_percent'] ?? 0);
-
-    $bpjsKesPegawaiDeduction = -(
-        ($row['bpjs_kes_1_percent'] ?? 0) +
-        ($row['bpjs_kesehatan'] ?? 0)
-    );
-
-    // =========================
-    // TOTAL POTONGAN (FINAL)
-    // =========================
-    $totalPotongan =
-        ($row['ca_corporate'] ?? 0) +
-        ($row['ca_personal'] ?? 0) +
-        ($row['ca_kehadiran'] ?? 0) +
-        $pphForPotongan +
-        $bpjsTkPerusahaanDeduction +
-        $bpjsTkPegawaiDeduction +
-        $bpjsKesPerusahaanDeduction +
-        $bpjsKesPegawaiDeduction;
-
-    // =========================
-    // GAJI BERSIH
-    // =========================
-    $gajiBersih = $totalPenerimaan + $totalPotongan;
-
-    return array_merge($row, [
-        // tampil
-        'tunjangan' => $tunjangan,
-        'pph_21_deduction' => $pph21DeductionDisplay,
-
-        // calculated
-        'total_penerimaan' => $totalPenerimaan,
-        'total_potongan' => $totalPotongan, // negatif
-        'gaji_bersih' => $gajiBersih,
-    ]);
-});
-
-            
-            return response()->json([
-                'draw' => intval($request->input('draw')),
-                'recordsTotal' => $recordsTotal,
-                'recordsFiltered' => $recordsFiltered,
-                'data' => $formattedData
-            ]);
-            
-        } catch (\Exception $e) {
-            Log::error('Error in validDataTable', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
+        if (empty($validRows)) {
             return response()->json([
                 'draw' => intval($request->input('draw')),
                 'recordsTotal' => 0,
                 'recordsFiltered' => 0,
-                'data' => [],
-                'error' => $e->getMessage()
+                'data' => []
             ]);
         }
+
+        $collection = collect($validRows);
+
+        // Search
+        $search = $request->input('search.value');
+        if (!empty($search)) {
+            $collection = $collection->filter(function ($row) use ($search) {
+                return stripos($row['periode'], $search) !== false ||
+                    stripos($row['karyawan_nama'] ?? '', $search) !== false ||
+                    stripos($row['karyawan_nik'] ?? '', $search) !== false ||
+                    stripos($row['company_name'] ?? '', $search) !== false ||
+                    stripos((string)($row['absen_karyawan_id'] ?? ''), $search) !== false ||
+                    stripos((string)($row['absen_company_id'] ?? ''), $search) !== false;
+            });
+        }
+
+        $recordsFiltered = $collection->count();
+        $recordsTotal = count($validRows);
+
+        // Ordering
+        $orderColumnIndex = $request->input('order.0.column');
+        $orderDir = $request->input('order.0.dir', 'asc');
+
+        $columns = ['periode', 'karyawan_nama', 'company_name', 'gaji_pokok', 'total_penerimaan'];
+        $orderColumn = $columns[$orderColumnIndex] ?? 'periode';
+
+        $collection = $collection->sortBy($orderColumn, SORT_REGULAR, $orderDir === 'desc');
+
+        // Pagination
+        $start = $request->input('start', 0);
+        $length = $request->input('length', 10);
+
+        $data = $collection->slice($start, $length)->values();
+
+        // Calculate totals
+        $formattedData = $data->map(function ($row) {
+
+            $salaryType = $row['salary_type'] ?? 'gross';
+
+            // =========================
+            // TUNJANGAN (NETT ONLY)
+            // =========================
+            $tunjangan = ($salaryType === 'nett')
+                ? ($row['pph_21'] ?? 0)
+                : 0;
+
+            // =========================
+            // PPH21 (DISPLAY POSITIF)
+            // =========================
+            $pph21DeductionDisplay = ($salaryType === 'nett')
+                ? ($row['pph_21'] ?? 0)
+                : ($row['pph_21_deduction'] ?? 0);
+
+            // =========================
+            // BPJS PERUSAHAAN (INCOME)
+            // =========================
+            $bpjsTkPerusahaanIncome =
+                ($row['bpjs_tk_jht_3_7_percent'] ?? 0) +
+                ($row['bpjs_tk_jkk_0_24_percent'] ?? 0) +
+                ($row['bpjs_tk_jkm_0_3_percent'] ?? 0) +
+                ($row['bpjs_tk_jp_2_percent'] ?? 0);
+
+            $bpjsKesPerusahaanIncome =
+                ($row['bpjs_kes_4_percent'] ?? 0);
+
+            // =========================
+            // BPJS PEGAWAI (INCOME NETT ONLY)
+            // NOTE: bpjs_tenaga_kerja & bpjs_kesehatan di tabel SUDAH MINUS -> ikut apa adanya
+            // =========================
+            $bpjsTkPegawaiIncome = ($salaryType === 'nett')
+                ? (
+                    ($row['bpjs_tk_jht_2_percent'] ?? 0) +
+                    ($row['bpjs_tk_jp_1_percent'] ?? 0) +
+                    ($row['bpjs_tenaga_kerja'] ?? 0)
+                )
+                : 0;
+
+            $bpjsKesPegawaiIncome = ($salaryType === 'nett')
+                ? (
+                    ($row['bpjs_kes_1_percent'] ?? 0) +
+                    ($row['bpjs_kesehatan'] ?? 0)
+                )
+                : 0;
+
+            // =========================
+            // TOTAL PENERIMAAN (FINAL)
+            // =========================
+            $totalPenerimaan =
+                ($row['gaji_pokok'] ?? 0) +
+                ($row['monthly_kpi'] ?? 0) +
+                ($row['overtime'] ?? 0) +
+                ($row['medical_reimbursement'] ?? 0) +
+                $bpjsTkPerusahaanIncome +
+                $bpjsKesPerusahaanIncome +
+                $bpjsTkPegawaiIncome +
+                $bpjsKesPegawaiIncome +
+                ($row['insentif_sholat'] ?? 0) +
+                ($row['monthly_bonus'] ?? 0) +
+                ($row['rapel'] ?? 0) +
+                ($row['tunjangan_pulsa'] ?? 0) +
+                ($row['tunjangan_kehadiran'] ?? 0) +
+                ($row['tunjangan_transport'] ?? 0) +
+                ($row['tunjangan_lainnya'] ?? 0) +
+                ($row['yearly_bonus'] ?? 0) +
+                ($row['thr'] ?? 0) +
+                ($row['other'] ?? 0) +
+                $tunjangan;
+
+            // =========================
+            // PPH UNTUK POTONGAN (NEGATIF)
+            // =========================
+            $pphForPotongan = ($salaryType === 'nett')
+                ? -($row['pph_21'] ?? 0)
+                : -($row['pph_21_deduction'] ?? 0);
+
+            /**
+             * =========================
+             * BPJS DEDUCTION (NEGATIF)
+             * - perusahaan: minus komponen perusahaan
+             * - pegawai: TETAP kepotong untuk gross & nett, tapi PAKAI PERSEN DOANG
+             *   (JANGAN include bpjs_tenaga_kerja / bpjs_kesehatan, karena kolom itu SUDAH MINUS)
+             * =========================
+             */
+            $bpjsTkPerusahaanDeduction = -$bpjsTkPerusahaanIncome;
+            $bpjsKesPerusahaanDeduction = -($row['bpjs_kes_4_percent'] ?? 0);
+
+            $bpjsTkPegawaiDeduction = -(
+                ($row['bpjs_tk_jht_2_percent'] ?? 0) +
+                ($row['bpjs_tk_jp_1_percent'] ?? 0)
+            );
+
+            $bpjsKesPegawaiDeduction = -($row['bpjs_kes_1_percent'] ?? 0);
+
+            // =========================
+            // TOTAL POTONGAN (FINAL)
+            // =========================
+            $totalPotongan =
+                ($row['ca_corporate'] ?? 0) +
+                ($row['ca_personal'] ?? 0) +
+                ($row['ca_kehadiran'] ?? 0) +
+                $pphForPotongan +
+                $bpjsTkPerusahaanDeduction +
+                $bpjsTkPegawaiDeduction +
+                $bpjsKesPerusahaanDeduction +
+                $bpjsKesPegawaiDeduction;
+
+            // =========================
+            // GAJI BERSIH
+            // =========================
+            $gajiBersih = $totalPenerimaan + $totalPotongan;
+
+            return array_merge($row, [
+                // tampil
+                'tunjangan' => $tunjangan,
+                'pph_21_deduction' => $pph21DeductionDisplay,
+
+                // calculated
+                'total_penerimaan' => $totalPenerimaan,
+                'total_potongan' => $totalPotongan, // negatif
+                'gaji_bersih' => $gajiBersih,
+            ]);
+        });
+
+        return response()->json([
+            'draw' => intval($request->input('draw')),
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $formattedData
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error in validDataTable', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'draw' => intval($request->input('draw')),
+            'recordsTotal' => 0,
+            'recordsFiltered' => 0,
+            'data' => [],
+            'error' => $e->getMessage()
+        ]);
     }
+}
+
 
     /**
      * ✅ DataTables untuk Error Data

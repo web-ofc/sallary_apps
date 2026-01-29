@@ -516,4 +516,23 @@ class PayrollsFakeController extends Controller
             abort(500, 'Error loading summary: ' . $e->getMessage());
         }
     }
+
+     public function destroy($id)
+    {
+        try {
+            $payroll = PayrollsFake::findOrFail($id);
+            
+            if ($payroll->is_released) {
+                return response()->json(['success' => false, 'message' => 'Tidak dapat menghapus payroll yang sudah dirilis'], 403);
+            }
+            
+            $payroll->delete();
+            
+            return response()->json(['success' => true, 'message' => 'Payroll berhasil dihapus']);
+            
+        } catch (\Exception $e) {
+            Log::error('Error deleting payroll', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
 }
