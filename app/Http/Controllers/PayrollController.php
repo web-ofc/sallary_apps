@@ -454,60 +454,46 @@ class PayrollController extends Controller
         }
     }
 
-       public function export(Request $request)
-{
-    // 🔥 TAMBAHKAN INI DI AWAL
-    ob_end_clean(); // Bersihkan output buffer
-    ob_start(); // Mulai buffer baru
-    
-    set_time_limit(300);
-    ini_set('memory_limit', '512M');
+        public function export(Request $request)
+    {
+        set_time_limit(300);
+        ini_set('memory_limit', '512M');
 
-    try {
-        $periode = $request->get('periode');
-        $companyId = $request->get('company_id');
-        $status = $request->get('status', 'pending');
+        try {
+            $periode = $request->get('periode');
+            $companyId = $request->get('company_id');
+            $status = $request->get('status', 'pending'); // pending, released, released_slip
 
-        $isReleased = null;
-        $isReleasedSlip = null;
-        
-        if ($status === 'pending') {
-            $isReleased = 0;
-        } elseif ($status === 'released') {
-            $isReleased = 1;
-            $isReleasedSlip = 0;
-        } elseif ($status === 'released_slip') {
-            $isReleased = 1;
-            $isReleasedSlip = 1;
+            // Tentukan is_released dan is_released_slip berdasarkan status
+            $isReleased = null;
+            $isReleasedSlip = null;
+            
+            if ($status === 'pending') {
+                $isReleased = 0;
+            } elseif ($status === 'released') {
+                $isReleased = 1;
+                $isReleasedSlip = 0;
+            } elseif ($status === 'released_slip') {
+                $isReleased = 1;
+                $isReleasedSlip = 1;
+            }
+
+            $filename = 'payroll_' . $status . '_' . date('YmdHis') . '.xlsx';
+            
+            if ($periode) {
+                $filename = 'payroll_' . $status . '_' . $periode . '_' . date('YmdHis') . '.xlsx';
+            }
+
+            return Excel::download(
+                new PayrollsExport($periode, $companyId, $isReleased, $isReleasedSlip),
+                $filename
+            );
+
+        } catch (\Exception $e) {
+            Log::error('Export Payroll Error', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Gagal export data: ' . $e->getMessage());
         }
-
-        $filename = 'payroll_' . $status . '_' . date('YmdHis') . '.xlsx';
-        
-        if ($periode) {
-            $filename = 'payroll_' . $status . '_' . $periode . '_' . date('YmdHis') . '.xlsx';
-        }
-
-        return Excel::download(
-            new PayrollsExport($periode, $companyId, $isReleased, $isReleasedSlip),
-            $filename,
-            \Maatwebsite\Excel\Excel::XLSX, // 🔥 TAMBAHKAN INI
-            [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            ]
-        );
-
-    } catch (\Exception $e) {
-        Log::error('Export Payroll Error', [
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString() // 🔥 TAMBAHKAN TRACE
-        ]);
-        
-        return response()->json([
-            'success' => false,
-            'message' => 'Gagal export: ' . $e->getMessage()
-        ], 500);
     }
-}
     public function create(Request $request)
     {
         $karyawanId = $request->get('karyawan_id');

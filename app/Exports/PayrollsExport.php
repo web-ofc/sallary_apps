@@ -3,19 +3,18 @@
 namespace App\Exports;
 
 use App\Models\PayrollCalculation;
-use Illuminate\Support\Facades\Log;
-use Maatwebsite\Excel\Events\AfterSheet;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use Maatwebsite\Excel\Concerns\WithEvents;
-use Maatwebsite\Excel\Concerns\WithStyles;
-use PhpOffice\PhpSpreadsheet\Style\Border;
-use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class PayrollsExport implements FromCollection, WithHeadings, WithMapping, WithColumnFormatting, WithStyles, WithEvents
 {
@@ -33,8 +32,7 @@ class PayrollsExport implements FromCollection, WithHeadings, WithMapping, WithC
     }
 
         public function collection()
-{
-    try {
+    {
         $query = PayrollCalculation::with([
             'karyawan:absen_karyawan_id,nik,nama_lengkap',
             'company:absen_company_id,company_name'
@@ -56,18 +54,8 @@ class PayrollsExport implements FromCollection, WithHeadings, WithMapping, WithC
             }
         }
 
-        $data = $query->orderBy('periode', 'desc')->orderBy('id')->get();
-        
-        // 🔥 TAMBAHKAN LOG
-        Log::info('Export Data Count: ' . $data->count());
-        
-        return $data;
-        
-    } catch (\Exception $e) {
-        Log::error('Export Collection Error: ' . $e->getMessage());
-        return collect([]); // Return empty collection jika error
+        return $query->orderBy('periode', 'desc')->orderBy('id')->get();
     }
-}
 
     /**
      * Return multi-row headers
