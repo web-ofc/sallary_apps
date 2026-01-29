@@ -30,7 +30,6 @@
     }
     
 </style>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
 @endpush
 
 @section('content')
@@ -73,7 +72,7 @@
                                     <div class="card-body py-4">
                                         <div class="d-flex align-items-center gap-3 flex-wrap">
                                             <label class="fs-6 fw-semibold text-gray-700 text-nowrap">Filter Statistik:</label>
-                                            <input type="text" id="filterStatisticsPeriode" class="form-control form-control-sm form-control-solid w-200px" placeholder="Pilih Bulan" readonly />
+                                            <input type="month" id="filterStatisticsPeriode" class="form-control form-control-sm form-control-solid w-200px" />
                                             <select id="filterStatisticsYear" class="form-select form-select-sm form-select-solid w-150px">
                                                 <option value="">Pilih Tahun</option>
                                                 @for ($year = date('Y'); $year >= 2020; $year--)
@@ -200,7 +199,7 @@
                                                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5" style="top: 50%; transform: translateY(-50%);"></i>
                                                     <input type="text" id="searchPending" class="form-control form-control-solid w-250px ps-13" placeholder="Cari..." />
                                                 </div>
-                                                <input type="text" id="filterPeriodePending" class="form-control form-control-solid w-150px" placeholder="Periode" readonly />
+                                                <input type="month" id="filterPeriodePending" class="form-control form-control-solid w-150px" />
                                                 <button type="button" class="btn btn-sm btn-light-primary" id="btnResetFilterPending">
                                                     <i class="ki-outline ki-arrows-circle fs-5"></i>
                                                 </button>
@@ -294,7 +293,7 @@
                                                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5" style="top: 50%; transform: translateY(-50%);"></i>
                                                     <input type="text" id="searchReleased" class="form-control form-control-solid w-250px ps-13" placeholder="Cari..." />
                                                 </div>
-                                                <input type="text" id="filterPeriodeReleased" class="form-control form-control-solid w-150px" placeholder="Periode" readonly />
+                                                <input type="month" id="filterPeriodeReleased" class="form-control form-control-solid w-150px" />
                                                 <button type="button" class="btn btn-sm btn-light-primary" id="btnResetFilterReleased">
                                                     <i class="ki-outline ki-arrows-circle fs-5"></i>
                                                 </button>
@@ -389,7 +388,10 @@
                                                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5" style="top: 50%; transform: translateY(-50%);"></i>
                                                     <input type="text" id="searchReleasedSlip" class="form-control form-control-solid w-250px ps-13" placeholder="Cari..." />
                                                 </div>
-                                                <input type="text" id="filterPeriodeReleasedSlip" class="form-control form-control-solid w-150px" placeholder="Periode" readonly />
+                                                <input type="month" id="filterPeriodeReleasedSlip" class="form-control form-control-solid w-150px" />
+                                                <button type="button" class="btn btn-sm btn-light-primary" id="btnResetFilterReleasedSlip">
+                                                    <i class="ki-outline ki-arrows-circle fs-5"></i>
+                                                </button>
                                             </div>
                                             <button type="button" class="btn btn-sm btn-light-success" id="btnExportReleasedSlip">
                                                 <i class="ki-outline ki-file-down fs-3"></i>
@@ -582,14 +584,10 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
 <script>
 $(document).ready(function() {
     'use strict';
 
- $('#btnExportPending').off('click');
-    $('#btnExportReleased').off('click');
-    $('#btnExportReleasedSlip').off('click');
     // 🔥 KONFIGURASI
     const CONFIG = {
         routes: {
@@ -603,19 +601,16 @@ $(document).ready(function() {
         },
         csrfToken: '{{ csrf_token() }}'
     };
-      // 🔥 INIT FLATPICKR - Filter Statistik Bulan
-    $("#filterStatisticsPeriode").flatpickr({
-        plugins: [new monthSelectPlugin({ shorthand: true, dateFormat: "Y-m", altFormat: "F Y" })],
-        locale: "id",
-        altInput: true,
-        altFormat: "F Y",
-        dateFormat: "Y-m",
-        onChange: function(selectedDates, dateStr) {
-            updateStatistics(dateStr);
+
+    // 🔥 EVENT: Filter Statistik Periode (HTML month input)
+    $('#filterStatisticsPeriode').on('change', function() {
+        const periode = $(this).val();
+        if (periode) {
+            updateStatistics(periode);
         }
     });
 
-    // 🔥 INIT SELECT - Filter Statistik Tahun
+    // 🔥 EVENT: Filter Statistik Tahun
     $('#filterStatisticsYear').on('change', function() {
         const year = $(this).val();
         if (year) {
@@ -623,48 +618,27 @@ $(document).ready(function() {
         }
     });
 
-    // 🔥 INIT FLATPICKR - Filter Periode Pending
-   // 🔥 INIT FLATPICKR - Filter Periode Pending
-if ($("#filterPeriodePending").length) {
-    $("#filterPeriodePending").flatpickr({
-        plugins: [new monthSelectPlugin({ shorthand: true, dateFormat: "Y-m", altFormat: "F Y" })],
-        locale: "id",
-        altInput: true,
-        altFormat: "F Y",
-        dateFormat: "Y-m",
-        onChange: function(selectedDates, dateStr) {
-            if (tablePending) tablePending.ajax.reload();
-        }
+    // 🔥 EVENT: Reset Filter Statistik
+    $('#btnResetStatistics').on('click', function() {
+        $('#filterStatisticsPeriode').val('');
+        $('#filterStatisticsYear').val('');
+        updateStatistics();
     });
-}
 
-// 🔥 INIT FLATPICKR - Filter Periode Released
-if ($("#filterPeriodeReleased").length) {
-    $("#filterPeriodeReleased").flatpickr({
-        plugins: [new monthSelectPlugin({ shorthand: true, dateFormat: "Y-m", altFormat: "F Y" })],
-        locale: "id",
-        altInput: true,
-        altFormat: "F Y",
-        dateFormat: "Y-m",
-        onChange: function(selectedDates, dateStr) {
-            if (tableReleased) tableReleased.ajax.reload();
-        }
+    // 🔥 EVENT: Filter Periode Pending
+    $('#filterPeriodePending').on('change', function() {
+        if (tablePending) tablePending.ajax.reload();
     });
-}
 
-// 🔥 INIT FLATPICKR - Filter Periode Released Slip
-if ($("#filterPeriodeReleasedSlip").length) {
-    $("#filterPeriodeReleasedSlip").flatpickr({
-        plugins: [new monthSelectPlugin({ shorthand: true, dateFormat: "Y-m", altFormat: "F Y" })],
-        locale: "id",
-        altInput: true,
-        altFormat: "F Y",
-        dateFormat: "Y-m",
-        onChange: function(selectedDates, dateStr) {
-            if (tableReleasedSlip) tableReleasedSlip.ajax.reload();
-        }
+    // 🔥 EVENT: Filter Periode Released
+    $('#filterPeriodeReleased').on('change', function() {
+        if (tableReleased) tableReleased.ajax.reload();
     });
-}
+
+    // 🔥 EVENT: Filter Periode Released Slip
+    $('#filterPeriodeReleasedSlip').on('change', function() {
+        if (tableReleasedSlip) tableReleasedSlip.ajax.reload();
+    });
 
     // 🔥 STATE MANAGEMENT
     let selectedIds = [];
@@ -879,17 +853,13 @@ if ($("#filterPeriodeReleasedSlip").length) {
         }
     });
 
-   
-
     $('#btnResetFilterPending').on('click', function() {
-    if ($('#filterPeriodePending').length && $('#filterPeriodePending')[0]._flatpickr) {
-        $('#filterPeriodePending')[0]._flatpickr.clear();
-    }
-    $('#searchPending').val('');
-    if (tablePending) {
-        tablePending.search('').ajax.reload();
-    }
-});
+        $('#filterPeriodePending').val('');
+        $('#searchPending').val('');
+        if (tablePending) {
+            tablePending.search('').ajax.reload();
+        }
+    });
 
     // 🔥 SEARCH RELEASED
     $('#searchReleased').on('keyup', function() {
@@ -898,17 +868,13 @@ if ($("#filterPeriodeReleasedSlip").length) {
         }
     });
 
-   
-
-   $('#btnResetFilterReleased').on('click', function() {
-    if ($('#filterPeriodeReleased').length && $('#filterPeriodeReleased')[0]._flatpickr) {
-        $('#filterPeriodeReleased')[0]._flatpickr.clear();
-    }
-    $('#searchReleased').val('');
-    if (tableReleased) {
-        tableReleased.search('').ajax.reload();
-    }
-});
+    $('#btnResetFilterReleased').on('click', function() {
+        $('#filterPeriodeReleased').val('');
+        $('#searchReleased').val('');
+        if (tableReleased) {
+            tableReleased.search('').ajax.reload();
+        }
+    });
 
     // 🔥 SEARCH RELEASED SLIP
     $('#searchReleasedSlip').on('keyup', function() {
@@ -917,18 +883,13 @@ if ($("#filterPeriodeReleasedSlip").length) {
         }
     });
 
- 
-
     $('#btnResetFilterReleasedSlip').on('click', function() {
-    if ($('#filterPeriodeReleasedSlip').length && $('#filterPeriodeReleasedSlip')[0]._flatpickr) {
-        $('#filterPeriodeReleasedSlip')[0]._flatpickr.clear();
-    }
-    $('#searchReleasedSlip').val('');
-    if (tableReleasedSlip) {
-        tableReleasedSlip.search('').ajax.reload();
-    }
-});
-
+        $('#filterPeriodeReleasedSlip').val('');
+        $('#searchReleasedSlip').val('');
+        if (tableReleasedSlip) {
+            tableReleasedSlip.search('').ajax.reload();
+        }
+    });
 
     // 🔥 CHECKBOX: Check All Pending
     $('#checkAllPending').on('change', function() {
@@ -1104,105 +1065,44 @@ if ($("#filterPeriodeReleasedSlip").length) {
         });
     });
 
-
-    // Ganti bagian FILTER STATISTICS
-    $('#btnResetStatistics').on('click', function() {
-    if ($('#filterStatisticsPeriode').length && $('#filterStatisticsPeriode')[0]._flatpickr) {
-        $('#filterStatisticsPeriode')[0]._flatpickr.clear();
-    }
-    $('#filterStatisticsYear').val('');
-    updateStatistics();
-});
-
-    // 🔥 EXPORT PENDING (Alternative Method)
-$('#btnExportPending').on('click', function(e) {
-    e.preventDefault();
-    
-    const periode = $('#filterPeriodePending').val();
-    
-    // Create hidden form
-    const form = $('<form>', {
-        'method': 'GET',
-        'action': CONFIG.routes.export
+    // 🔥 EXPORT PENDING
+    $('#btnExportPending').on('click', function() {
+        const periode = $('#filterPeriodePending').val();
+        let url = CONFIG.routes.export + '?status=pending';
+        
+        if (periode) {
+            url += '&periode=' + periode;
+        }
+        
+        window.location.href = url;
     });
-    
-    // Add hidden inputs
-    $('<input>').attr({
-        type: 'hidden',
-        name: 'status',
-        value: 'pending'
-    }).appendTo(form);
-    
-    if (periode) {
-        $('<input>').attr({
-            type: 'hidden',
-            name: 'periode',
-            value: periode
-        }).appendTo(form);
-    }
-    
-    // Submit form and remove it
-    form.appendTo('body').submit().remove();
-});
 
-// 🔥 EXPORT RELEASED (Alternative Method)
-$('#btnExportReleased').on('click', function(e) {
-    e.preventDefault();
-    
-    const periode = $('#filterPeriodeReleased').val();
-    
-    const form = $('<form>', {
-        'method': 'GET',
-        'action': CONFIG.routes.export
+    // 🔥 EXPORT RELEASED (tanpa slip)
+    $('#btnExportReleased').on('click', function() {
+        const periode = $('#filterPeriodeReleased').val();
+        let url = CONFIG.routes.export + '?status=released';
+        
+        if (periode) {
+            url += '&periode=' + periode;
+        }
+        
+        window.location.href = url;
     });
-    
-    $('<input>').attr({
-        type: 'hidden',
-        name: 'status',
-        value: 'released'
-    }).appendTo(form);
-    
-    if (periode) {
-        $('<input>').attr({
-            type: 'hidden',
-            name: 'periode',
-            value: periode
-        }).appendTo(form);
-    }
-    
-    form.appendTo('body').submit().remove();
-});
 
-// 🔥 EXPORT RELEASED SLIP (Alternative Method)
-$('#btnExportReleasedSlip').on('click', function(e) {
-    e.preventDefault();
-    
-    const periode = $('#filterPeriodeReleasedSlip').val();
-    
-    const form = $('<form>', {
-        'method': 'GET',
-        'action': CONFIG.routes.export
+    // 🔥 EXPORT RELEASED SLIP
+    $('#btnExportReleasedSlip').on('click', function() {
+        const periode = $('#filterPeriodeReleasedSlip').val();
+        let url = CONFIG.routes.export + '?status=released_slip';
+        
+        if (periode) {
+            url += '&periode=' + periode;
+        }
+        
+        window.location.href = url;
     });
-    
-    $('<input>').attr({
-        type: 'hidden',
-        name: 'status',
-        value: 'released_slip'
-    }).appendTo(form);
-    
-    if (periode) {
-        $('<input>').attr({
-            type: 'hidden',
-            name: 'periode',
-            value: periode
-        }).appendTo(form);
-    }
-    
-    form.appendTo('body').submit().remove();
-});
+
     // 🔥 TAB SWITCH: Reload table when tab is shown
-    $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e)
-    {
+    $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
         const target = $(e.target).attr('href');
         
         if (target === '#tab_pending' && tablePending) {
