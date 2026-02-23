@@ -145,4 +145,26 @@ class PayrollCalculation extends Model
     {
         return isset($this->attributes['karyawan_id']) && !is_null($this->attributes['karyawan_id']);
     }
+
+    /**
+     * ✅ RELASI KE PTKP HISTORY
+     */
+    public function ptkpHistory()
+    {
+        $currentYear = date('Y');
+        
+        return $this->hasOneThrough(
+            \App\Models\ListPtkp::class,
+            \App\Models\KaryawanPtkpHistory::class,
+            'absen_karyawan_id', // FK di karyawan_ptkp_histories
+            'absen_ptkp_id',     // FK di list_ptkps
+            'karyawan_id',       // Local key di payroll_calculations
+            'absen_ptkp_id'      // Local key di karyawan_ptkp_histories
+        )
+        ->where('karyawan_ptkp_histories.tahun', $currentYear)
+        ->orderBy('karyawan_ptkp_histories.tahun', 'desc')
+        ->withDefault(function () {
+            return new \App\Models\ListPtkp(['status' => '-']);
+        });
+    }
 }

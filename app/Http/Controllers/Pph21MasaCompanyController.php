@@ -7,8 +7,19 @@ use Illuminate\Http\Request;
 use App\Models\Company;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 class Pph21MasaCompanyController extends Controller
 {
+     public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (Gate::denies('manage-pph21companyperiode')) {
+                abort(403, 'Unauthorized action.');
+            }
+
+            return $next($request);
+        });
+    }
     /**
      * Display a listing of the resource.
      */

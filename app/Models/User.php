@@ -38,4 +38,25 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+      public function settingCompanyUsers()
+    {
+        return $this->hasMany(SettingCompanyUser::class, 'user_id', 'id');
+    }
+    
+    /**
+     * User punya banyak companies (through pivot table)
+     * Ini yang lu mau pake
+     */
+    public function assignedCompanies()
+    {
+        return $this->belongsToMany(
+            Company::class,              // Model target
+            'setting_company_users',     // Pivot table name
+            'user_id',                   // FK di pivot untuk User
+            'absen_company_id',          // FK di pivot untuk Company
+            'id',                        // PK di User table
+            'absen_company_id'           // Reference key di Company table (bukan 'id')
+        );
+    }
 }

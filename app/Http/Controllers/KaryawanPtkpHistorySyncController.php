@@ -7,7 +7,6 @@ use App\Services\KaryawanPtkpHistorySyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Gate;
-use Carbon\Carbon;
 
 class KaryawanPtkpHistorySyncController extends Controller
 {
@@ -17,128 +16,24 @@ class KaryawanPtkpHistorySyncController extends Controller
     {
         $this->syncService = $syncService;
 
-        $this->middleware(function ($request, $next) {
-            if (Gate::denies('ptkp-history-sync')) {
-                abort(403, 'Unauthorized action.');
-            }
-
-            return $next($request);
-        });
-    }
-
-    /**
-     * 📡 DATATABLE SERVER-SIDE (POST)
-     */
-    public function datatable(Request $request)
-    {
-        $query = \App\Models\KaryawanPtkpHistory::with(['karyawan:id,absen_karyawan_id,nama_lengkap,nik', 'ptkp:id,absen_ptkp_id,kriteria,status']);
-        
-        // Filter by tahun
-        if ($request->filled('tahun')) {
-            $query->where('tahun', $request->input('tahun'));
-        }
-        
-        // Search
-        if ($request->filled('search.value')) {
-            $search = $request->input('search.value');
-            $query->where(function($q) use ($search) {
-                $q->where('absen_ptkp_history_id', 'like', "%{$search}%")
-                  ->orWhere('absen_karyawan_id', 'like', "%{$search}%")
-                  ->orWhere('tahun', 'like', "%{$search}%")
-                  ->orWhereHas('karyawan', function($sq) use ($search) {
-                      $sq->where('nama_lengkap', 'like', "%{$search}%")
-                         ->orWhere('nik', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('ptkp', function($sq) use ($search) {
-                      $sq->where('kriteria', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        // Total records
-        $totalRecords = \App\Models\KaryawanPtkpHistory::count();
-        $filteredRecords = $query->count();
-
-        // Ordering
-        $orderColumnIndex = $request->input('order.0.column', 0);
-        $orderDir = $request->input('order.0.dir', 'desc');
-        $columns = ['absen_ptkp_history_id', 'karyawan_nama', 'ptkp_kriteria', 'tahun', 'last_synced_at', 'created_at', 'status_badge'];
-        $orderColumn = $columns[$orderColumnIndex] ?? 'absen_ptkp_history_id';
-        
-        // Custom ordering untuk relasi
-        if ($orderColumn === 'karyawan_nama') {
-            $query->leftJoin('karyawans', 'karyawan_ptkp_histories.absen_karyawan_id', '=', 'karyawans.absen_karyawan_id')
-                  ->orderBy('karyawans.nama_lengkap', $orderDir)
-                  ->select('karyawan_ptkp_histories.*');
-        } elseif ($orderColumn === 'ptkp_kriteria') {
-            $query->leftJoin('list_ptkps', 'karyawan_ptkp_histories.absen_ptkp_id', '=', 'list_ptkps.absen_ptkp_id')
-                  ->orderBy('list_ptkps.kriteria', $orderDir)
-                  ->select('karyawan_ptkp_histories.*');
-        } else {
-            $query->orderBy($orderColumn, $orderDir);
-        }
-
-        // Pagination
-        $start = $request->input('start', 0);
-        $length = $request->input('length', 10);
-        
-        $data = $query->skip($start)->take($length)->get();
-
-        // Format data
-        $formattedData = $data->map(function($history) {
-            return [
-                'absen_ptkp_history_id' => $history->absen_ptkp_history_id,
-                'karyawan_nama' => $history->karyawan 
-                    ? $history->karyawan->nama_lengkap . ' (' . $history->karyawan->nik . ')' 
-                    : 'Karyawan ID: ' . $history->absen_karyawan_id,
-                'ptkp_kriteria' => $history->ptkp 
-                    ? $history->ptkp->kriteria . ' - ' . $history->ptkp->status 
-                    : 'PTKP ID: ' . $history->absen_ptkp_id,
-                'tahun' => $history->tahun ?? '-',
-                'last_synced_at' => $history->last_synced_at 
-                    ? Carbon::parse($history->last_synced_at)->format('d M Y H:i') 
-                    : '-',
-                'created_at' => $history->created_at 
-                    ? Carbon::parse($history->created_at)->format('d M Y H:i') 
-                    : '-',
-                'status_badge' => $history->deleted_at 
-                    ? '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Deleted</span>' 
-                    : '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Active</span>',
-            ];
-        });
-
-        return response()->json([
-            'draw' => intval($request->input('draw')),
-            'recordsTotal' => $totalRecords,
-            'recordsFiltered' => $filteredRecords,
-            'data' => $formattedData
-        ]);
+      
     }
     
     /**
-     * 🔄 TRIGGER FULL SYNC (via API)
+     * 🔄 TRIGGER FULL SYNC (via API/UI button)
+     * POST /api/ptkp-history/sync
      */
     public function syncAll(Request $request)
     {
         try {
             $forceRefresh = $request->boolean('force', false);
-            $filters = [];
-            
-            // Optional filters
-            if ($request->filled('tahun')) {
-                $filters['tahun'] = $request->input('tahun');
-            }
-            if ($request->filled('search')) {
-                $filters['search'] = $request->input('search');
-            }
             
             Log::info('Manual PTKP History sync triggered', [
                 'user' => auth()->user()->email ?? 'unknown',
-                'force' => $forceRefresh,
-                'filters' => $filters
+                'force' => $forceRefresh
             ]);
             
-            $result = $this->syncService->syncAll($forceRefresh, $filters);
+            $result = $this->syncService->syncAll($forceRefresh);
             
             return response()->json($result);
             
@@ -155,13 +50,16 @@ class KaryawanPtkpHistorySyncController extends Controller
     }
     
     /**
-     * 🔄 SYNC SPECIFIC PTKP HISTORY
+     * 🔄 SYNC SPECIFIC PTKP HISTORY BY ID
+     * POST /api/ptkp-history/sync/{absenHistoryId}
      */
     public function syncById($absenHistoryId)
     {
         try {
             $result = $this->syncService->syncById($absenHistoryId);
+            
             return response()->json($result);
+            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -172,12 +70,16 @@ class KaryawanPtkpHistorySyncController extends Controller
     
     /**
      * 🔄 SYNC BY KARYAWAN ID
+     * POST /api/ptkp-history/sync/karyawan/{absenKaryawanId}
      */
-    public function syncByKaryawan($absenKaryawanId)
+    public function syncByKaryawan($absenKaryawanId, Request $request)
     {
         try {
-            $result = $this->syncService->syncByKaryawanId($absenKaryawanId);
+            $forceRefresh = $request->boolean('force', false);
+            $result = $this->syncService->syncByKaryawan($absenKaryawanId, $forceRefresh);
+            
             return response()->json($result);
+            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -188,12 +90,16 @@ class KaryawanPtkpHistorySyncController extends Controller
     
     /**
      * 🔄 SYNC BY TAHUN
+     * POST /api/ptkp-history/sync/tahun/{tahun}
      */
-    public function syncByTahun($tahun)
+    public function syncByTahun($tahun, Request $request)
     {
         try {
-            $result = $this->syncService->syncByTahun($tahun);
+            $forceRefresh = $request->boolean('force', false);
+            $result = $this->syncService->syncByTahun($tahun, $forceRefresh);
+            
             return response()->json($result);
+            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -203,7 +109,8 @@ class KaryawanPtkpHistorySyncController extends Controller
     }
     
     /**
-     * 📊 GET STATISTICS
+     * 📊 GET SYNC STATISTICS
+     * GET /api/ptkp-history/sync/stats
      */
     public function stats()
     {
@@ -217,53 +124,111 @@ class KaryawanPtkpHistorySyncController extends Controller
     
     /**
      * 📊 DASHBOARD SYNC (Web UI)
+     * GET /ptkp-history/sync/dashboard
      */
     public function dashboard()
     {
         $stats = $this->syncService->getSyncStats();
         $health = $this->syncService->checkSyncHealth(24);
         
-        // Get available years for filter
-        $years = \App\Models\KaryawanPtkpHistory::distinct('tahun')
-            ->orderBy('tahun', 'desc')
-            ->pluck('tahun')
-            ->toArray();
-        
-        return view('dashboard.dashboard-admin.ptkp-history.sync', compact('stats', 'health', 'years'));
+        return view('dashboard.dashboard-admin.ptkp-history.sync', compact('stats', 'health'));
     }
     
     /**
-     * 🔄 TRIGGER SYNC VIA WEB
+     * 📊 DATATABLE FOR PTKP HISTORY LIST
+     * POST /ptkp-history/sync/datatable
+     */
+    public function datatable(Request $request)
+    {
+        $query = \App\Models\KaryawanPtkpHistory::with(['karyawan', 'ptkp']);
+
+        // Search
+        if ($request->filled('search.value')) {
+            $search = $request->input('search.value');
+            $query->where(function($q) use ($search) {
+                $q->where('tahun', 'like', "%{$search}%")
+                  ->orWhere('absen_karyawan_id', 'like', "%{$search}%")
+                  ->orWhere('absen_ptkp_id', 'like', "%{$search}%")
+                  ->orWhereHas('karyawan', function($q2) use ($search) {
+                      $q2->where('nama_lengkap', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Filter by tahun if provided
+        if ($request->filled('tahun')) {
+            $query->where('tahun', $request->tahun);
+        }
+
+        $totalRecords = \App\Models\KaryawanPtkpHistory::count();
+        $filteredRecords = $query->count();
+
+        $orderColumnIndex = $request->input('order.0.column', 0);
+        $orderDir = $request->input('order.0.dir', 'desc');
+        $columns = ['id', 'absen_karyawan_id', 'absen_ptkp_id', 'tahun', 'last_synced_at'];
+        $orderColumn = $columns[$orderColumnIndex] ?? 'id';
+        
+        $query->orderBy($orderColumn, $orderDir);
+
+        $start = $request->input('start', 0);
+        $length = $request->input('length', 10);
+        
+        $data = $query->skip($start)->take($length)->get();
+
+        $formattedData = $data->map(function($history) {
+            return [
+                'id' => $history->id,
+                'absen_history_id' => $history->absen_ptkp_history_id,
+                'karyawan_nama' => $history->karyawan->nama_lengkap ?? '-',
+                'karyawan_nik' => $history->karyawan->nik ?? '-',
+                'ptkp_kriteria' => $history->ptkp->kriteria ?? '-',
+                'ptkp_status' => $history->ptkp->status ?? '-',
+                'tahun' => $history->tahun,
+                'last_synced_at' => $history->last_synced_at 
+                    ? \Carbon\Carbon::parse($history->last_synced_at)->format('d M Y H:i') 
+                    : '<span class="badge bg-warning">Never</span>',
+                'sync_status' => $history->last_synced_at && $history->last_synced_at->isAfter(now()->subHours(24))
+                    ? '<span class="badge bg-success">Synced</span>'
+                    : '<span class="badge bg-warning">Needs Sync</span>',
+            ];
+        });
+
+        return response()->json([
+            'draw' => intval($request->input('draw')),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $filteredRecords,
+            'data' => $formattedData
+        ]);
+    }
+    
+    /**
+     * 🔄 TRIGGER SYNC VIA WEB (Button Click)
+     * POST /ptkp-history/sync/trigger
      */
     public function triggerSync(Request $request)
     {
         try {
             $forceRefresh = $request->boolean('force', false);
-            $filters = [];
-            
-            if ($request->filled('tahun')) {
-                $filters['tahun'] = $request->input('tahun');
-            }
             
             Log::info('Manual PTKP History sync triggered via web', [
                 'user' => auth()->user()->name ?? 'unknown',
                 'force' => $forceRefresh,
-                'filters' => $filters,
                 'ip' => $request->ip()
             ]);
             
-            $result = $this->syncService->syncAll($forceRefresh, $filters);
+            // Jalankan sync
+            $result = $this->syncService->syncAll($forceRefresh);
             
             if ($result['success']) {
                 return redirect()
                     ->route('ptkp.history.sync.dashboard')
-                    ->with('success', 'Sinkronisasi berhasil! ' . 
+                    ->with('success', 'Sinkronisasi PTKP History berhasil! ' . 
                         $result['stats']['new_inserted'] . ' inserted, ' .
                         $result['stats']['updated'] . ' updated, ' .
                         $result['stats']['deleted'] . ' deleted.');
             } else {
                 return redirect()
-                    ->route('ptkp.history.sync.dashboard')
+                    ->route('ptkp-history.sync.dashboard')
                     ->with('error', 'Sinkronisasi gagal: ' . $result['message']);
             }
             
@@ -280,6 +245,7 @@ class KaryawanPtkpHistorySyncController extends Controller
     
     /**
      * 📡 GET SYNC STATUS (AJAX)
+     * GET /ptkp-history/sync/status
      */
     public function getSyncStatus()
     {
@@ -291,19 +257,5 @@ class KaryawanPtkpHistorySyncController extends Controller
             'stats' => $stats,
             'health' => $health
         ]);
-    }
-    
-    /**
-     * 📊 GET MISSING PTKP FOR YEAR
-     */
-    public function getMissingPtkp(Request $request)
-    {
-        $request->validate([
-            'tahun' => 'required|integer|min:2000|max:2100'
-        ]);
-        
-        $result = $this->syncService->getMissingPtkpForYear($request->input('tahun'));
-        
-        return response()->json($result);
     }
 }

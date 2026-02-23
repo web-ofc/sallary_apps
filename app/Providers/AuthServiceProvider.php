@@ -34,6 +34,9 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('company-sync', function ($user) {
             return in_array($user->role, ['admin']);
         });
+        Gate::define('A1-files', function ($user) {
+            return in_array($user->role, ['admin']);
+        });
         Gate::define('ptkp-sync', function ($user) {
             return in_array($user->role, ['admin']);
         });
@@ -54,6 +57,46 @@ class AuthServiceProvider extends ServiceProvider
         });
         Gate::define('pph21-tax-brackets', function ($user) {
             return in_array($user->role, ['admin']);
+        });
+        Gate::define('manage-setting-admin-user', function ($user) {
+            return in_array($user->role, ['admin']);
+        });
+        Gate::define('manage-mutasicompany', function ($user) {
+            return in_array($user->role, ['admin']);
+        });
+        Gate::define('manage-payroll', function ($user) {
+            return in_array($user->role, ['admin']);
+        });
+        Gate::define('manage-payroll-fake', function ($user) {
+            return in_array($user->role, ['admin']);
+        });
+        Gate::define('pph21-tahunan', function ($user) {
+            return in_array($user->role, ['admin']);
+        });
+        Gate::define('manage-pph21companyperiode', function ($user) {
+            return in_array($user->role, ['admin']);
+        });
+
+
+
+        // management & admin
+        Gate::define('master-reimbursementtypes', function ($user) {
+            return in_array($user->role, ['management','admin']);
+        });
+        Gate::define('manage-reimbursements', function ($user) {
+            return in_array($user->role, ['management','admin']);
+        });
+        Gate::define('manage-reimbursementperiods', function ($user) {
+            return in_array($user->role, ['management','admin']);
+        });
+        Gate::define('master-salaries', function ($user) {
+            return in_array($user->role, ['management','admin']);
+        });
+        Gate::define('balance-reimbursements', function ($user) {
+            return in_array($user->role, ['management','admin']);
+        });
+        Gate::define('manage-reimbursement-childs', function ($user) {
+            return in_array($user->role, ['management','admin']);
         });
     }
 }

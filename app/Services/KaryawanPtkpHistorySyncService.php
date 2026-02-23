@@ -19,8 +19,9 @@ class KaryawanPtkpHistorySyncService
     
     /**
      * 🔄 SYNC SEMUA PTKP HISTORY (FULL SYNC)
+     * Ambil semua data dari API ABSEN, sync ke local DB
      */
-    public function syncAll($forceRefresh = false, $filters = [])
+    public function syncAll($forceRefresh = false)
     {
         Log::info('🔄 Starting FULL SYNC PTKP History...');
         
@@ -34,10 +35,20 @@ class KaryawanPtkpHistorySyncService
         ];
         
         try {
-            // Step 1: Ambil semua PTKP History dari API
-            $allHistoriesFromApi = $this->fetchAllHistoriesFromApi($filters);
+            // Step 1: Ambil semua PTKP History dari API (paginated)
+            $allHistoriesFromApi = $this->fetchAllPtkpHistoriesFromApi($forceRefresh);
             $stats['total_from_api'] = count($allHistoriesFromApi);
-            
+            $ids = collect($allHistoriesFromApi)->pluck('id');
+$uniqueCount = $ids->unique()->count();
+$dupIds = $ids->duplicates()->values()->all();
+
+Log::info("🧾 API ID CHECK", [
+    'total_items' => $ids->count(),
+    'unique_ids' => $uniqueCount,
+    'dup_count' => count($dupIds),
+    'dup_sample' => array_slice($dupIds, 0, 20),
+]);
+
             if (empty($allHistoriesFromApi)) {
                 Log::warning('⚠️ No PTKP History data from API');
                 return [
@@ -49,13 +60,26 @@ class KaryawanPtkpHistorySyncService
             
             // Step 2: Ambil semua ID dari API
             $apiIds = collect($allHistoriesFromApi)->pluck('id')->toArray();
+            // Audit missing from DB (active + trashed)
+$localIds = KaryawanPtkpHistory::withTrashed()
+    ->pluck('absen_ptkp_history_id')
+    ->toArray();
+
+$missingInDb = array_values(array_diff($apiIds, $localIds));
+if (!empty($missingInDb)) {
+    Log::warning("⚠️ Missing PTKP History in DB (will be inserted if fetched)", [
+        'missing_count' => count($missingInDb),
+        'missing_ids' => array_slice($missingInDb, 0, 50),
+    ]);
+}
+
             
             DB::beginTransaction();
             
             // Step 3: Sync setiap PTKP History
             foreach ($allHistoriesFromApi as $apiHistory) {
                 try {
-                    $result = $this->syncSingleHistory($apiHistory);
+                    $result = $this->syncSinglePtkpHistory($apiHistory);
                     
                     if ($result['action'] === 'inserted') {
                         $stats['new_inserted']++;
@@ -71,9 +95,15 @@ class KaryawanPtkpHistorySyncService
                     ]);
                 }
             }
+            Log::info("🛢️ DB CHECK", [
+    'connection' => DB::connection()->getName(),
+    'database' => DB::connection()->getDatabaseName(),
+    'db_host' => config('database.connections.' . DB::connection()->getName() . '.host'),
+]);
+
             
-            // Step 4: Hapus PTKP History yang tidak ada di API lagi
-            $deletedCount = $this->deleteRemovedHistories($apiIds);
+            // Step 4: Hapus PTKP History yang tidak ada di API lagi (soft delete)
+            $deletedCount = $this->deleteRemovedPtkpHistories($apiIds);
             $stats['deleted'] = $deletedCount;
             
             DB::commit();
@@ -106,44 +136,95 @@ class KaryawanPtkpHistorySyncService
     }
     
     /**
-     * 📥 FETCH ALL PTKP HISTORY FROM API
-     */
-    protected function fetchAllHistoriesFromApi($filters = [])
-    {
-        $allHistories = [];
-        $page = 1;
-        $perPage = 100;
-        
-        do {
-            $response = $this->apiService->getPtkpHistoriesPaginated($page, $perPage, $filters, false);
-            
-            if (!$response['success']) {
-                Log::error('Failed to fetch PTKP History page', ['page' => $page]);
-                break;
-            }
-            
-            $data = $response['data'] ?? [];
-            $allHistories = array_merge($allHistories, $data);
-            
-            $meta = $response['meta'] ?? [];
-            $currentPage = $meta['current_page'] ?? $page;
-            $lastPage = $meta['last_page'] ?? $page;
-            
-            Log::info("📄 Fetched PTKP History page {$currentPage}/{$lastPage}", [
-                'count' => count($data)
+ * 📥 FETCH ALL PTKP HISTORY FROM API (robust pagination)
+ * - Selalu ambil page 1 TANPA cache untuk dapat meta terbaru
+ * - Sisanya juga default tanpa cache biar gak ketahan data lama
+ * - Loop sampai count >= meta.total (kalau meta ada)
+ */
+protected function fetchAllPtkpHistoriesFromApi($forceRefresh = false)
+{
+    $allHistories = [];
+    $page = 1;
+    $perPage = 100;
+
+    $expectedTotal = null;
+    $lastPage = null;
+
+    while (true) {
+        // ✅ Page 1 wajib fresh supaya meta (total/last_page) up-to-date
+        $useCache = false;
+
+        // Kalau lu mau tetap cache saat bukan forceRefresh, boleh:
+        // $useCache = (!$forceRefresh && $page > 1);
+
+        $response = $this->apiService->getPtkpHistoriesPaginated($page, $perPage, $useCache);
+
+        if (empty($response) || !($response['success'] ?? false)) {
+            Log::error('Failed to fetch PTKP History page', [
+                'page' => $page,
+                'response' => $response
             ]);
-            
-            $page++;
-            
-        } while ($page <= ($meta['last_page'] ?? 1));
-        
-        return $allHistories;
+            break;
+        }
+
+        $data = $response['data'] ?? [];
+        $meta = $response['meta'] ?? [];
+
+        // meta dari API
+        $expectedTotal = $expectedTotal ?? ($meta['total'] ?? null);
+        $lastPage = $lastPage ?? ($meta['last_page'] ?? null);
+
+        // merge
+        $allHistories = array_merge($allHistories, $data);
+
+        Log::info("📄 Fetched PTKP History page {$page}", [
+            'count_page' => count($data),
+            'count_total_collected' => count($allHistories),
+            'expected_total' => $expectedTotal,
+            'last_page' => $lastPage,
+        ]);
+
+        // stop conditions
+        if (count($data) === 0) {
+            // safety: API ngasih kosong -> stop
+            break;
+        }
+
+        // Kalau meta total ada, stop saat sudah terkumpul semua
+        if ($expectedTotal !== null && count($allHistories) >= $expectedTotal) {
+            break;
+        }
+
+        // Kalau meta last_page ada, stop saat sudah lewat last_page
+        if ($lastPage !== null && $page >= $lastPage) {
+            break;
+        }
+
+        $page++;
+        if ($page > 2000) { // safety guard
+            Log::warning("Pagination guard hit, stopping.", ['page' => $page]);
+            break;
+        }
     }
+
+    // ✅ hard check: kalau meta bilang 226 tapi terkumpul 223 -> log error jelas
+    if ($expectedTotal !== null && count($allHistories) !== $expectedTotal) {
+        Log::warning("⚠️ PTKP History fetched count mismatch", [
+            'expected_total' => $expectedTotal,
+            'fetched' => count($allHistories),
+            'missing' => $expectedTotal - count($allHistories),
+        ]);
+    }
+
+    return $allHistories;
+}
+
     
     /**
      * 🔄 SYNC SINGLE PTKP HISTORY
+     * Insert baru atau update existing
      */
-    protected function syncSingleHistory(array $apiData)
+    protected function syncSinglePtkpHistory(array $apiData)
     {
         $absenHistoryId = $apiData['id'];
         
@@ -152,11 +233,12 @@ class KaryawanPtkpHistorySyncService
             ->where('absen_ptkp_history_id', $absenHistoryId)
             ->first();
         
-        $preparedData = $this->prepareHistoryData($apiData);
+        $preparedData = $this->preparePtkpHistoryData($apiData);
         
         if ($history) {
             // UPDATE existing
             
+            // Jika sebelumnya soft deleted, restore dulu
             if ($history->trashed()) {
                 $history->restore();
                 Log::info("🔄 Restored PTKP History", ['id' => $absenHistoryId]);
@@ -191,9 +273,11 @@ class KaryawanPtkpHistorySyncService
     
     /**
      * 🗑️ DELETE PTKP HISTORY YANG TIDAK ADA DI API
+     * Soft delete PTKP History yang sudah tidak ada di API ABSEN
      */
-    protected function deleteRemovedHistories(array $apiIds)
+    protected function deleteRemovedPtkpHistories(array $apiIds)
     {
+        // Ambil semua ID local yang tidak ada di API lagi
         $toDelete = KaryawanPtkpHistory::whereNotIn('absen_ptkp_history_id', $apiIds)
             ->whereNull('deleted_at')
             ->get();
@@ -201,7 +285,7 @@ class KaryawanPtkpHistorySyncService
         $deletedCount = 0;
         
         foreach ($toDelete as $history) {
-            // Soft delete langsung (karena history biasanya tidak punya relasi)
+            // Soft delete
             $history->delete();
             $deletedCount++;
             
@@ -217,33 +301,35 @@ class KaryawanPtkpHistorySyncService
     }
     
     /**
-     * 📋 PREPARE DATA
+     * 📋 PREPARE DATA dari API untuk disimpan ke local DB
      */
-    protected function prepareHistoryData(array $apiData)
+    protected function preparePtkpHistoryData(array $apiData)
     {
         return [
             'absen_ptkp_history_id' => $apiData['id'],
-            'absen_karyawan_id' => $apiData['karyawan_id'] ?? null,
-            'absen_ptkp_id' => $apiData['ptkp_id'] ?? null,
-            'tahun' => $apiData['tahun'] ?? null,
+            'absen_karyawan_id' => $apiData['karyawan_id'],
+            'absen_ptkp_id' => $apiData['ptkp_id'],
+            'tahun' => $apiData['tahun'],
             'absen_updated_by_id' => $apiData['updated_by_id'] ?? null,
             'last_synced_at' => now(),
             'sync_metadata' => json_encode([
                 'synced_from' => 'api',
                 'api_id' => $apiData['id'],
                 'synced_at' => now()->toISOString(),
-                'karyawan_nama' => $apiData['karyawan']['nama_lengkap'] ?? null,
-                'ptkp_kriteria' => $apiData['ptkp']['kriteria'] ?? null,
+                'karyawan_info' => $apiData['karyawan'] ?? null,
+                'ptkp_info' => $apiData['ptkp'] ?? null,
             ])
         ];
     }
     
     /**
      * 🔄 SYNC SPECIFIC PTKP HISTORY BY ID
+     * Sync satu PTKP History aja by absen_ptkp_history_id
      */
     public function syncById($absenHistoryId)
     {
         try {
+            // Ambil data dari API
             $response = $this->apiService->getPtkpHistory($absenHistoryId, false);
             
             if (!$response['success']) {
@@ -256,7 +342,7 @@ class KaryawanPtkpHistorySyncService
             $apiData = $response['data'];
             
             DB::beginTransaction();
-            $result = $this->syncSingleHistory($apiData);
+            $result = $this->syncSinglePtkpHistory($apiData);
             DB::commit();
             
             Log::info("✅ Synced single PTKP History", $result);
@@ -285,11 +371,12 @@ class KaryawanPtkpHistorySyncService
     
     /**
      * 🔄 SYNC BY KARYAWAN ID
+     * Sync semua PTKP History untuk karyawan tertentu
      */
-    public function syncByKaryawanId($absenKaryawanId)
+    public function syncByKaryawan($absenKaryawanId, $forceRefresh = false)
     {
         try {
-            $response = $this->apiService->getPtkpHistoryByKaryawan($absenKaryawanId, false);
+            $response = $this->apiService->getPtkpHistoryByKaryawan($absenKaryawanId, !$forceRefresh);
             
             if (!$response['success']) {
                 return [
@@ -300,42 +387,44 @@ class KaryawanPtkpHistorySyncService
             
             $histories = $response['data'] ?? [];
             
-            if (empty($histories)) {
-                return [
-                    'success' => true,
-                    'message' => 'No histories to sync',
-                    'synced' => 0
-                ];
-            }
+            $stats = [
+                'total' => count($histories),
+                'inserted' => 0,
+                'updated' => 0,
+                'errors' => 0
+            ];
             
             DB::beginTransaction();
             
-            $synced = 0;
-            foreach ($histories as $apiData) {
-                $this->syncSingleHistory($apiData);
-                $synced++;
+            foreach ($histories as $apiHistory) {
+                try {
+                    $result = $this->syncSinglePtkpHistory($apiHistory);
+                    
+                    if ($result['action'] === 'inserted') {
+                        $stats['inserted']++;
+                    } else {
+                        $stats['updated']++;
+                    }
+                } catch (\Exception $e) {
+                    $stats['errors']++;
+                    Log::error('Error syncing PTKP History by karyawan', [
+                        'karyawan_id' => $absenKaryawanId,
+                        'history_id' => $apiHistory['id'] ?? 'unknown',
+                        'error' => $e->getMessage()
+                    ]);
+                }
             }
             
             DB::commit();
             
-            Log::info("✅ Synced PTKP History for karyawan", [
-                'karyawan_id' => $absenKaryawanId,
-                'count' => $synced
-            ]);
-            
             return [
                 'success' => true,
-                'message' => 'PTKP History synced successfully',
-                'synced' => $synced
+                'message' => 'Karyawan PTKP History synced',
+                'stats' => $stats
             ];
             
         } catch (\Exception $e) {
             DB::rollBack();
-            
-            Log::error('Error syncing PTKP History by karyawan', [
-                'karyawan_id' => $absenKaryawanId,
-                'error' => $e->getMessage()
-            ]);
             
             return [
                 'success' => false,
@@ -346,57 +435,60 @@ class KaryawanPtkpHistorySyncService
     
     /**
      * 🔄 SYNC BY TAHUN
+     * Sync semua PTKP History untuk tahun tertentu
      */
-    public function syncByTahun($tahun)
+    public function syncByTahun($tahun, $forceRefresh = false)
     {
         try {
-            $response = $this->apiService->getPtkpHistoryByTahun($tahun, false);
+            $response = $this->apiService->getPtkpHistoryByTahun($tahun, !$forceRefresh);
             
             if (!$response['success']) {
                 return [
                     'success' => false,
-                    'message' => 'No PTKP History found for this year'
+                    'message' => 'No PTKP History found for this tahun'
                 ];
             }
             
             $histories = $response['data'] ?? [];
             
-            if (empty($histories)) {
-                return [
-                    'success' => true,
-                    'message' => 'No histories to sync',
-                    'synced' => 0
-                ];
-            }
+            $stats = [
+                'total' => count($histories),
+                'inserted' => 0,
+                'updated' => 0,
+                'errors' => 0
+            ];
             
             DB::beginTransaction();
             
-            $synced = 0;
-            foreach ($histories as $apiData) {
-                $this->syncSingleHistory($apiData);
-                $synced++;
+            foreach ($histories as $apiHistory) {
+                try {
+                    $result = $this->syncSinglePtkpHistory($apiHistory);
+                    
+                    if ($result['action'] === 'inserted') {
+                        $stats['inserted']++;
+                    } else {
+                        $stats['updated']++;
+                    }
+                } catch (\Exception $e) {
+                    $stats['errors']++;
+                    Log::error('Error syncing PTKP History by tahun', [
+                        'tahun' => $tahun,
+                        'history_id' => $apiHistory['id'] ?? 'unknown',
+                        'error' => $e->getMessage()
+                    ]);
+                }
             }
             
             DB::commit();
             
-            Log::info("✅ Synced PTKP History for tahun", [
-                'tahun' => $tahun,
-                'count' => $synced
-            ]);
-            
             return [
                 'success' => true,
-                'message' => 'PTKP History synced successfully',
-                'synced' => $synced
+                'message' => "PTKP History for tahun {$tahun} synced",
+                'stats' => $stats
             ];
             
         } catch (\Exception $e) {
             DB::rollBack();
-            
-            Log::error('Error syncing PTKP History by tahun', [
-                'tahun' => $tahun,
-                'error' => $e->getMessage()
-            ]);
             
             return [
                 'success' => false,
@@ -405,42 +497,28 @@ class KaryawanPtkpHistorySyncService
         }
     }
     
-   /**
+    /**
      * 📊 GET SYNC STATISTICS
      */
     public function getSyncStats()
     {
-        // Get statistics by year with unique karyawan count
-        $byYear = KaryawanPtkpHistory::select('tahun')
-            ->selectRaw('COUNT(*) as count')
-            ->selectRaw('COUNT(DISTINCT absen_karyawan_id) as unique_karyawan')
-            ->whereNotNull('tahun')
-            ->groupBy('tahun')
-            ->orderBy('tahun', 'desc')
-            ->get()
-            ->keyBy('tahun')
-            ->map(function($item) {
-                return [
-                    'count' => $item->count,
-                    'unique_karyawan' => $item->unique_karyawan
-                ];
-            })
-            ->toArray();
-
         return [
             'total_histories' => KaryawanPtkpHistory::count(),
-            'total_karyawan' => KaryawanPtkpHistory::distinct('absen_karyawan_id')->count('absen_karyawan_id'),
             'soft_deleted' => KaryawanPtkpHistory::onlyTrashed()->count(),
             'never_synced' => KaryawanPtkpHistory::whereNull('last_synced_at')->count(),
             'last_sync_time' => KaryawanPtkpHistory::max('last_synced_at'),
-            'oldest_sync_time' => KaryawanPtkpHistory::whereNotNull('last_synced_at')->min('last_synced_at'),
-            'unique_years' => KaryawanPtkpHistory::distinct('tahun')->whereNotNull('tahun')->count(),
-            'by_year' => $byYear
+            'oldest_sync_time' => KaryawanPtkpHistory::min('last_synced_at'),
+            'by_tahun' => KaryawanPtkpHistory::selectRaw('tahun, COUNT(*) as total')
+                ->groupBy('tahun')
+                ->orderBy('tahun', 'desc')
+                ->get()
+                ->pluck('total', 'tahun'),
         ];
     }
     
     /**
      * 🔍 CHECK SYNC HEALTH
+     * Cek apakah ada PTKP History yang perlu di-sync ulang
      */
     public function checkSyncHealth($hoursThreshold = 24)
     {
@@ -459,39 +537,6 @@ class KaryawanPtkpHistorySyncService
             'threshold_hours' => $hoursThreshold
         ];
     }
+
     
-    /**
-     * 🔍 GET MISSING PTKP FOR YEAR
-     */
-    public function getMissingPtkpForYear($tahun)
-    {
-        try {
-            $response = $this->apiService->getKaryawanMissingPtkp($tahun, false);
-            
-            if (!$response['success']) {
-                return [
-                    'success' => false,
-                    'message' => 'Failed to fetch missing PTKP data'
-                ];
-            }
-            
-            return [
-                'success' => true,
-                'data' => $response['data'] ?? [],
-                'total' => $response['total'] ?? 0,
-                'tahun' => $tahun
-            ];
-            
-        } catch (\Exception $e) {
-            Log::error('Error getting missing PTKP', [
-                'tahun' => $tahun,
-                'error' => $e->getMessage()
-            ]);
-            
-            return [
-                'success' => false,
-                'message' => $e->getMessage()
-            ];
-        }
-    }
 }

@@ -39,7 +39,7 @@ SELECT
     p.pph_21,
     p.salary_type,
 
-    -- ini nilainya MINUS di tabel (sesuai request lu)
+    -- ini nilainya MINUS di tabel
     p.bpjs_tenaga_kerja,
     p.bpjs_kesehatan,
 
@@ -67,15 +67,28 @@ SELECT
     p.created_at,
     p.updated_at,
 
+    -- ✅ PTKP Status dari history berdasarkan tahun periode
+    ptkp.status AS ptkp_status,
+    ptkp.kriteria AS ptkp_kriteria,
+    ptkp.besaran_ptkp AS ptkp_besaran,
+
     /* =========================
-       Salary Calculation (biarin sesuai existing lu)
+       Salary Calculation (gaya lama)
        ========================= */
     COALESCE(p.gaji_pokok, 0)
     + COALESCE(p.pph_21_deduction, 0)
     + COALESCE(p.pph_21, 0) AS salary,
 
     /* =========================
-       BPJS Income (POSITIF / ikut nilai tabel)
+       ✅ Tunjangan (NETT only)
+       ========================= */
+    CASE
+        WHEN p.salary_type = 'nett' THEN COALESCE(p.pph_21, 0)
+        ELSE 0
+    END AS tunjangan,
+
+    /* =========================
+       BPJS Income
        ========================= */
     (
         COALESCE(p.bpjs_tk_jht_3_7_percent, 0)
@@ -87,19 +100,19 @@ SELECT
     (
         COALESCE(p.bpjs_tk_jht_2_percent, 0)
         + COALESCE(p.bpjs_tk_jp_1_percent, 0)
-        + COALESCE(p.bpjs_tenaga_kerja, 0)   -- <- nilai MINUS dari tabel ikut masuk
+        + COALESCE(p.bpjs_tenaga_kerja, 0)
     ) AS bpjs_tenaga_kerja_pegawai_income,
 
     COALESCE(p.bpjs_kes_4_percent, 0) AS bpjs_kesehatan_perusahaan_income,
 
     (
         COALESCE(p.bpjs_kes_1_percent, 0)
-        + COALESCE(p.bpjs_kesehatan, 0)      -- <- nilai MINUS dari tabel ikut masuk
+        + COALESCE(p.bpjs_kesehatan, 0)
     ) AS bpjs_kesehatan_pegawai_income,
 
     /* =========================
        BPJS Deduction (HARUS MINUS)
-       (sesuai rumus lu: DEDUCTION pegawai TIDAK pakai kolom manual)
+       - pegawai deduction tanpa kolom manual
        ========================= */
     -(
         COALESCE(p.bpjs_tk_jht_3_7_percent, 0)
@@ -135,12 +148,12 @@ SELECT
         + (
             COALESCE(p.bpjs_tk_jht_2_percent, 0)
             + COALESCE(p.bpjs_tk_jp_1_percent, 0)
-            + COALESCE(p.bpjs_tenaga_kerja, 0)   -- <- minus ikut ngurangin penerimaan
+            + COALESCE(p.bpjs_tenaga_kerja, 0)
         )
         + COALESCE(p.bpjs_kes_4_percent, 0)
         + (
             COALESCE(p.bpjs_kes_1_percent, 0)
-            + COALESCE(p.bpjs_kesehatan, 0)      -- <- minus ikut ngurangin penerimaan
+            + COALESCE(p.bpjs_kesehatan, 0)
         )
 
         + COALESCE(p.insentif_sholat, 0)
@@ -158,8 +171,7 @@ SELECT
     ) AS total_penerimaan,
 
     /* =========================
-       Total Potongan (negatif)
-       - BPJS potongan pakai rumus DEDUCTION yang lu minta (tanpa kolom manual)
+       Total Potongan
        ========================= */
     (
         COALESCE(p.ca_corporate, 0)
@@ -253,8 +265,11 @@ SELECT
         )
     ) AS gaji_bersih
 
-FROM payrolls p;
-
+FROM payrolls p
+LEFT JOIN karyawans k ON p.karyawan_id = k.id
+LEFT JOIN karyawan_ptkp_histories kph ON k.absen_karyawan_id = kph.absen_karyawan_id 
+    AND YEAR(STR_TO_DATE(CONCAT(p.periode, '-01'), '%Y-%m-%d')) = kph.tahun
+LEFT JOIN list_ptkps ptkp ON kph.absen_ptkp_id = ptkp.absen_ptkp_id;
 ");
 
 
@@ -263,8 +278,9 @@ FROM payrolls p;
     /**
      * Reverse the migrations.
      */
-    public function down(): void
+        public function down(): void
     {
-        Schema::dropIfExists('payroll_calculations_view');
+        DB::statement("DROP VIEW IF EXISTS payroll_calculations");
     }
+
 };

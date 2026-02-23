@@ -3,23 +3,35 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
-use App\Models\PayrollsFake;
 use App\Models\Karyawan;
+use App\Models\PayrollsFake;
 use Illuminate\Http\Request;
-use App\Exports\PayrollsFakeExport;
-use App\Models\PayrollCalculationFake;
 use Illuminate\Support\Facades\DB;
+use App\Exports\PayrollsFakeExport;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\PayrollCalculationFake;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Support\Facades\Gate;
 class PayrollsFakeController extends Controller
 {
+     public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (Gate::denies('manage-payroll-fake')) {
+                abort(403, 'Unauthorized action.');
+            }
+
+            return $next($request);
+        });
+    }
     public function index(Request $request)
     {
         // 🔥 OPTIMASI: Count semua status sekali jalan
         $counts = DB::table('payrolls_fakes')
+            ->whereIn('company_id', Auth::user()->assignedCompanies()->pluck('companies.absen_company_id')->toArray())
             ->selectRaw('
                 SUM(CASE WHEN is_released = 0 THEN 1 ELSE 0 END) as pending_count,
                 SUM(CASE WHEN is_released = 1 AND is_released_slip = 0 THEN 1 ELSE 0 END) as released_count,
@@ -63,6 +75,11 @@ class PayrollsFakeController extends Controller
             
             if ($request->filled('periode')) {
                 $query->where('periode', $request->periode);
+            }
+
+            $companyIds = Auth::user()->assignedCompanies()->pluck('companies.absen_company_id')->toArray();
+            if (!empty($companyIds)) {
+                $query->whereIn('company_id', $companyIds);
             }
             
             return DataTables::eloquent($query)
@@ -175,6 +192,11 @@ class PayrollsFakeController extends Controller
                 ])
                 ->where('is_released', 1)
                 ->where('is_released_slip', 0);
+
+                $companyIds = Auth::user()->assignedCompanies()->pluck('companies.absen_company_id')->toArray();
+                if (!empty($companyIds)) {
+                    $query->whereIn('company_id', $companyIds);
+                }
             
             if ($request->filled('periode')) {
                 $query->where('periode', $request->periode);
@@ -286,6 +308,11 @@ class PayrollsFakeController extends Controller
                 ])
                 ->where('is_released', 1)
                 ->where('is_released_slip', 1);
+
+                $companyIds = Auth::user()->assignedCompanies()->pluck('companies.absen_company_id')->toArray();
+                if (!empty($companyIds)) {
+                    $query->whereIn('company_id', $companyIds);
+                }
             
             if ($request->filled('periode')) {
                 $query->where('periode', $request->periode);
@@ -421,6 +448,8 @@ class PayrollsFakeController extends Controller
             $periode = $request->get('periode');
             
             $query = PayrollCalculationFake::query();
+            $companyIds = Auth::user()->assignedCompanies()->pluck('companies.absen_company_id')->toArray();
+            $query->whereIn('company_id', $companyIds);
             
             if ($periode) {
                 if (strlen($periode) === 7) {
@@ -480,8 +509,12 @@ class PayrollsFakeController extends Controller
                 $filename = 'payroll_fake_' . $status . '_' . $periode . '_' . date('YmdHis') . '.xlsx';
             }
 
+            $assignedCompanyIds = Auth::user()->assignedCompanies()->pluck('companies.absen_company_id')->toArray();
+
+
             return Excel::download(
-                new PayrollsFakeExport($periode, $companyId, $isReleased, $isReleasedSlip),
+                // Dan ubah jadi:
+                new PayrollsFakeExport($periode, $companyId, $isReleased, $isReleasedSlip, $assignedCompanyIds),
                 $filename
             );
 

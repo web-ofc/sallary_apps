@@ -26,21 +26,21 @@ class Company extends Model
         });
     }
     
-    /**
-     * Relasi ke Karyawan (jika ada FK company_id di karyawan)
-     */
-    public function karyawan()
-    {
-        return $this->hasMany(Karyawan::class, 'company_id');
-    }
+    // /**
+    //  * Relasi ke Karyawan (jika ada FK company_id di karyawan)
+    //  */
+    // public function karyawan()
+    // {
+    //     return $this->hasMany(Karyawan::class, 'company_id');
+    // }
     
-    /**
-     * Relasi ke Payroll (jika ada FK company_id di payroll)
-     */
-    public function payrolls()
-    {
-        return $this->hasMany(Payroll::class, 'company_id');
-    }
+    // /**
+    //  * Relasi ke Payroll (jika ada FK company_id di payroll)
+    //  */
+    // public function payrolls()
+    // {
+    //     return $this->hasMany(Payroll::class, 'company_id');
+    // }
     
     /**
      * Check apakah company punya karyawan

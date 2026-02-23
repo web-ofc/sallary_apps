@@ -48,9 +48,9 @@ class Karyawan extends Model
     /**
      * Relasi ke Payroll (jika ada)
      */
-    public function payrolls()
+        public function payrolls()
     {
-        return $this->hasMany(Payroll::class, 'karyawan_id');
+        return $this->hasMany(Payroll::class, 'karyawan_id', 'absen_karyawan_id');
     }
 
     
@@ -60,5 +60,23 @@ class Karyawan extends Model
     public function hasPayrolls()
     {
         return $this->payrolls()->exists();
+    }
+
+    /**
+     * Relasi ke Master Salaries
+     * PENTING: Menggunakan absen_karyawan_id sebagai local key
+     */
+    public function salaries()
+    {
+        return $this->hasMany(MasterSalary::class, 'karyawan_id', 'absen_karyawan_id');
+    }
+
+    /**
+     * Get latest salary
+     */
+    public function latestSalary()
+    {
+        return $this->hasOne(MasterSalary::class, 'karyawan_id', 'absen_karyawan_id')
+                    ->latestOfMany(['update_date', 'year']);
     }
 }

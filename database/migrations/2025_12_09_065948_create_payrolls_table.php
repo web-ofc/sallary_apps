@@ -66,6 +66,14 @@ return new class extends Migration
             $table->boolean('is_last_period')->default(false);
 
             $table->timestamps();
+
+
+            $table->index(['company_id', 'periode']);
+            $table->index(['karyawan_id', 'periode']);
+            $table->index(['company_id', 'is_released']);
+            $table->index('is_released_slip');
+            $table->index('is_last_period');
+
         });
     }
 

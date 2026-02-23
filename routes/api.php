@@ -1,17 +1,19 @@
 <?php
 // routes/api.php (DI APLIKASI GAJI)
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PtkpSyncController;
-use App\Http\Controllers\CompanyViewController;
 use App\Http\Controllers\Api\KaryawanController;
+use App\Http\Controllers\Api\PayrollApiController;
+use App\Http\Controllers\Api\ReimbursementApiController;
+use App\Http\Controllers\Api\ReimbursementFileApiController;
+use App\Http\Controllers\CompanyViewController;
 use App\Http\Controllers\JenisTerSyncController;
+use App\Http\Controllers\KaryawanPtkpHistorySyncController;
 use App\Http\Controllers\KaryawanSyncController;
 use App\Http\Controllers\KaryawanViewController;
-use App\Http\Controllers\Api\PayrollApiController;
+use App\Http\Controllers\PtkpSyncController;
 use App\Http\Controllers\RangeBrutoSyncController;
-use App\Http\Controllers\KaryawanPtkpHistorySyncController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -113,29 +115,25 @@ use App\Http\Controllers\KaryawanPtkpHistorySyncController;
     });
     
     Route::prefix('sync/ptkp-history')->name('api.sync.ptkp-history.')->group(function () {
-        // Full sync
-        Route::post('/all', [KaryawanPtkpHistorySyncController::class, 'syncAll'])
-            ->name('all');
-        
-        // Sync by specific ID
-        Route::post('/{id}', [KaryawanPtkpHistorySyncController::class, 'syncById'])
-            ->name('by-id');
-        
-        // Sync by karyawan
-        Route::post('/karyawan/{karyawan_id}', [KaryawanPtkpHistorySyncController::class, 'syncByKaryawan'])
-            ->name('by-karyawan');
-        
-        // Sync by tahun
-        Route::post('/tahun/{tahun}', [KaryawanPtkpHistorySyncController::class, 'syncByTahun'])
-            ->name('by-tahun');
-        
-        // Get stats
-        Route::get('/stats', [KaryawanPtkpHistorySyncController::class, 'stats'])
-            ->name('stats');
-        
-        // Get missing PTKP for year
-        Route::get('/missing-ptkp', [KaryawanPtkpHistorySyncController::class, 'getMissingPtkp'])
-            ->name('missing-ptkp');
+         // Full sync
+    Route::post('/', [KaryawanPtkpHistorySyncController::class, 'syncAll'])
+        ->name('api.ptkp-history.sync.all');
+    
+    // Sync by ID
+    Route::post('/{absenHistoryId}', [KaryawanPtkpHistorySyncController::class, 'syncById'])
+        ->name('api.ptkp-history.sync.by-id');
+    
+    // Sync by karyawan
+    Route::post('/karyawan/{absenKaryawanId}', [KaryawanPtkpHistorySyncController::class, 'syncByKaryawan'])
+        ->name('api.ptkp-history.sync.by-karyawan');
+    
+    // Sync by tahun
+    Route::post('/tahun/{tahun}', [KaryawanPtkpHistorySyncController::class, 'syncByTahun'])
+        ->name('api.ptkp-history.sync.by-tahun');
+    
+    // Get stats
+    Route::get('/stats', [KaryawanPtkpHistorySyncController::class, 'stats'])
+        ->name('api.ptkp-history.sync.stats');
     });
 /*
 |--------------------------------------------------------------------------
@@ -152,9 +150,48 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/summary/{periode}', [PayrollApiController::class, 'summaryByPeriode']);
         Route::get('/by-periode/{periode}', [PayrollApiController::class, 'byPeriode']);
         Route::get('/by-karyawan/{karyawan_id}', [PayrollApiController::class, 'byKaryawan']);
+         Route::get('/{source}/{id}', [PayrollApiController::class, 'showBySource']);
         Route::get('/{id}', [PayrollApiController::class, 'show']);
         
         
         
+    });
+
+    Route::prefix('reimbursements')->group(function () {
+    
+        // API 1: Get pending reimbursements (status = 0) dengan pagination
+        // GET /api/reimbursements/pending
+        // Query params: page, per_page, karyawan_id, company_id, periode_slip, year_budget
+        Route::get('/pending', [ReimbursementApiController::class, 'getPendingReimbursements']);
+        
+        // API 2: Get summary/statistics
+        // GET /api/reimbursements/summary
+        // Query params: karyawan_id, company_id, periode_slip, year_budget
+        Route::get('/summary', [ReimbursementApiController::class, 'getSummary']);
+        
+        // API 3: Get detail reimbursement by ID (untuk show icon mata)
+        // GET /api/reimbursements/{id}
+        Route::get('/{id}', [ReimbursementApiController::class, 'getReimbursementDetail']);
+        
+        // API 4: Approve reimbursement (update status jadi 1)
+        // PUT /api/reimbursements/{id}/approve
+        // Body: approved_id (optional, default 6 dari auth karyawan_id)
+        Route::put('/{id}/approve', [ReimbursementApiController::class, 'approveReimbursement']);
+        
+    });
+
+    Route::prefix('reimbursement-files')->name('api.reimbursement-files.')->group(function () {
+        
+        // ✅ FIX: Accept karyawan_id as path parameter
+        Route::get('/by-karyawan/{karyawan_id}', [ReimbursementFileApiController::class, 'getByKaryawan'])
+            ->name('by-karyawan');
+        
+        // ✅ FIX: Accept karyawan_id as path parameter
+        Route::get('/summary/{karyawan_id}', [ReimbursementFileApiController::class, 'getSummary'])
+            ->name('summary');
+        
+        // ✅ FIX: Accept karyawan_id as path parameter
+        Route::get('/years/{karyawan_id}', [ReimbursementFileApiController::class, 'getAvailableYears'])
+            ->name('years');
     });
 });

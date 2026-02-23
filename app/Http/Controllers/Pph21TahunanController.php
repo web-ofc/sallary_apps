@@ -10,6 +10,7 @@ use Yajra\DataTables\Facades\DataTables;
 use App\Exports\Pph21TahunanExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Gate;
 
 class Pph21TahunanController extends Controller
 {
@@ -18,6 +19,14 @@ class Pph21TahunanController extends Controller
     public function __construct(Pph21CalculationService $pph21Service)
     {
         $this->pph21Service = $pph21Service;
+
+        $this->middleware(function ($request, $next) {
+            if (Gate::denies('pph21-tahunan')) {
+                abort(403, 'Unauthorized action.');
+            }
+
+            return $next($request);
+        });
     }
     
     /**

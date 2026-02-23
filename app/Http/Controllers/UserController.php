@@ -44,10 +44,6 @@ class UserController extends Controller
                 }
                 return '<span class="badge badge-light-danger">Inactive</span>';
             })
-            ->addColumn('role', function ($user) {
-                $badgeClass = $user->role === 'admin' ? 'badge-light-primary' : 'badge-light-info';
-                return '<span class="badge ' . $badgeClass . '">' . ucfirst($user->role) . '</span>';
-            })
             ->addColumn('action', function ($user) {
                 return '<div class="btn-group" role="group">
                     <button type="button" class="btn btn-sm btn-light-primary" onclick="editUser(' . $user->id . ')">
@@ -58,7 +54,7 @@ class UserController extends Controller
                     </button>
                 </div>';
             })
-            ->rawColumns(['status', 'role', 'action'])
+            ->rawColumns(['status', 'action'])
             ->make(true);
     }
 
@@ -79,7 +75,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
-            'role' => 'required|in:admin',
+            'role' => 'required|in:admin,management',
             'is_active' => 'boolean',
         ]);
 
@@ -139,7 +135,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $id,
             'password' => 'nullable|string|min:6',
-            'role' => 'required|in:admin',
+            'role' => 'required|in:admin,management',
             'is_active' => 'boolean',
         ]);
 

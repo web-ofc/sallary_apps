@@ -11,11 +11,11 @@ class SyncKaryawanPtkpHistoryCommand extends Command
     protected $signature = 'ptkp-history:sync 
                             {--force : Force refresh cache}
                             {--id= : Sync specific PTKP History by absen_ptkp_history_id}
-                            {--karyawan= : Sync by karyawan ID (absen_karyawan_id)}
-                            {--tahun= : Sync by tahun or filter by tahun}
+                            {--karyawan= : Sync all PTKP History for specific karyawan}
+                            {--tahun= : Sync all PTKP History for specific tahun}
                             {--stats : Show sync statistics only}';
     
-    protected $description = 'Sinkronisasi data PTKP History dari aplikasi ABSEN ke aplikasi GAJI';
+    protected $description = 'Sinkronisasi data Karyawan PTKP History dari aplikasi ABSEN ke aplikasi GAJI';
     
     protected $syncService;
     
@@ -33,7 +33,7 @@ class SyncKaryawanPtkpHistoryCommand extends Command
             return 0;
         }
         
-        // Sync specific PTKP History
+        // Sync specific PTKP History by ID
         if ($this->option('id')) {
             return $this->syncSpecific($this->option('id'));
         }
@@ -43,53 +43,53 @@ class SyncKaryawanPtkpHistoryCommand extends Command
             return $this->syncByKaryawan($this->option('karyawan'));
         }
         
-        // Sync by tahun only
-        if ($this->option('tahun') && !$this->option('force')) {
+        // Sync by tahun
+        if ($this->option('tahun')) {
             return $this->syncByTahun($this->option('tahun'));
         }
         
-        // Full sync (with optional tahun filter)
+        // Full sync
         return $this->syncAll();
     }
     
+    /**
+     * FULL SYNC
+     */
     protected function syncAll()
     {
         $this->info('🔄 Starting FULL SYNC PTKP History...');
         $this->newLine();
         
         $forceRefresh = $this->option('force');
-        $filters = [];
-        
-        if ($this->option('tahun')) {
-            $filters['tahun'] = $this->option('tahun');
-            $this->info("📅 Filter: Tahun {$filters['tahun']}");
-        }
         
         if ($forceRefresh) {
-            $this->warn('⚠️  Force refresh enabled');
+            $this->warn('⚠️  Force refresh enabled - akan fetch ulang semua data');
         }
         
+        // Confirm di production
         if (app()->environment('production')) {
-            if (!$this->confirm('Sync di PRODUCTION?')) {
-                $this->error('❌ Dibatalkan');
+            if (!$this->confirm('Anda yakin ingin sync PTKP History di PRODUCTION?')) {
+                $this->error('❌ Sync dibatalkan');
                 return 1;
             }
         }
         
         $this->newLine();
         
+        // Start sync dengan progress bar
         $bar = $this->output->createProgressBar();
         $bar->setFormat(' %current% [%bar%] %message%');
         $bar->setMessage('Memulai sync...');
         $bar->start();
         
-        $result = $this->syncService->syncAll($forceRefresh, $filters);
+        $result = $this->syncService->syncAll($forceRefresh);
         
         $bar->finish();
         $this->newLine(2);
         
+        // Display results
         if ($result['success']) {
-            $this->info('✅ SYNC BERHASIL!');
+            $this->info('✅ SYNC PTKP HISTORY BERHASIL!');
             $this->newLine();
             
             $stats = $result['stats'];
@@ -115,6 +115,9 @@ class SyncKaryawanPtkpHistoryCommand extends Command
         }
     }
     
+    /**
+     * SYNC SPECIFIC PTKP HISTORY BY ID
+     */
     protected function syncSpecific($absenHistoryId)
     {
         $this->info("🔄 Syncing PTKP History ID: {$absenHistoryId}");
@@ -134,17 +137,33 @@ class SyncKaryawanPtkpHistoryCommand extends Command
         }
     }
     
+    /**
+     * SYNC BY KARYAWAN ID
+     */
     protected function syncByKaryawan($absenKaryawanId)
     {
         $this->info("🔄 Syncing PTKP History for Karyawan ID: {$absenKaryawanId}");
         
-        $result = $this->syncService->syncByKaryawanId($absenKaryawanId);
+        $forceRefresh = $this->option('force');
+        $result = $this->syncService->syncByKaryawan($absenKaryawanId, $forceRefresh);
         
         $this->newLine();
         
         if ($result['success']) {
             $this->info('✅ Sync berhasil!');
-            $this->info("Synced: {$result['synced']} histories");
+            $this->newLine();
+            
+            $stats = $result['stats'];
+            $this->table(
+                ['Metric', 'Value'],
+                [
+                    ['Total', $stats['total']],
+                    ['Inserted', $stats['inserted']],
+                    ['Updated', $stats['updated']],
+                    ['Errors', $stats['errors']],
+                ]
+            );
+            
             return 0;
         } else {
             $this->error('❌ Sync gagal!');
@@ -153,17 +172,33 @@ class SyncKaryawanPtkpHistoryCommand extends Command
         }
     }
     
+    /**
+     * SYNC BY TAHUN
+     */
     protected function syncByTahun($tahun)
     {
         $this->info("🔄 Syncing PTKP History for Tahun: {$tahun}");
         
-        $result = $this->syncService->syncByTahun($tahun);
+        $forceRefresh = $this->option('force');
+        $result = $this->syncService->syncByTahun($tahun, $forceRefresh);
         
         $this->newLine();
         
         if ($result['success']) {
             $this->info('✅ Sync berhasil!');
-            $this->info("Synced: {$result['synced']} histories");
+            $this->newLine();
+            
+            $stats = $result['stats'];
+            $this->table(
+                ['Metric', 'Value'],
+                [
+                    ['Total', $stats['total']],
+                    ['Inserted', $stats['inserted']],
+                    ['Updated', $stats['updated']],
+                    ['Errors', $stats['errors']],
+                ]
+            );
+            
             return 0;
         } else {
             $this->error('❌ Sync gagal!');
@@ -172,9 +207,12 @@ class SyncKaryawanPtkpHistoryCommand extends Command
         }
     }
     
+    /**
+     * SHOW STATISTICS
+     */
     protected function showStats()
     {
-        $this->info('📊 SYNC STATISTICS - PTKP History');
+        $this->info('📊 PTKP HISTORY SYNC STATISTICS');
         $this->newLine();
         
         $stats = $this->syncService->getSyncStats();
@@ -182,36 +220,36 @@ class SyncKaryawanPtkpHistoryCommand extends Command
         $this->table(
             ['Metric', 'Value'],
             [
-                ['Total Histories', $stats['total_histories']],
+                ['Total PTKP History', $stats['total_histories']],
                 ['Soft Deleted', $stats['soft_deleted']],
                 ['Never Synced', $stats['never_synced']],
-                ['Unique Karyawan', $stats['unique_karyawan']],
-                ['Unique Years', $stats['unique_years']],
                 ['Last Sync', $stats['last_sync_time'] ?? 'Never'],
                 ['Oldest Sync', $stats['oldest_sync_time'] ?? 'Never'],
             ]
         );
         
-        // Show breakdown by year
-        if (!empty($stats['by_year'])) {
-            $this->newLine();
-            $this->info('📅 Breakdown by Year:');
-            $this->table(
-                ['Tahun', 'Total'],
-                array_map(function($item) {
-                    return [$item['tahun'], $item['total']];
-                }, $stats['by_year'])
-            );
+        $this->newLine();
+        $this->info('📅 Distribution by Tahun:');
+        
+        if (!empty($stats['by_tahun'])) {
+            $tahunData = [];
+            foreach ($stats['by_tahun'] as $tahun => $total) {
+                $tahunData[] = [$tahun, $total];
+            }
+            $this->table(['Tahun', 'Total'], $tahunData);
+        } else {
+            $this->warn('No data available');
         }
         
         $this->newLine();
         
+        // Check health
         $health = $this->syncService->checkSyncHealth(24);
         
         if ($health['healthy']) {
             $this->info('✅ Sync health: GOOD');
         } else {
-            $this->warn("⚠️  {$health['needs_sync_count']} histories need sync");
+            $this->warn("⚠️  {$health['needs_sync_count']} PTKP History needs sync");
         }
         
         $this->info("Sync coverage: {$health['percentage_synced']}%");

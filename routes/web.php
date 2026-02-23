@@ -1,29 +1,36 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\LoginController;
-use App\Http\Controllers\PayrollController;
-use App\Http\Controllers\KaryawanController;
-use App\Http\Controllers\PtkpSyncController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\FileProxyController;
+use App\Http\Controllers\Api\PayrollApiController;
+use App\Http\Controllers\BalanceReimbursementController;
 use App\Http\Controllers\CompanySyncController;
 use App\Http\Controllers\CompanyViewController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FileProxyController;
 use App\Http\Controllers\JenisTerSyncController;
+use App\Http\Controllers\KaryawanController;
+use App\Http\Controllers\KaryawanPtkpHistorySyncController;
 use App\Http\Controllers\KaryawanSyncController;
-use App\Http\Controllers\PayrollsFakeController;
-use App\Http\Controllers\Pph21TahunanController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\MasterReimbursementTypeController;
+use App\Http\Controllers\MasterSalaryController;
 use App\Http\Controllers\MutasiCompanyController;
 use App\Http\Controllers\PayrollAnnualController;
-use App\Http\Controllers\PayrollImportController;
-use App\Http\Controllers\Api\PayrollApiController;
-use App\Http\Controllers\RangeBrutoSyncController;
-use App\Http\Controllers\Pph21TaxBracketController;
-use App\Http\Controllers\Pph21MasaCompanyController;
+use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\PayrollFakeImportController;
-use App\Http\Controllers\KaryawanPtkpHistorySyncController;
+use App\Http\Controllers\PayrollImportController;
+use App\Http\Controllers\PayrollsFakeController;
 use App\Http\Controllers\PeriodeKaryawanMasaJabatanController;
+use App\Http\Controllers\Pph21MasaCompanyController;
+use App\Http\Controllers\Pph21TahunanController;
+use App\Http\Controllers\Pph21TaxBracketController;
+use App\Http\Controllers\PtkpSyncController;
+use App\Http\Controllers\RangeBrutoSyncController;
+use App\Http\Controllers\ReimbursementController;
+use App\Http\Controllers\ReimbursementFileController;
+use App\Http\Controllers\ReimbursementPeriodController;
+use App\Http\Controllers\SettingCompanyUserController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,7 +52,10 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard-admin', [DashboardController::class, 'adminDashboard'])->name('dashboard.admin')->middleware('admin');
-     // Dashboard AJAX Routes
+    Route::get('/dashboard-management', [DashboardController::class, 'managementDashboard'])->name('dashboard.management')->middleware('management');
+    
+    
+    // Dashboard AJAX Routes
     Route::prefix('dashboard')->middleware('admin')->group(function () {
         Route::get('/data', [DashboardController::class, 'getDashboardData'])->name('dashboard.data');
         Route::get('/periodes', [DashboardController::class, 'getPeriodes'])->name('dashboard.periodes');
@@ -152,9 +162,18 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/payrolls/summary/{periode}', [PayrollController::class, 'summary'])
         ->name('payrolls.summary');
 
+    // Download PDF Slip Gaji (individual)
+    Route::get('/payrolls/{id}/download-pdf', [PayrollController::class, 'downloadPdf'])
+        ->name('payrolls.download-pdf');
+        Route::post('/payrolls/download-pdf-zip', [PayrollController::class, 'downloadPdfZip'])
+    ->name('payrolls.download-pdf-zip');
+
+        
+        
+
     // Export payroll
-    Route::get('/payrolls/export', [PayrollController::class, 'export'])
-        ->name('payrolls.export');
+    Route::post('/payrolls/export', [PayrollController::class, 'export'])
+    ->name('payrolls.export');
         
     // Statistics
     Route::post('/payrolls/statistics', [PayrollController::class, 'getStatistics'])
@@ -369,7 +388,56 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::resource('/manage-pph21companyperiode', Pph21MasaCompanyController::class);
     Route::get('pph21companyperiode/data', [Pph21MasaCompanyController::class, 'getData'])->name('pph21companyperiode.data');
+    
+    Route::resource('/manage-setting-admin-user', SettingCompanyUserController::class);
+    Route::get('managesettingadminuser/data', [SettingCompanyUserController::class, 'getData'])->name('managesettingadminuser.data');
+    
 
+    Route::resource('reimbursement-files', ReimbursementFileController::class)
+        ->except(['show', 'edit', 'update']);
+
+    Route::prefix('reimbursement-files')->name('reimbursement-files.')->group(function () {
+        Route::get('/get-data', [ReimbursementFileController::class, 'getData'])->name('get-data');
+        Route::post('/validate-pre-create', [ReimbursementFileController::class, 'validatePreCreate'])->name('validate-pre-create');
+        Route::post('/validate-file', [ReimbursementFileController::class, 'validateFile'])->name('validate-file'); // ✅ NEW
+        Route::get('/download/{id}', [ReimbursementFileController::class, 'download'])->name('download');
+        Route::get('/get-karyawan-list', [ReimbursementFileController::class, 'getKaryawanList'])->name('get-karyawan-list');
+    });
+});
+
+
+Route::middleware(['auth', 'role:admin,management'])->group(function () {
+    Route::resource('/master-reimbursementtypes', MasterReimbursementTypeController::class);
+    Route::get('reimbursementtypes/data', [MasterReimbursementTypeController::class, 'getData'])->name('reimbursementtypes.data');
+    
+    // Reimbursements Routes
+    Route::get('manage-reimbursements/{id}/download-pdf', [ReimbursementController::class, 'downloadPdf'])->name('manage-reimbursements.download-pdf');
+    Route::resource('/manage-reimbursements', ReimbursementController::class);
+    Route::get('reimbursements/data', [ReimbursementController::class, 'getData'])->name('reimbursements.data');
+    // AJAX Routes for Reimbursements
+    Route::post('manage-reimbursements/validate-pre-create', [ReimbursementController::class, 'validatePreCreate'])->name('manage-reimbursements.validate-pre-create');
+    Route::get('manage-reimbursements/balance/by-year', [ReimbursementController::class, 'getBalanceByYear'])->name('manage-reimbursements.balance.by-year');
+    Route::get('manage-reimbursements/karyawan/list', [ReimbursementController::class, 'getKaryawanList'])->name('manage-reimbursements.karyawan.list');
+    Route::get('manage-reimbursements/company/list', [ReimbursementController::class, 'getCompanyList'])->name('manage-reimbursements.company.list');  // ✅ TAMBAH INI
+    
+     
+    
+    // Route untuk Reimbursement Periods
+    Route::resource('/manage-reimbursementperiods', ReimbursementPeriodController::class);
+    Route::get('reimbursementperiods/data', [ReimbursementPeriodController::class, 'getData'])->name('reimbursementperiods.data');
+    Route::get('reimbursementperiods/active', [ReimbursementPeriodController::class, 'getActivePeriod'])->name('reimbursementperiods.active');
+    
+
+    // Master Salaries Routes
+    Route::resource('/master-salaries', MasterSalaryController::class);
+    Route::get('salaries/data', [MasterSalaryController::class, 'getData'])->name('salaries.data');
+    // AJAX Routes for Select2
+    Route::get('master-salaries/karyawan/list', [MasterSalaryController::class, 'getKaryawanList'])->name('master-salaries.karyawan.list');
+    Route::get('master-salaries/karyawan/{id}', [MasterSalaryController::class, 'getKaryawanDetail'])->name('master-salaries.karyawan.detail');
+
+
+    Route::resource('/balance-reimbursements', BalanceReimbursementController::class);
+    Route::get('balancereimbursements/data', [BalanceReimbursementController::class, 'getData'])->name('balancereimbursements.data');
 });
 
 

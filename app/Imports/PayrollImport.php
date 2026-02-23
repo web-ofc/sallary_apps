@@ -1,11 +1,12 @@
 <?php
-// app/Imports/PayrollImport.php (FIXED - Simpan absen_id langsung ke kolom karyawan_id & company_id)
+// app/Imports/PayrollImport.php - UPDATED WITH REIMBURSEMENT AUTO-FILL
 
 namespace App\Imports;
 
 use App\Models\Payroll;
 use App\Models\Karyawan;
 use App\Models\Company;
+use App\Models\ReimbursementChildSum; // ✅ TAMBAH INI
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
@@ -48,9 +49,6 @@ class PayrollImport implements WithMultipleSheets
     }
 }
 
-/**
- * ✅ FIXED: Simpan absen_karyawan_id & absen_company_id langsung ke kolom karyawan_id & company_id
- */
 class PayrollDataSheet implements ToCollection, WithHeadingRow, SkipsOnError, SkipsOnFailure
 {
     use SkipsErrors, SkipsFailures;
@@ -60,8 +58,9 @@ class PayrollDataSheet implements ToCollection, WithHeadingRow, SkipsOnError, Sk
     protected $processedRows = 0;
     
     // Map untuk validasi existence
-    protected $karyawanMap = [];  // Key: absen_karyawan_id
-    protected $companyMap = [];   // Key: absen_company_id
+    protected $karyawanMap = [];
+    protected $companyMap = [];
+    protected $reimbursementMap = []; // ✅ BARU: Map reimbursement by karyawan_id + periode
     
     public function headingRow(): int
     {
@@ -72,17 +71,21 @@ class PayrollDataSheet implements ToCollection, WithHeadingRow, SkipsOnError, Sk
     {
         Log::info('Starting Payroll Import', ['total_rows' => $rows->count()]);
         
-        // Collect unique absen IDs from Excel
+        // ✅ Collect unique combinations untuk preload
         $absenKaryawanIds = [];
         $absenCompanyIds = [];
-        
-        // ✅ NEW: Track periode+karyawan combinations dalam Excel
-        $excelCombinations = []; // Format: "periode|karyawan_id" => row_number
+        $reimbursementKeys = []; // Format: "karyawan_id|periode"
         
         foreach ($rows as $row) {
             if (!$this->isEmptyRow($row)) {
                 if (!empty($row['karyawan_id']) && is_numeric($row['karyawan_id'])) {
                     $absenKaryawanIds[] = (int) $row['karyawan_id'];
+                    
+                    // ✅ Collect reimbursement key
+                    if (!empty($row['periode'])) {
+                        $key = (int)$row['karyawan_id'] . '|' . trim($row['periode']);
+                        $reimbursementKeys[$key] = true;
+                    }
                 }
                 if (!empty($row['company_id']) && is_numeric($row['company_id'])) {
                     $absenCompanyIds[] = (int) $row['company_id'];
@@ -92,24 +95,31 @@ class PayrollDataSheet implements ToCollection, WithHeadingRow, SkipsOnError, Sk
         
         $absenKaryawanIds = array_unique($absenKaryawanIds);
         $absenCompanyIds = array_unique($absenCompanyIds);
+        $reimbursementKeys = array_keys($reimbursementKeys);
         
         Log::info('Preloading data for validation', [
             'absen_karyawan_ids_count' => count($absenKaryawanIds),
-            'absen_company_ids_count' => count($absenCompanyIds)
+            'absen_company_ids_count' => count($absenCompanyIds),
+            'reimbursement_keys_count' => count($reimbursementKeys)
         ]);
         
-        // Preload untuk validasi existence & status
+        // ✅ Preload semua data
         $this->preloadKaryawan($absenKaryawanIds);
         $this->preloadCompanies($absenCompanyIds);
+        $this->preloadReimbursements($absenKaryawanIds, $rows); // ✅ BARU
         
         Log::info('Data preloaded', [
             'karyawan_loaded' => count($this->karyawanMap),
-            'companies_loaded' => count($this->companyMap)
+            'companies_loaded' => count($this->companyMap),
+            'reimbursements_loaded' => count($this->reimbursementMap)
         ]);
+        
+        // Track duplikasi dalam Excel
+        $excelCombinations = [];
         
         // Validate each row
         foreach ($rows as $index => $row) {
-            $rowNumber = $index + 5; // Excel row number (header at row 4)
+            $rowNumber = $index + 5;
             
             if ($this->isEmptyRow($row)) {
                 continue;
@@ -117,7 +127,7 @@ class PayrollDataSheet implements ToCollection, WithHeadingRow, SkipsOnError, Sk
             
             $this->processedRows++;
             
-            // ✅ NEW: Check duplikasi dalam Excel
+            // Check duplikasi dalam Excel
             $periode = trim($row['periode'] ?? '');
             $karyawanId = $row['karyawan_id'] ?? null;
             
@@ -125,7 +135,6 @@ class PayrollDataSheet implements ToCollection, WithHeadingRow, SkipsOnError, Sk
                 $combinationKey = $periode . '|' . (int)$karyawanId;
                 
                 if (isset($excelCombinations[$combinationKey])) {
-                    // Duplikasi terdetect!
                     $firstRowNumber = $excelCombinations[$combinationKey];
                     
                     $this->validationErrors[] = [
@@ -140,10 +149,9 @@ class PayrollDataSheet implements ToCollection, WithHeadingRow, SkipsOnError, Sk
                         ]
                     ];
                     
-                    continue; // Skip validasi lainnya
+                    continue;
                 }
                 
-                // Simpan kombinasi ini
                 $excelCombinations[$combinationKey] = $rowNumber;
             }
             
@@ -167,13 +175,12 @@ class PayrollDataSheet implements ToCollection, WithHeadingRow, SkipsOnError, Sk
         Log::info('Payroll Import Completed', [
             'processed_rows' => $this->processedRows,
             'valid_rows' => count($this->validRows),
-            'error_rows' => count($this->validationErrors),
-            'excel_duplicates_detected' => count($excelCombinations) < $this->processedRows
+            'error_rows' => count($this->validationErrors)
         ]);
     }
     
     /**
-     * ✅ Preload karyawan untuk validasi
+     * ✅ Preload karyawan
      */
     private function preloadKaryawan(array $absenKaryawanIds)
     {
@@ -214,7 +221,7 @@ class PayrollDataSheet implements ToCollection, WithHeadingRow, SkipsOnError, Sk
     }
     
     /**
-     * ✅ Preload companies untuk validasi
+     * ✅ Preload companies
      */
     private function preloadCompanies(array $absenCompanyIds)
     {
@@ -251,7 +258,60 @@ class PayrollDataSheet implements ToCollection, WithHeadingRow, SkipsOnError, Sk
     }
     
     /**
-     * ✅ Validate row - Simpan absen_id langsung ke kolom karyawan_id & company_id
+     * ✅ BARU: Preload reimbursements (OPTIMIZED dengan 1 query)
+     */
+    private function preloadReimbursements(array $absenKaryawanIds, Collection $rows)
+    {
+        if (empty($absenKaryawanIds)) return;
+        
+        try {
+            // Extract unique periodes dari rows
+            $periodes = [];
+            foreach ($rows as $row) {
+                if (!$this->isEmptyRow($row) && !empty($row['periode'])) {
+                    $periodes[] = trim($row['periode']);
+                }
+            }
+            $periodes = array_unique($periodes);
+            
+            if (empty($periodes)) return;
+            
+            Log::info('Loading reimbursements from database', [
+                'karyawan_count' => count($absenKaryawanIds),
+                'periode_count' => count($periodes)
+            ]);
+            
+            // ✅ 1 QUERY ONLY - ambil semua kombinasi karyawan + periode yang approved
+            $reimbursements = ReimbursementChildSum::whereIn('karyawan_id', $absenKaryawanIds)
+                ->whereIn('periode_slip', $periodes)
+                ->where('status', true) // only approved
+                ->select([
+                    'karyawan_id',
+                    'periode_slip',
+                    'total_harga'
+                ])
+                ->get();
+            
+            // Build map: "karyawan_id|periode" => total_harga
+            foreach ($reimbursements as $reimb) {
+                $key = $reimb->karyawan_id . '|' . $reimb->periode_slip;
+                $this->reimbursementMap[$key] = (int) $reimb->total_harga;
+            }
+            
+            Log::info('Reimbursements preloaded', [
+                'loaded' => count($this->reimbursementMap),
+                'query_count' => 1
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error preloading reimbursements', [
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+    
+    /**
+     * ✅ Validate row - AUTO FILL medical_reimbursement
      */
     private function validateRow($row, $rowNumber)
     {
@@ -267,7 +327,7 @@ class PayrollDataSheet implements ToCollection, WithHeadingRow, SkipsOnError, Sk
         }
         $data['periode'] = $periode;
         
-        // 2. Karyawan ID (absen_karyawan_id dari Excel)
+        // 2. Karyawan ID
         $absenKaryawanId = $row['karyawan_id'] ?? null;
         
         if (empty($absenKaryawanId) || !is_numeric($absenKaryawanId)) {
@@ -280,22 +340,18 @@ class PayrollDataSheet implements ToCollection, WithHeadingRow, SkipsOnError, Sk
             } else {
                 $karyawan = $this->karyawanMap[$absenKaryawanId];
                 
-                // Check resign status
                 if ($karyawan['status_resign'] == true || $karyawan['status_resign'] == 1) {
                     $errors[] = "Karyawan '{$karyawan['nama_lengkap']}' (ID: {$absenKaryawanId}) sudah resign";
                 } else {
-                    // ✅ PENTING: Simpan absen_karyawan_id langsung ke kolom karyawan_id
                     $data['karyawan_id'] = $absenKaryawanId;
-                    
-                    // Display fields (untuk preview di frontend)
                     $data['karyawan_nama'] = $karyawan['nama_lengkap'];
                     $data['karyawan_nik'] = $karyawan['nik'] ?? '-';
-                    $data['absen_karyawan_id'] = $absenKaryawanId; // Untuk ditampilkan di preview
+                    $data['absen_karyawan_id'] = $absenKaryawanId;
                 }
             }
         }
         
-        // 3. Company ID (absen_company_id dari Excel)
+        // 3. Company ID
         $absenCompanyId = $row['company_id'] ?? null;
         
         if (!empty($absenCompanyId)) {
@@ -309,13 +365,10 @@ class PayrollDataSheet implements ToCollection, WithHeadingRow, SkipsOnError, Sk
                 } else {
                     $company = $this->companyMap[$absenCompanyId];
                     
-                    // ✅ PENTING: Simpan absen_company_id langsung ke kolom company_id
                     $data['company_id'] = $absenCompanyId;
-                    
-                    // Display fields
                     $data['company_name'] = $company['company_name'];
                     $data['company_code'] = $company['code'] ?? '-';
-                    $data['absen_company_id'] = $absenCompanyId; // Untuk ditampilkan di preview
+                    $data['absen_company_id'] = $absenCompanyId;
                 }
             }
         } else {
@@ -325,7 +378,7 @@ class PayrollDataSheet implements ToCollection, WithHeadingRow, SkipsOnError, Sk
             $data['absen_company_id'] = null;
         }
         
-        // 4. Duplicate check (berdasarkan absen_karyawan_id yang tersimpan di kolom karyawan_id)
+        // 4. Duplicate check
         if (empty($errors) && !empty($data['periode']) && !empty($data['karyawan_id'])) {
             $exists = Payroll::where('periode', $data['periode'])
                             ->where('karyawan_id', $data['karyawan_id'])
@@ -335,9 +388,29 @@ class PayrollDataSheet implements ToCollection, WithHeadingRow, SkipsOnError, Sk
             }
         }
         
-        // 5. Numeric fields
+        // 5. ✅ AUTO-FILL MEDICAL REIMBURSEMENT dari preloaded map
+        if (!empty($data['karyawan_id']) && !empty($data['periode'])) {
+            $reimbKey = $data['karyawan_id'] . '|' . $data['periode'];
+            
+            if (isset($this->reimbursementMap[$reimbKey])) {
+                $data['medical_reimbursement'] = $this->reimbursementMap[$reimbKey];
+                
+                Log::debug('Medical reimbursement auto-filled', [
+                    'karyawan_id' => $data['karyawan_id'],
+                    'periode' => $data['periode'],
+                    'amount' => $data['medical_reimbursement']
+                ]);
+            } else {
+                // ✅ Tidak ada reimbursement = set 0 (atau null jika lu mau)
+                $data['medical_reimbursement'] = 0;
+            }
+        } else {
+            $data['medical_reimbursement'] = 0;
+        }
+        
+        // 6. Numeric fields (SKIP medical_reimbursement karena udah di-handle)
         $numericFields = [
-            'gaji_pokok', 'monthly_kpi', 'overtime', 'medical_reimbursement',
+            'gaji_pokok', 'monthly_kpi', 'overtime', // medical_reimbursement REMOVED
             'insentif_sholat', 'monthly_bonus', 'rapel',
             'tunjangan_pulsa', 'tunjangan_kehadiran', 'tunjangan_transport', 'tunjangan_lainnya',
             'yearly_bonus', 'thr', 'other',
@@ -364,7 +437,7 @@ class PayrollDataSheet implements ToCollection, WithHeadingRow, SkipsOnError, Sk
             }
         }
         
-        // 6. Salary type
+        // 7. Salary type
         $salaryType = strtolower(trim($row['salary_type'] ?? ''));
         if (!empty($salaryType)) {
             if (!in_array($salaryType, ['gross', 'nett'])) {

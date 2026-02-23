@@ -1,5 +1,5 @@
 <?php
-// app/Exports/PayrollTemplateExport.php (PATTERN: GREEN-RED-GREEN)
+// app/Exports/PayrollTemplateExport.php - REMOVED AUTO-CALCULATED COLUMNS
 
 namespace App\Exports;
 
@@ -37,7 +37,8 @@ class PayrollTemplateExport implements WithMultipleSheets
 
 /**
  * SHEET 1: PAYROLL DATA
- * Pattern: HIJAU (A-X) → MERAH (Y-AF) → HIJAU (AG-AJ)
+ * ✅ REMOVED: medical_reimbursement, pph_21, pph_21_deduction (auto-calculated)
+ * Pattern: HIJAU (A-U) → MERAH (V-AC) → HIJAU (AD-AF)
  */
 class PayrollDataSheet implements FromArray, WithHeadings, WithStyles, WithColumnWidths, WithTitle
 {
@@ -50,45 +51,45 @@ class PayrollDataSheet implements FromArray, WithHeadings, WithStyles, WithColum
     {
         return [
             ['PAYROLL IMPORT TEMPLATE - FILL THIS SHEET ONLY'],
-            ['⚠️ IMPORTANT: Use karyawan_id and company_id from reference sheets below'],
+            ['⚠️ IMPORTANT: medical_reimbursement, pph_21, dan pph_21_deduction akan dihitung otomatis oleh sistem'],
             [],
             [
-                'periode',
-                'karyawan_id',
-                'company_id',
-                'salary_type',
-                'gaji_pokok',
-                'monthly_kpi',
-                'overtime',
-                'medical_reimbursement',
-                'insentif_sholat',
-                'monthly_bonus',
-                'rapel',
-                'tunjangan_pulsa',
-                'tunjangan_kehadiran',
-                'tunjangan_transport',
-                'tunjangan_lainnya',
-                'yearly_bonus',
-                'thr',
-                'other',
-                'ca_corporate',
-                'ca_personal',
-                'ca_kehadiran',
-                'bpjs_tenaga_kerja',
-                'bpjs_kesehatan',
-                'pph_21_deduction',
-                'bpjs_tk_jht_3_7_percent',     // MERAH
-                'bpjs_tk_jht_2_percent',       // MERAH
-                'bpjs_tk_jkk_0_24_percent',    // MERAH
-                'bpjs_tk_jkm_0_3_percent',     // MERAH
-                'bpjs_tk_jp_2_percent',        // MERAH
-                'bpjs_tk_jp_1_percent',        // MERAH
-                'bpjs_kes_4_percent',          // MERAH
-                'bpjs_kes_1_percent',          // MERAH
-                'pph_21',                      // HIJAU
-                'glh',                         // HIJAU
-                'lm',                          // HIJAU
-                'lainnya'                      // HIJAU
+                'periode',                      // A - HIJAU
+                'karyawan_id',                  // B - HIJAU
+                'company_id',                   // C - HIJAU
+                'salary_type',                  // D - HIJAU
+                'gaji_pokok',                   // E - HIJAU
+                'monthly_kpi',                  // F - HIJAU
+                'overtime',                     // G - HIJAU
+                // ❌ REMOVED: 'medical_reimbursement' (auto dari ReimbursementChildSum)
+                'insentif_sholat',              // H - HIJAU
+                'monthly_bonus',                // I - HIJAU
+                'rapel',                        // J - HIJAU
+                'tunjangan_pulsa',              // K - HIJAU
+                'tunjangan_kehadiran',          // L - HIJAU
+                'tunjangan_transport',          // M - HIJAU
+                'tunjangan_lainnya',            // N - HIJAU
+                'yearly_bonus',                 // O - HIJAU
+                'thr',                          // P - HIJAU
+                'other',                        // Q - HIJAU
+                'ca_corporate',                 // R - HIJAU
+                'ca_personal',                  // S - HIJAU
+                'ca_kehadiran',                 // T - HIJAU
+                'bpjs_tenaga_kerja',            // U - HIJAU
+                'bpjs_kesehatan',               // V - MERAH
+                // ❌ REMOVED: 'pph_21_deduction' (auto dari PPh21 calculator)
+                'bpjs_tk_jht_3_7_percent',      // W - MERAH
+                'bpjs_tk_jht_2_percent',        // X - MERAH
+                'bpjs_tk_jkk_0_24_percent',     // Y - MERAH
+                'bpjs_tk_jkm_0_3_percent',      // Z - MERAH
+                'bpjs_tk_jp_2_percent',         // AA - MERAH
+                'bpjs_tk_jp_1_percent',         // AB - MERAH
+                'bpjs_kes_4_percent',           // AC - MERAH
+                'bpjs_kes_1_percent',           // AD - MERAH
+                // ❌ REMOVED: 'pph_21' (auto dari PPh21 calculator)
+                'glh',                          // AE - HIJAU
+                'lm',                           // AF - HIJAU
+                'lainnya'                       // AG - HIJAU
             ]
         ];
     }
@@ -97,14 +98,44 @@ class PayrollDataSheet implements FromArray, WithHeadings, WithStyles, WithColum
     {
         return [
             [], [], [],
-            // Sample data
+            // Sample data (sesuaikan dengan kolom baru)
             [
-                '2025-01', 1, 1, 'gross', 5000000,
-                500000, 200000, 100000, 50000, 0, 0,
-                100000, 200000, 150000, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0,
-                185000, 100000, 12000, 15000, 100000, 50000, 200000, 50000,
-                250000, 0, 0, 0
+                '2025-01',      // periode
+                1,              // karyawan_id
+                1,              // company_id
+                'gross',        // salary_type
+                5000000,        // gaji_pokok
+                500000,         // monthly_kpi
+                200000,         // overtime
+                // medical_reimbursement REMOVED
+                50000,          // insentif_sholat
+                0,              // monthly_bonus
+                0,              // rapel
+                100000,         // tunjangan_pulsa
+                200000,         // tunjangan_kehadiran
+                150000,         // tunjangan_transport
+                0,              // tunjangan_lainnya
+                0,              // yearly_bonus
+                0,              // thr
+                0,              // other
+                0,              // ca_corporate
+                0,              // ca_personal
+                0,              // ca_kehadiran
+                0,              // bpjs_tenaga_kerja
+                0,              // bpjs_kesehatan
+                // pph_21_deduction REMOVED
+                185000,         // bpjs_tk_jht_3_7_percent
+                100000,         // bpjs_tk_jht_2_percent
+                12000,          // bpjs_tk_jkk_0_24_percent
+                15000,          // bpjs_tk_jkm_0_3_percent
+                100000,         // bpjs_tk_jp_2_percent
+                50000,          // bpjs_tk_jp_1_percent
+                200000,         // bpjs_kes_4_percent
+                50000,          // bpjs_kes_1_percent
+                // pph_21 REMOVED
+                0,              // glh
+                0,              // lm
+                0               // lainnya
             ]
         ];
     }
@@ -112,7 +143,7 @@ class PayrollDataSheet implements FromArray, WithHeadings, WithStyles, WithColum
     public function styles(Worksheet $sheet)
     {
         // Title
-        $sheet->mergeCells('A1:AJ1');
+        $sheet->mergeCells('A1:AG1');
         $sheet->getStyle('A1')->applyFromArray([
             'font' => ['bold' => true, 'size' => 14, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => [
@@ -124,7 +155,7 @@ class PayrollDataSheet implements FromArray, WithHeadings, WithStyles, WithColum
         $sheet->getRowDimension(1)->setRowHeight(30);
         
         // Warning
-        $sheet->mergeCells('A2:AJ2');
+        $sheet->mergeCells('A2:AG2');
         $sheet->getStyle('A2')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => '000000']],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'FFF9C4']],
@@ -132,8 +163,8 @@ class PayrollDataSheet implements FromArray, WithHeadings, WithStyles, WithColum
         ]);
         $sheet->getRowDimension(2)->setRowHeight(25);
         
-        // HIJAU PERTAMA (A-X: 24 kolom)
-        $greenCols1 = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X'];
+        // ✅ HIJAU PERTAMA (A-U: 21 kolom)
+        $greenCols1 = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V'];
         foreach ($greenCols1 as $col) {
             $sheet->getStyle($col.'4')->applyFromArray([
                 'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
@@ -143,8 +174,8 @@ class PayrollDataSheet implements FromArray, WithHeadings, WithStyles, WithColum
             ]);
         }
         
-        // MERAH (Y-AF: 8 kolom BPJS)
-        $redCols = ['Y','Z','AA','AB','AC','AD','AE','AF'];
+        // ✅ MERAH (V-AD: 9 kolom BPJS)
+        $redCols = ['W','X','Y','Z','AA','AB','AC','AD'];
         foreach ($redCols as $col) {
             $sheet->getStyle($col.'4')->applyFromArray([
                 'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
@@ -154,8 +185,8 @@ class PayrollDataSheet implements FromArray, WithHeadings, WithStyles, WithColum
             ]);
         }
         
-        // HIJAU KEDUA (AG-AJ: 4 kolom terakhir)
-        $greenCols2 = ['AG','AH','AI','AJ'];
+        // ✅ HIJAU KEDUA (AE-AG: 3 kolom terakhir)
+        $greenCols2 = ['AE','AF','AG'];
         foreach ($greenCols2 as $col) {
             $sheet->getStyle($col.'4')->applyFromArray([
                 'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
@@ -171,20 +202,45 @@ class PayrollDataSheet implements FromArray, WithHeadings, WithStyles, WithColum
     public function columnWidths(): array
     {
         return [
-            'A' => 12, 'B' => 15, 'C' => 15, 'D' => 15, 'E' => 15,
-            'F' => 15, 'G' => 15, 'H' => 20, 'I' => 15, 'J' => 15,
-            'K' => 12, 'L' => 15, 'M' => 18, 'N' => 18, 'O' => 18,
-            'P' => 15, 'Q' => 12, 'R' => 12, 'S' => 15, 'T' => 15,
-            'U' => 15, 'V' => 20, 'W' => 18, 'X' => 18,
-            'Y' => 22, 'Z' => 20, 'AA' => 23, 'AB' => 22,
-            'AC' => 20, 'AD' => 20, 'AE' => 18, 'AF' => 18,
-            'AG' => 12, 'AH' => 18, 'AI' => 18, 'AJ' => 18
+            'A' => 12,  // periode
+            'B' => 15,  // karyawan_id
+            'C' => 15,  // company_id
+            'D' => 15,  // salary_type
+            'E' => 15,  // gaji_pokok
+            'F' => 15,  // monthly_kpi
+            'G' => 15,  // overtime
+            'H' => 15,  // insentif_sholat
+            'I' => 15,  // monthly_bonus
+            'J' => 12,  // rapel
+            'K' => 15,  // tunjangan_pulsa
+            'L' => 18,  // tunjangan_kehadiran
+            'M' => 18,  // tunjangan_transport
+            'N' => 18,  // tunjangan_lainnya
+            'O' => 15,  // yearly_bonus
+            'P' => 12,  // thr
+            'Q' => 12,  // other
+            'R' => 15,  // ca_corporate
+            'S' => 15,  // ca_personal
+            'T' => 15,  // ca_kehadiran
+            'U' => 20,  // bpjs_tenaga_kerja
+            'V' => 18,  // bpjs_kesehatan
+            'W' => 22,  // bpjs_tk_jht_3_7_percent
+            'X' => 20,  // bpjs_tk_jht_2_percent
+            'Y' => 23,  // bpjs_tk_jkk_0_24_percent
+            'Z' => 22,  // bpjs_tk_jkm_0_3_percent
+            'AA' => 20, // bpjs_tk_jp_2_percent
+            'AB' => 20, // bpjs_tk_jp_1_percent
+            'AC' => 18, // bpjs_kes_4_percent
+            'AD' => 18, // bpjs_kes_1_percent
+            'AE' => 18, // glh
+            'AF' => 18, // lm
+            'AG' => 18  // lainnya
         ];
     }
 }
 
 /**
- * SHEET 2: KARYAWAN REFERENCE
+ * SHEET 2: KARYAWAN REFERENCE (NO CHANGES)
  */
 class KaryawanReferenceSheet implements FromArray, WithHeadings, WithStyles, WithColumnWidths, WithTitle
 {
@@ -264,7 +320,7 @@ class KaryawanReferenceSheet implements FromArray, WithHeadings, WithStyles, Wit
 }
 
 /**
- * SHEET 3: COMPANY REFERENCE
+ * SHEET 3: COMPANY REFERENCE (NO CHANGES)
  */
 class CompanyReferenceSheet implements FromArray, WithHeadings, WithStyles, WithColumnWidths, WithTitle
 {

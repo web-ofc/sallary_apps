@@ -23,12 +23,16 @@ class PayrollsFakeExport implements FromCollection, WithHeadings, WithMapping, W
     protected $isReleased;
     protected $isReleasedSlip;
 
-    public function __construct($periode = null, $companyId = null, $isReleased = null, $isReleasedSlip = null)
+    protected $assignedCompanyIds;
+
+    public function __construct($periode = null, $companyId = null, $isReleased = null, $isReleasedSlip = null, $assignedCompanyIds = null)
+
     {
         $this->periode = $periode;
         $this->companyId = $companyId;
         $this->isReleased = $isReleased;
         $this->isReleasedSlip = $isReleasedSlip;
+        $this->assignedCompanyIds = $assignedCompanyIds;
     }
 
     public function collection()
@@ -52,6 +56,10 @@ class PayrollsFakeExport implements FromCollection, WithHeadings, WithMapping, W
             if ($this->isReleasedSlip !== null) {
                 $query->where('is_released_slip', $this->isReleasedSlip);
             }
+        }
+
+        if (!empty($this->assignedCompanyIds)) {
+            $query->whereIn('company_id', $this->assignedCompanyIds);
         }
 
         return $query->orderBy('periode', 'desc')->orderBy('id')->get();

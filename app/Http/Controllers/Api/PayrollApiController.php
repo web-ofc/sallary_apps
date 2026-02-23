@@ -306,6 +306,48 @@ class PayrollApiController extends Controller
             ], 500);
         }
     }
+
+        public function showBySource($source, $id)
+    {
+        try {
+            $allowed = ['payrolls', 'payrolls_fakes'];
+            if (!in_array($source, $allowed, true)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid source_table'
+                ], 422);
+            }
+
+            $payroll = PayrollCalculationsMerge::with([
+                    'karyawan:absen_karyawan_id,nama_lengkap,nik,email_pribadi,telp_pribadi',
+                    'company:absen_company_id,company_name,code,logo,ttd,nama_ttd,jabatan_ttd'
+                ])
+                ->where('source_table', $source)
+                ->where('id', $id)
+                ->first();
+
+            if (!$payroll) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payroll tidak ditemukan atau belum dirilis'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Detail payroll berhasil diambil',
+                'data' => $payroll
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Payroll API ShowBySource Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     
     /**
      * GET /api/payrolls/{id}

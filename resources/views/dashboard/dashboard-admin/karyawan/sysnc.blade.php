@@ -222,6 +222,29 @@
                     </h5>
                 </div>
                 <div class="card-body">
+                    {{-- Search Box (Metronic Style) --}}
+                    <div class="d-flex justify-content-between mb-5">
+                        <div class="d-flex align-items-center position-relative w-50">
+                            <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            <input type="text" 
+                                id="kt_search_karyawan" 
+                                class="form-control form-control-solid w-100 ps-13" 
+                                placeholder="Cari NIK, Nama, Email, atau Telepon..." />
+                        </div>
+                        
+                        <div>
+                            <button type="button" class="btn btn-light-primary" id="btn_reset_search">
+                                <i class="ki-duotone ki-arrows-circle fs-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                Reset
+                            </button>
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table id="karyawanTable" class="table table-hover table-bordered" style="width:100%">
                             <thead class="table-light">
@@ -250,9 +273,7 @@
 
 @endsection
 
-
 @push('scripts')
-
 <script>
 function confirmSync() {
     const force = document.getElementById('forceSync').checked;
@@ -285,14 +306,18 @@ function refreshStats() {
 
 // Initialize DataTables
 $(document).ready(function() {
-    $('#karyawanTable').DataTable({
+    // DECLARE table di sini agar bisa diakses di seluruh scope
+    var table = $('#karyawanTable').DataTable({
         processing: true,
         serverSide: true,
+        searching: false, // Disable default search box
         ajax: {
             url: '{{ route('karyawandatatable') }}',
             type: 'POST',
             data: function(d) {
-                return d;
+                d.search = {
+                    value: $('#kt_search_karyawan').val()
+                };
             },
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -312,16 +337,16 @@ $(document).ready(function() {
                 data: 'jenis_kelamin', 
                 name: 'jenis_kelamin',
                 className: 'text-center',
-                orderable: true,
-                width: '100px'
+                orderable: false,
+                width: '120px'
             },
             { 
                 data: 'status_resign', 
                 name: 'status_resign',
                 className: 'text-center',
-                orderable: true,
+                orderable: false,
                 searchable: false,
-                width: '80px'
+                width: '100px'
             }
         ],
         order: [[0, 'desc']],
@@ -329,7 +354,6 @@ $(document).ready(function() {
         lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
         language: {
             processing: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
-            search: 'Cari:',
             lengthMenu: 'Tampilkan _MENU_ data',
             info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ karyawan',
             infoEmpty: 'Tidak ada data',
@@ -344,6 +368,28 @@ $(document).ready(function() {
             }
         }
     });
+
+    // Custom Search - NOW table is defined!
+    $('#kt_search_karyawan').on('keyup', function() {
+        table.draw();
+    });
+
+    // Reset Button
+    $('#btn_reset_search').on('click', function() {
+        $('#kt_search_karyawan').val('');
+        table.draw();
+    });
+
+    // Auto-refresh stats (optional, bisa dihapus jika tidak perlu)
+    /*
+    setInterval(function() {
+        $.get('{{ route("karyawan.sync.status") }}', function(response) {
+            if (response.success) {
+                location.reload();
+            }
+        });
+    }, 30000);
+    */
 });
 </script>
 @endpush

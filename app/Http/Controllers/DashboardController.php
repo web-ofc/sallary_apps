@@ -28,6 +28,16 @@ class DashboardController extends Controller
             'title' => 'Dashboard Admin',
         ]);
     }
+    public function managementDashboard()
+    {
+        if (!in_array(Auth::user()->role, ['management'])) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        return view('dashboard.dashboard-management.dashboard', [
+            'title' => 'Dashboard Management',
+        ]);
+    }
 
     /**
      * Get dashboard data via AJAX

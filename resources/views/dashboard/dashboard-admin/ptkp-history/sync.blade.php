@@ -9,7 +9,7 @@
     
     {{-- Header --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>📋 Sinkronisasi PTKP History Karyawan</h2>
+        <h2>🔄 Sinkronisasi Karyawan PTKP History</h2>
         <div>
             <button type="button" class="btn btn-primary" onclick="refreshStats()">
                 <i class="fas fa-sync"></i> Refresh Stats
@@ -46,13 +46,13 @@
                                     <i class="fas fa-check-circle text-success fa-2x me-3"></i>
                                     <div>
                                         <h6 class="mb-0">Status: <span class="badge bg-success">HEALTHY</span></h6>
-                                        <small class="text-muted">Semua data ter-sinkronisasi dengan baik</small>
+                                        <small class="text-muted">Semua PTKP History ter-sinkronisasi dengan baik</small>
                                     </div>
                                 @else
                                     <i class="fas fa-exclamation-triangle text-warning fa-2x me-3"></i>
                                     <div>
                                         <h6 class="mb-0">Status: <span class="badge bg-warning">NEEDS SYNC</span></h6>
-                                        <small class="text-muted">{{ $health['needs_sync_count'] }} history perlu di-sync</small>
+                                        <small class="text-muted">{{ $health['needs_sync_count'] }} PTKP History perlu di-sync</small>
                                     </div>
                                 @endif
                             </div>
@@ -80,27 +80,27 @@
     
     {{-- Statistics Cards --}}
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card text-center">
                 <div class="card-body">
-                    <i class="fas fa-history fa-3x text-primary mb-3"></i>
+                    <i class="fas fa-file-alt fa-3x text-primary mb-3"></i>
                     <h3 class="mb-0">{{ number_format($stats['total_histories']) }}</h3>
-                    <p class="text-muted mb-0">Total History</p>
+                    <p class="text-muted mb-0">Total PTKP History</p>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card text-center">
                 <div class="card-body">
-                    <i class="fas fa-users fa-3x text-info mb-3"></i>
-                    <h3 class="mb-0">{{ number_format($stats['total_karyawan']) }}</h3>
-                    <p class="text-muted mb-0">Karyawan Unik</p>
+                    <i class="fas fa-exclamation-circle text-warning fa-3x mb-3"></i>
+                    <h3 class="mb-0">{{ number_format($stats['never_synced']) }}</h3>
+                    <p class="text-muted mb-0">Never Synced</p>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card text-center">
                 <div class="card-body">
                     <i class="fas fa-trash fa-3x text-danger mb-3"></i>
@@ -109,52 +109,9 @@
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
-                    <h3 class="mb-0">{{ number_format($stats['never_synced']) }}</h3>
-                    <p class="text-muted mb-0">Never Synced</p>
-                </div>
-            </div>
-        </div>
     </div>
     
-    {{-- Year Statistics --}}
-    @if(!empty($stats['by_year']))
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Statistik per Tahun</h5>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Tahun</th>
-                                    <th class="text-end">Total History</th>
-                                    <th class="text-end">Karyawan Unik</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($stats['by_year'] as $year => $data)
-                                <tr>
-                                    <td><strong>{{ $year }}</strong></td>
-                                    <td class="text-end">{{ number_format($data['count']) }}</td>
-                                    <td class="text-end">{{ number_format($data['unique_karyawan']) }}</td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
-    
-    {{-- Sync Information --}}
+    {{-- Sync Information & Manual Trigger --}}
     <div class="row mb-4">
         <div class="col-md-6">
             <div class="card">
@@ -184,6 +141,24 @@
                             </td>
                         </tr>
                     </table>
+                    
+                    <hr>
+                    
+                    <h6 class="mt-3">📅 Distribution by Tahun</h6>
+                    @if(!empty($stats['by_tahun']) && count($stats['by_tahun']) > 0)
+                        <div class="row">
+                            @foreach($stats['by_tahun'] as $tahun => $total)
+                                <div class="col-6 mb-2">
+                                    <div class="d-flex justify-content-between align-items-center p-2 border rounded">
+                                        <span><strong>{{ $tahun }}</strong></span>
+                                        <span class="badge bg-primary">{{ number_format($total) }}</span>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-muted">No data available</p>
+                    @endif
                 </div>
             </div>
         </div>
@@ -199,17 +174,6 @@
                     
                     <form action="{{ route('ptkp.history.sync.trigger') }}" method="POST" id="syncForm" onsubmit="return confirmSync()">
                         @csrf
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Filter Tahun (Opsional)</label>
-                            <select class="form-select" name="tahun" id="filterTahun">
-                                <option value="">Semua Tahun</option>
-                                @foreach($years as $year)
-                                <option value="{{ $year }}">{{ $year }}</option>
-                                @endforeach
-                            </select>
-                            <small class="text-muted">Kosongkan untuk sync semua tahun</small>
-                        </div>
                         
                         <div class="mb-3">
                             <div class="form-check">
@@ -240,7 +204,7 @@
                             <li>Proses sinkronisasi dapat memakan waktu beberapa menit</li>
                             <li>Jangan refresh atau tutup halaman selama proses berlangsung</li>
                             <li>Data yang sudah ada akan di-update otomatis jika ada perubahan</li>
-                            <li>History yang tidak ada di API akan di-soft delete</li>
+                            <li>PTKP History yang tidak ada di API akan di-soft delete</li>
                         </ul>
                     </div>
                 </div>
@@ -248,41 +212,50 @@
         </div>
     </div>
 
-    {{-- ========================================== --}}
-    {{-- SECTION: PTKP HISTORY LIST (DATATABLES) --}}
-    {{-- ========================================== --}}
+    {{-- PTKP History List (DataTables) --}}
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
-                       📋 Daftar PTKP History Karyawan
+                       📋 Daftar PTKP History
                     </h5>
                 </div>
                 <div class="card-body">
-                    {{-- Filter Tahun untuk DataTable --}}
-                    <div class="row mb-3">
-                        <div class="col-md-3">
-                            <label class="form-label">Filter Tahun:</label>
-                            <select class="form-select" id="dtFilterTahun">
-                                <option value="">Semua Tahun</option>
-                                @foreach($years as $year)
-                                <option value="{{ $year }}">{{ $year }}</option>
-                                @endforeach
-                            </select>
+                    <div class="d-flex justify-content-between mb-5">
+                        <div class="d-flex align-items-center position-relative w-50">
+                            <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            <input type="text" 
+                                id="kt_search_ptkp" 
+                                class="form-control form-control-solid w-100 ps-13" 
+                                placeholder="Cari Nama Karyawan, NIK, PTKP..." />
+                        </div>
+                        
+                        <div>
+                            <button type="button" class="btn btn-light-primary" id="btn_reset_search">
+                                <i class="ki-duotone ki-arrows-circle fs-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                Reset
+                            </button>
                         </div>
                     </div>
-                    
+
                     <div class="table-responsive">
                         <table id="ptkpHistoryTable" class="table table-hover table-bordered" style="width:100%">
                             <thead class="table-light">
                                 <tr>
-                                    <th>ID History</th>
+                                    <th>ID</th>
                                     <th>Karyawan</th>
-                                    <th>PTKP</th>
+                                    <th>NIK</th>
+                                    <th>PTKP Kriteria</th>
+                                    <th>PTKP Status</th>
                                     <th>Tahun</th>
-                                    <th>Last Synced</th>
-                                    <th>Created At</th>
+                                    <th class="text-center">Last Synced</th>
                                     <th class="text-center">Status</th>
                                 </tr>
                             </thead>
@@ -299,24 +272,13 @@
 </div>
 
 @endsection
-
-
 @push('scripts')
-
 <script>
 function confirmSync() {
     const force = document.getElementById('forceSync').checked;
-    const tahun = document.getElementById('filterTahun').value;
-    
-    let message = 'Anda yakin ingin menjalankan sinkronisasi sekarang?';
-    
-    if (tahun) {
-        message = `Anda yakin ingin sync data tahun ${tahun}?`;
-    }
-    
-    if (force) {
-        message += '\n\nFORCE REFRESH aktif - ini akan mengabaikan cache dan memakan waktu lebih lama.';
-    }
+    const message = force 
+        ? 'Anda yakin ingin menjalankan FORCE SYNC? Ini akan mengabaikan cache dan memakan waktu lebih lama.'
+        : 'Anda yakin ingin menjalankan sinkronisasi PTKP History sekarang?';
     
     if (confirm(message)) {
         const btn = document.getElementById('syncButton');
@@ -343,15 +305,17 @@ function refreshStats() {
 
 // Initialize DataTables
 $(document).ready(function() {
-    const table = $('#ptkpHistoryTable').DataTable({
+    var table = $('#ptkpHistoryTable').DataTable({
         processing: true,
         serverSide: true,
+        searching: false, // Disable default search
         ajax: {
             url: '{{ route('ptkp.history.sync.datatable') }}',
             type: 'POST',
             data: function(d) {
-                d.tahun = $('#dtFilterTahun').val();
-                return d;
+                d.search = {
+                    value: $('#kt_search_ptkp').val()
+                };
             },
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -361,19 +325,25 @@ $(document).ready(function() {
             }
         },
         columns: [
-            { data: 'absen_ptkp_history_id', name: 'absen_ptkp_history_id', width: '100px' },
-            { data: 'karyawan_nama', name: 'karyawan_nama', width: '200px' },
-            { data: 'ptkp_kriteria', name: 'ptkp_kriteria', width: '150px' },
-            { data: 'tahun', name: 'tahun', width: '80px' },
-            { data: 'last_synced_at', name: 'last_synced_at', width: '120px' },
-            { data: 'created_at', name: 'created_at', width: '120px' },
+            { data: 'absen_history_id', name: 'absen_history_id', width: '80px' },
+            { data: 'karyawan_nama', name: 'karyawan_nama' },
+            { data: 'karyawan_nik', name: 'karyawan_nik', width: '100px' },
+            { data: 'ptkp_kriteria', name: 'ptkp_kriteria', width: '120px' },
+            { data: 'ptkp_status', name: 'ptkp_status', width: '100px' },
+            { data: 'tahun', name: 'tahun', className: 'text-center', width: '80px' },
             { 
-                data: 'status_badge', 
-                name: 'status_badge',
+                data: 'last_synced_at', 
+                name: 'last_synced_at',
+                className: 'text-center',
+                width: '150px'
+            },
+            { 
+                data: 'sync_status', 
+                name: 'sync_status',
                 className: 'text-center',
                 orderable: false,
                 searchable: false,
-                width: '80px'
+                width: '100px'
             }
         ],
         order: [[0, 'desc']],
@@ -381,11 +351,10 @@ $(document).ready(function() {
         lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
         language: {
             processing: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
-            search: 'Cari:',
             lengthMenu: 'Tampilkan _MENU_ data',
-            info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ history',
+            info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ PTKP History',
             infoEmpty: 'Tidak ada data',
-            infoFiltered: '(difilter dari _MAX_ total history)',
+            infoFiltered: '(difilter dari _MAX_ total PTKP History)',
             zeroRecords: 'Tidak ada data yang cocok',
             emptyTable: 'Tidak ada PTKP History tersedia',
             paginate: {
@@ -396,10 +365,16 @@ $(document).ready(function() {
             }
         }
     });
-    
-    // Reload DataTable when filter changes
-    $('#dtFilterTahun').on('change', function() {
-        table.ajax.reload();
+
+    // Custom Search
+    $('#kt_search_ptkp').on('keyup', function() {
+        table.draw();
+    });
+
+    // Reset Button
+    $('#btn_reset_search').on('click', function() {
+        $('#kt_search_ptkp').val('');
+        table.draw();
     });
 });
 </script>

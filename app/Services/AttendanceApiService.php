@@ -1323,30 +1323,29 @@ class AttendanceApiService
 
     /*
     |--------------------------------------------------------------------------
-    | PTKP HISTORY METHODS
+    | PTKP HISTORY METHODS ATTENDANCEAPISERVICE.PHP
     |--------------------------------------------------------------------------
     */
 
     /**
      * GET PTKP HISTORY WITH PAGINATION
      */
-    public function getPtkpHistoriesPaginated($page = 1, $perPage = 50, $filters = [], $useCache = true)
+        public function getPtkpHistoriesPaginated($page = 1, $perPage = 50, $useCache = true)
     {
         $perPage = min($perPage, 100);
         
         if (!$useCache) {
-            return $this->fetchPtkpHistoriesPaginated($page, $perPage, $filters);
+            return $this->fetchPtkpHistoriesPaginated($page, $perPage);
         }
         
-        $filterKey = md5(json_encode($filters));
-        $cacheKey = "ptkp_history_page_{$page}_per_{$perPage}_filter_{$filterKey}";
+        $cacheKey = "ptkp_history_page_{$page}_per_{$perPage}";
         $cached = Cache::get($cacheKey);
         
         if ($cached !== null) {
             return $cached;
         }
         
-        $result = $this->fetchPtkpHistoriesPaginated($page, $perPage, $filters);
+        $result = $this->fetchPtkpHistoriesPaginated($page, $perPage);
         
         if ($result['success']) {
             Cache::put($cacheKey, $result, $this->listCacheTime);
@@ -1355,26 +1354,17 @@ class AttendanceApiService
         return $result;
     }
 
-    protected function fetchPtkpHistoriesPaginated($page, $perPage, $filters = [])
+
+        protected function fetchPtkpHistoriesPaginated($page, $perPage)
     {
         try {
-            $params = [
-                'page' => $page,
-                'per_page' => $perPage
-            ];
-            
-            // Add filters jika ada
-            if (!empty($filters['search'])) {
-                $params['search'] = $filters['search'];
-            }
-            if (!empty($filters['tahun'])) {
-                $params['tahun'] = $filters['tahun'];
-            }
-            
             $response = Http::withToken($this->token)
                 ->acceptJson()
                 ->timeout(30)
-                ->get("{$this->baseUrl}/ptkp-history", $params);
+                ->get("{$this->baseUrl}/ptkp-history", [
+                    'page' => $page,
+                    'per_page' => $perPage
+                ]);
             
             if ($response->successful()) {
                 $json = $response->json();
@@ -1387,8 +1377,7 @@ class AttendanceApiService
                         'per_page' => $perPage,
                         'total' => 0,
                         'last_page' => 1,
-                    ],
-                    'filters' => $json['filters'] ?? []
+                    ]
                 ];
             }
             
@@ -1415,53 +1404,12 @@ class AttendanceApiService
         }
     }
 
-    /**
-     * SEARCH PTKP HISTORY
-     */
-    public function searchPtkpHistory($query, $page = 1, $perPage = 20)
-    {
-        try {
-            $response = Http::withToken($this->token)
-                ->acceptJson()
-                ->timeout(30)
-                ->get("{$this->baseUrl}/ptkp-history/search", [
-                    'q' => $query,
-                    'page' => $page,
-                    'per_page' => $perPage
-                ]);
-            
-            if ($response->successful()) {
-                $json = $response->json();
-                
-                return [
-                    'success' => true,
-                    'data' => $json['data'] ?? [],
-                    'meta' => $json['meta'] ?? []
-                ];
-            }
-            
-            return [
-                'success' => false,
-                'message' => 'Search failed'
-            ];
-            
-        } catch (\Exception $e) {
-            Log::error('Search PTKP History error', [
-                'query' => $query,
-                'error' => $e->getMessage()
-            ]);
-            
-            return [
-                'success' => false,
-                'message' => $e->getMessage()
-            ];
-        }
-    }
 
+   
     /**
      * GET SINGLE PTKP HISTORY BY ID
      */
-    public function getPtkpHistory($id, $useCache = true)
+        public function getPtkpHistory($id, $useCache = true)
     {
         if (!$useCache) {
             return $this->fetchPtkpHistory($id);
@@ -1483,7 +1431,8 @@ class AttendanceApiService
         return $result;
     }
 
-    protected function fetchPtkpHistory($id)
+
+        protected function fetchPtkpHistory($id)
     {
         try {
             $response = Http::withToken($this->token)
@@ -1521,6 +1470,49 @@ class AttendanceApiService
         } catch (\Exception $e) {
             Log::error('Error fetching PTKP History', [
                 'id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+     /**
+     * SEARCH PTKP HISTORY
+     */
+    public function searchPtkpHistory($query, $page = 1, $perPage = 20)
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->acceptJson()
+                ->timeout(30)
+                ->get("{$this->baseUrl}/ptkp-history/search", [
+                    'q' => $query,
+                    'page' => $page,
+                    'per_page' => $perPage
+                ]);
+            
+            if ($response->successful()) {
+                $json = $response->json();
+                
+                return [
+                    'success' => true,
+                    'data' => $json['data'] ?? [],
+                    'meta' => $json['meta'] ?? []
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'message' => 'Search failed'
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error('Search PTKP History error', [
+                'query' => $query,
                 'error' => $e->getMessage()
             ]);
             
@@ -1977,6 +1969,24 @@ class AttendanceApiService
     */
 
     /**
+     * Clear all PTKP History related cache
+     */
+        public function clearAllPtkpHistoryCache()
+    {
+        // Clear pagination cache akan expire sendiri
+        Log::info("PTKP History cache cleared");
+    }
+
+     /**
+     * Clear cache untuk PTKP History tertentu
+     */
+    public function clearPtkpHistoryCache($id)
+    {
+        Cache::forget("ptkp_history_{$id}");
+        Log::info("Cache cleared", ['type' => 'ptkp_history', 'id' => $id]);
+    }
+
+    /**
      * Clear cache untuk PTKP tertentu
      */
     public function clearPtkpCache($id)
@@ -2001,14 +2011,7 @@ class AttendanceApiService
         Cache::forget("ptkp_status_{$status}");
     }
 
-    /**
-     * Clear cache untuk PTKP History tertentu
-     */
-    public function clearPtkpHistoryCache($id)
-    {
-        Cache::forget("ptkp_history_{$id}");
-        Log::info("Cache cleared", ['type' => 'ptkp_history', 'id' => $id]);
-    }
+   
 
     /**
      * Clear cache PTKP History by karyawan
@@ -2034,18 +2037,7 @@ class AttendanceApiService
         Cache::forget("ptkp_history_tahun_{$tahun}");
     }
 
-    /**
-     * Clear all PTKP History related cache
-     */
-    public function clearAllPtkpHistoryCache()
-    {
-        Cache::forget('ptkp_history_minimal');
-        Cache::forget('ptkp_history_years');
-        Cache::forget('ptkp_history_stats');
-        Cache::forget('ptkp_history_latest_per_karyawan');
-        Log::info("All PTKP History cache cleared");
-    }
-
+    
     /*
     |--------------------------------------------------------------------------
     | JENIS TER METHODS

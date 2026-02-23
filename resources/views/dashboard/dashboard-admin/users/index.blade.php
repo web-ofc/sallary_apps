@@ -112,6 +112,7 @@
                         <select name="role" id="role" class="form-select form-select-solid" required>
                             <option value="">Select Role</option>
                             <option value="admin">Admin</option>
+                            <option value="management">Management</option>
                         </select>
                     </div>
 
