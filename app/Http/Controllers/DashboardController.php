@@ -74,18 +74,27 @@ class DashboardController extends Controller
                 ], 400);
             }
 
+            $counts = PayrollCalculation::where('periode', $periode)
+                ->selectRaw('
+                    COUNT(*) as total_payroll,
+                    SUM(CASE WHEN is_released = 0 THEN 1 ELSE 0 END) as draft_count,
+                    SUM(CASE WHEN is_released = 1 AND is_released_slip = 0 THEN 1 ELSE 0 END) as released_count,
+                    SUM(CASE WHEN is_released = 1 AND is_released_slip = 1 THEN 1 ELSE 0 END) as released_slip
+                ')
+                ->first();
+
+            $totalPayroll  = $counts->total_payroll ?? 0;
+            $draftCount    = $counts->draft_count ?? 0;
+            $releasedCount = $counts->released_count ?? 0;
+            $releasedSlip  = $counts->released_slip ?? 0;
+
             $karyawanSudahInput = PayrollCalculation::where('periode', $periode)
                 ->pluck('karyawan_id')
                 ->unique();
 
-            $totalPayroll  = $karyawanSudahInput->count();
-            $releasedCount = PayrollCalculation::where('periode', $periode)->where('is_released', true)->count();
-            $releasedSlip  = PayrollCalculation::where('periode', $periode)->where('is_released_slip', true)->count();
-            $draftCount    = $totalPayroll - $releasedCount;
-
             $belumInput = Karyawan::where('status_resign', false)
                 ->whereNull('deleted_at')
-                 ->whereNotIn('absen_karyawan_id', $karyawanSudahInput) // ← fix
+                ->whereNotIn('id', $karyawanSudahInput)
                 ->count();
 
             return response()->json([
