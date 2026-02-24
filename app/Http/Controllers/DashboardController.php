@@ -85,7 +85,7 @@ class DashboardController extends Controller
 
             $belumInput = Karyawan::where('status_resign', false)
                 ->whereNull('deleted_at')
-                ->whereNotIn('id', $karyawanSudahInput)
+                 ->whereNotIn('absen_karyawan_id', $karyawanSudahInput) // ← fix
                 ->count();
 
             return response()->json([
@@ -145,14 +145,13 @@ class DashboardController extends Controller
 
             // Karyawan yang sudah punya payroll di periode ini
             $sudahInput = PayrollCalculation::where('periode', $periode)
-                ->pluck('karyawan_id')
-                ->unique()
-                ->toArray();
-
+            ->pluck('karyawan_id')
+            ->unique()
+            ->toArray();
             // Base query
             $query = Karyawan::where('status_resign', false)
                 ->whereNull('deleted_at')
-                ->whereNotIn('id', $sudahInput)
+                ->whereNotIn('absen_karyawan_id', $sudahInput)
                 ->select(['id', 'nik', 'nama_lengkap', 'email_pribadi', 'telp_pribadi', 'join_date', 'jenis_kelamin', 'absen_karyawan_id']);
 
             // Datatables manual serverside
