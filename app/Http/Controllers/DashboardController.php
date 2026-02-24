@@ -94,7 +94,7 @@ class DashboardController extends Controller
 
             $belumInput = Karyawan::where('status_resign', false)
                 ->whereNull('deleted_at')
-                ->whereNotIn('id', $karyawanSudahInput)
+                 ->whereNotIn('absen_karyawan_id', $karyawanSudahInput) // ← fix
                 ->count();
 
             return response()->json([
