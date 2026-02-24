@@ -49,19 +49,18 @@ class DashboardController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $periodes
+                'data'    => $periodes,
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error loading periodes: ' . $e->getMessage()
+                'message' => 'Error loading periodes: ' . $e->getMessage(),
             ], 500);
         }
     }
 
     /**
-     * Get dashboard statistics (count only, ringan)
+     * Get dashboard statistics (count only)
      */
     public function getStatistics(Request $request)
     {
@@ -71,21 +70,19 @@ class DashboardController extends Controller
             if (!$periode) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Periode is required'
+                    'message' => 'Periode is required',
                 ], 400);
             }
 
-            // Ambil karyawan_id yang sudah punya payroll di periode ini
             $karyawanSudahInput = PayrollCalculation::where('periode', $periode)
                 ->pluck('karyawan_id')
                 ->unique();
 
-            $totalPayroll    = $karyawanSudahInput->count();
-            $releasedCount   = PayrollCalculation::where('periode', $periode)->where('is_released', true)->count();
-            $releasedSlip    = PayrollCalculation::where('periode', $periode)->where('is_released_slip', true)->count();
-            $draftCount      = $totalPayroll - $releasedCount;
+            $totalPayroll  = $karyawanSudahInput->count();
+            $releasedCount = PayrollCalculation::where('periode', $periode)->where('is_released', true)->count();
+            $releasedSlip  = PayrollCalculation::where('periode', $periode)->where('is_released_slip', true)->count();
+            $draftCount    = $totalPayroll - $releasedCount;
 
-            // Karyawan aktif yang belum punya payroll di periode ini
             $belumInput = Karyawan::where('status_resign', false)
                 ->whereNull('deleted_at')
                 ->whereNotIn('id', $karyawanSudahInput)
@@ -93,20 +90,120 @@ class DashboardController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => [
-                    'total_payroll'   => $totalPayroll,
-                    'released_count'  => $releasedCount,
-                    'released_slip'   => $releasedSlip,
-                    'draft_count'     => $draftCount,
-                    'belum_input'     => $belumInput,
-                ]
+                'data'    => [
+                    'total_payroll'  => $totalPayroll,
+                    'released_count' => $releasedCount,
+                    'released_slip'  => $releasedSlip,
+                    'draft_count'    => $draftCount,
+                    'belum_input'    => $belumInput,
+                ],
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error loading statistics: ' . $e->getMessage()
+                'message' => 'Error loading statistics: ' . $e->getMessage(),
             ], 500);
+        }
+    }
+
+    /**
+     * Page: Karyawan belum diinput payroll
+     */
+    public function karyawanBelumInput(Request $request)
+    {
+        if (!in_array(Auth::user()->role, ['admin'])) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Ambil periode dari query string, fallback ke periode terbaru
+        $periode = $request->input('periode');
+
+        if (!$periode) {
+            $periode = PayrollCalculation::select('periode')
+                ->distinct()
+                ->orderBy('periode', 'desc')
+                ->value('periode');
+        }
+
+        return view('dashboard.dashboard-admin.karyawan-belum-ada-payrolls.index', [
+            'title'   => 'Karyawan Belum Diinput Payroll',
+            'periode' => $periode,
+        ]);
+    }
+
+    /**
+     * Serverside datatable: Karyawan belum diinput payroll
+     */
+    public function karyawanBelumInputData(Request $request)
+    {
+        try {
+            $periode = $request->input('periode');
+
+            if (!$periode) {
+                return response()->json(['error' => 'Periode is required'], 400);
+            }
+
+            // Karyawan yang sudah punya payroll di periode ini
+            $sudahInput = PayrollCalculation::where('periode', $periode)
+                ->pluck('karyawan_id')
+                ->unique()
+                ->toArray();
+
+            // Base query
+            $query = Karyawan::where('status_resign', false)
+                ->whereNull('deleted_at')
+                ->whereNotIn('id', $sudahInput)
+                ->select(['id', 'nik', 'nama_lengkap', 'email_pribadi', 'telp_pribadi', 'join_date', 'jenis_kelamin', 'absen_karyawan_id']);
+
+            // Datatables manual serverside
+            $totalRecords = (clone $query)->count();
+
+            // Search
+            $search = $request->input('search.value');
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nik', 'like', "%{$search}%")
+                      ->orWhere('nama_lengkap', 'like', "%{$search}%")
+                      ->orWhere('email_pribadi', 'like', "%{$search}%");
+                });
+            }
+
+            $filteredRecords = (clone $query)->count();
+
+            // Order
+            $orderColumnIndex = $request->input('order.0.column', 1);
+            $orderDir         = $request->input('order.0.dir', 'asc');
+            $columns          = ['id', 'nik', 'nama_lengkap', 'email_pribadi', 'telp_pribadi', 'join_date', 'jenis_kelamin'];
+            $orderColumn      = $columns[$orderColumnIndex] ?? 'nama_lengkap';
+            $query->orderBy($orderColumn, $orderDir);
+
+            // Paginate
+            $start  = $request->input('start', 0);
+            $length = $request->input('length', 25);
+            $data   = $query->skip($start)->take($length)->get();
+
+            $rows = $data->map(function ($k, $index) use ($start) {
+                return [
+                    'no'            => $start + $index + 1,
+                    'nik'           => $k->nik ?? '-',
+                    'nama_lengkap'  => $k->nama_lengkap,
+                    'email_pribadi' => $k->email_pribadi ?? '-',
+                    'telp_pribadi'  => $k->telp_pribadi ?? '-',
+                    'join_date'     => $k->join_date
+                        ? \Carbon\Carbon::parse($k->join_date)->format('d M Y')
+                        : '-',
+                    'jenis_kelamin' => $k->jenis_kelamin === 'L' ? 'Laki-laki' : ($k->jenis_kelamin === 'P' ? 'Perempuan' : '-'),
+                ];
+            });
+
+            return response()->json([
+                'draw'            => intval($request->input('draw')),
+                'recordsTotal'    => $totalRecords,
+                'recordsFiltered' => $filteredRecords,
+                'data'            => $rows,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }

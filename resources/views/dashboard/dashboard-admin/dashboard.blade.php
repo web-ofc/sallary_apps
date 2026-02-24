@@ -105,7 +105,7 @@
 
         <!-- Belum Diinput -->
         <div class="col-xl-3 col-md-6">
-            <div class="card card-xl-stretch mb-xl-8 border border-danger border-dashed">
+            <a href="#" id="cardBelumInput" class="card card-xl-stretch mb-xl-8 border border-danger border-dashed text-decoration-none card-hover-scale">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="symbol symbol-50px me-5">
@@ -120,10 +120,14 @@
                             </span>
                             <span class="text-muted fw-semibold fs-8">karyawan aktif tanpa payroll</span>
                         </div>
+                        <div>
+                            <i class="fas fa-chevron-right text-danger"></i>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
+
 
     </div>
 </div>
@@ -138,6 +142,7 @@ $(document).ready(function () {
     $('#periodeFilter').change(function () {
         currentPeriode = $(this).val();
         loadStatistics();
+        updateCardBelumInputLink();
     });
 });
 
@@ -175,6 +180,8 @@ function loadStatistics() {
         $('#' + id).html('<span class="spinner-border spinner-border-sm" role="status"></span>');
     });
 
+    
+
     $.ajax({
         url: '{{ route("dashboard.statistics") }}',
         method: 'GET',
@@ -187,6 +194,7 @@ function loadStatistics() {
                 $('#releasedCount').text(d.released_count);
                 $('#releasedSlip').text(d.released_slip);
                 $('#belumInput').text(d.belum_input);
+                updateCardBelumInputLink(); // ← tambah di sini
             }
         },
         error: function (xhr) {
@@ -199,6 +207,11 @@ function formatPeriode(periode) {
     let [year, month] = periode.split('-');
     let monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
     return `${monthNames[parseInt(month) - 1]} ${year}`;
+}
+
+function updateCardBelumInputLink() {
+    let url = '{{ route("dashboard.karyawan-belum-input") }}' + '?periode=' + currentPeriode;
+    $('#cardBelumInput').attr('href', url);
 }
 </script>
 @endpush

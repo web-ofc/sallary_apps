@@ -67,6 +67,14 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('/manage-user', UserController::class);
     Route::get('users/data', [UserController::class, 'getData'])->name('users.data');
 
+    
+    Route::get('/dashboard/karyawan-belum-input', [DashboardController::class, 'karyawanBelumInput'])
+        ->name('dashboard.karyawan-belum-input');
+
+    Route::get('/dashboard/karyawan-belum-input/data', [DashboardController::class, 'karyawanBelumInputData'])
+        ->name('dashboard.karyawan-belum-input.data');
+
+
         
     // ========================================
     // PAYROLL IMPORT ROUTES
