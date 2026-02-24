@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         DB::statement("
-    CREATE OR REPLACE VIEW payroll_calculations AS
+     CREATE OR REPLACE VIEW payroll_calculations AS
 SELECT
     p.id,
     p.periode,
@@ -266,7 +266,7 @@ SELECT
     ) AS gaji_bersih
 
 FROM payrolls p
-LEFT JOIN karyawans k ON p.karyawan_id = k.id
+LEFT JOIN karyawans k ON p.karyawan_id = k.absen_karyawan_id
 LEFT JOIN karyawan_ptkp_histories kph ON k.absen_karyawan_id = kph.absen_karyawan_id 
     AND YEAR(STR_TO_DATE(CONCAT(p.periode, '-01'), '%Y-%m-%d')) = kph.tahun
 LEFT JOIN list_ptkps ptkp ON kph.absen_ptkp_id = ptkp.absen_ptkp_id;
