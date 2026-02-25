@@ -14,28 +14,26 @@ return new class extends Migration
     public function up(): void
     {
         DB::statement("
-            CREATE VIEW reimbursement_child_sum AS
-            SELECT
-                r.id AS id,
-                r.id_recapan,
-                r.karyawan_id,
-                r.company_id,
-                r.year_budget,
-                r.periode_slip,
-                r.status,
-                COALESCE(SUM(rc.harga), 0) AS total_harga
-            FROM reimbursements r
-            LEFT JOIN reimbursement_childs rc 
-                ON rc.reimbursement_id = r.id
-            WHERE r.deleted_at IS NULL  -- ✅ TAMBAH INI: Exclude soft deleted reimbursements
-            GROUP BY
-                r.id,
-                r.id_recapan,
-                r.karyawan_id,
-                r.company_id,
-                r.year_budget,
-                r.periode_slip,
-                r.status;
+        CREATE OR REPLACE VIEW reimbursement_child_sum AS
+        SELECT
+            r.karyawan_id,
+            r.periode_slip,
+            r.status,
+            COUNT(r.id) AS jumlah_reimbursement,
+            COALESCE(SUM(
+                COALESCE(rc.tagihan_dokter, 0) +
+                COALESCE(rc.tagihan_obat, 0) +
+                COALESCE(rc.tagihan_kacamata, 0) +
+                COALESCE(rc.tagihan_gigi, 0)
+            ), 0) AS total_harga
+        FROM reimbursements r
+        LEFT JOIN reimbursement_childs rc 
+            ON rc.reimbursement_id = r.id
+        WHERE r.deleted_at IS NULL
+        GROUP BY
+            r.karyawan_id,
+            r.periode_slip,
+            r.status;
         ");
     }
 

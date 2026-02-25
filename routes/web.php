@@ -74,6 +74,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/dashboard/karyawan-belum-input/data', [DashboardController::class, 'karyawanBelumInputData'])
         ->name('dashboard.karyawan-belum-input.data');
 
+   
+
 
         
     // ========================================
@@ -446,6 +448,9 @@ Route::middleware(['auth', 'role:admin,management'])->group(function () {
 
     Route::resource('/balance-reimbursements', BalanceReimbursementController::class);
     Route::get('balancereimbursements/data', [BalanceReimbursementController::class, 'getData'])->name('balancereimbursements.data');
+
+     Route::post('/sync-karyawan', [ReimbursementController::class, 'syncKaryawan'])
+    ->name('manage-reimbursements.sync-karyawan');
 });
 
 

@@ -4,37 +4,42 @@
 
 <div class="container-fluid">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-6">
         <div>
-            <h3 class="mb-1">Edit Reimbursement</h3>
-            <div class="text-muted">
-                <span class="me-3"><i class="fas fa-user me-1"></i> {{ $karyawan->nama_lengkap }}</span>
-                <span class="me-3"><i class="fas fa-id-badge me-1"></i> {{ $karyawan->absen_karyawan_id }}</span>
-                <span class="me-3"><i class="fas fa-building me-1"></i> {{ $reimbursement->company->company_name ?? '-' }}</span>  <!-- ✅ TAMBAH INI -->
-                <span class="me-3"><i class="fas fa-calendar me-1"></i> {{ \Carbon\Carbon::parse($reimbursement->periode_slip . '-01')->format('F Y') }}</span>
+            <h1 class="fs-2x fw-bold text-gray-900 mb-2">Edit Reimbursement Medical</h1>
+            <div class="text-gray-600 fs-6">
+                <span class="me-4"><i class="ki-outline ki-user fs-5 me-1"></i>{{ $karyawan->nama_lengkap }}</span>
+                <span class="me-4"><i class="ki-outline ki-badge fs-5 me-1"></i>{{ $karyawan->absen_karyawan_id }}</span>
+                <span class="me-4"><i class="ki-outline ki-building fs-5 me-1"></i>{{ $reimbursement->company->company_name ?? '-' }}</span>
+                <span class="me-4"><i class="ki-outline ki-calendar fs-5 me-1"></i>{{ \Carbon\Carbon::parse($reimbursement->periode_slip . '-01')->format('F Y') }}</span>
                 <span class="badge badge-light-primary">{{ $reimbursement->id_recapan }}</span>
             </div>
         </div>
-        <a href="{{ route('manage-reimbursements.index') }}" class="btn btn-sm btn-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Kembali
+        <a href="{{ route('manage-reimbursements.index') }}" class="btn btn-light btn-sm">
+            <i class="ki-outline ki-arrow-left fs-3"></i>
+            Kembali
         </a>
     </div>
+
     <form id="reimbursementForm">
         @csrf
-        @method('PUT')
         <input type="hidden" name="reimbursement_id" value="{{ $reimbursement->id }}">
+        <input type="hidden" name="karyawan_id" value="{{ $reimbursement->karyawan_id }}">
+        <input type="hidden" name="company_id" value="{{ $reimbursement->company_id }}">
 
-        <!-- Budget Section -->
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <label class="form-label fw-bold mb-3">Tahun Budget <span class="text-danger">*</span></label>
-                        <select class="form-select" id="year_budget" name="year_budget" 
-                                data-control="select2" data-placeholder="Pilih tahun..." required>
+        <!-- Budget Selection Card -->
+        <div class="card mb-7">
+            <div class="card-body p-9">
+                <div class="row g-6">
+                    <div class="col-lg-4">
+                        <label class="form-label fs-6 fw-semibold text-gray-800 mb-3">
+                            Tahun Budget <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select form-select-solid" id="year_budget" name="year_budget"
+                                data-control="select2" data-placeholder="Pilih tahun budget..." required>
                             <option></option>
                             @foreach($availableYears as $yearData)
-                                <option value="{{ $yearData->year }}" 
+                                <option value="{{ $yearData->year }}"
                                         data-sisa="{{ $yearData->sisa_budget }}"
                                         data-total="{{ $yearData->total_budget }}"
                                         {{ $yearData->year == $reimbursement->year_budget ? 'selected' : '' }}>
@@ -43,40 +48,26 @@
                             @endforeach
                         </select>
                     </div>
-                </div>
-            </div>
-            
-            <div class="col-md-8" id="budget-info">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <div class="card border-0 bg-light">
-                            <div class="card-body text-center py-3">
-                                <div class="text-muted small mb-1">Total Budget</div>
-                                <div class="h5 mb-0 fw-bold" id="total-budget">Rp 0</div>
+
+                    <div class="col-lg-8" id="budget-info">
+                        <div class="row g-5">
+                            <div class="col-md-4">
+                                <div class="d-flex flex-column">
+                                    <span class="text-gray-600 fs-7 fw-semibold mb-2">Total Budget</span>
+                                    <span class="text-gray-900 fs-3 fw-bold" id="total-budget">Rp 0</span>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card border-0 bg-light-success">
-                            <div class="card-body text-center py-3">
-                                <div class="text-muted small mb-1">Sisa Budget</div>
-                                <div class="h5 mb-0 fw-bold text-success" id="sisa-budget">Rp 0</div>
+                            <div class="col-md-4">
+                                <div class="d-flex flex-column">
+                                    <span class="text-gray-600 fs-7 fw-semibold mb-2">Sisa Budget</span>
+                                    <span class="text-gray-900 fs-3 fw-bold" id="sisa-budget">Rp 0</span>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card border-0 bg-light-primary">
-                            <div class="card-body text-center py-3">
-                                <div class="text-muted small mb-1">Akan Digunakan</div>
-                                <div class="h5 mb-0 fw-bold text-primary" id="akan-digunakan">Rp 0</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card border-0" id="sisa-card">
-                            <div class="card-body text-center py-3">
-                                <div class="text-muted small mb-1">Sisa Akhir</div>
-                                <div class="h5 mb-0 fw-bold" id="sisa-setelah-input">Rp 0</div>
+                            <div class="col-md-4">
+                                <div class="d-flex flex-column">
+                                    <span class="text-gray-600 fs-7 fw-semibold mb-2">Akan Digunakan</span>
+                                    <span class="text-primary fs-3 fw-bold" id="akan-digunakan">Rp 0</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -84,68 +75,56 @@
             </div>
         </div>
 
-        <!-- Forms Container -->
-        <div id="forms-container">
-            
-            <!-- GENERAL Section -->
-            <div id="general-section" style="display: none;">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-white py-3">
-                        <h5 class="mb-0">General Medical</h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="general-forms-container"></div>
-                        
-                        <div class="mt-3" id="general-load-more">
-                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addGeneralForm()">
-                                <i class="fas fa-plus me-1"></i> Tambah Item General
-                            </button>
-                            <small class="text-muted ms-2">Maksimal 6 item</small>
-                        </div>
-                    </div>
+        <!-- Items Card -->
+        <div class="card mb-7">
+            <div class="card-header border-0 pt-6">
+                <h3 class="card-title align-items-start flex-column">
+                    <span class="card-label fw-bold text-gray-900">Item Reimbursement</span>
+                    <span class="text-gray-500 mt-1 fw-semibold fs-7">Edit data kunjungan/tagihan medis</span>
+                </h3>
+                <div class="card-toolbar">
+                    <button type="button" class="btn btn-sm btn-light-primary" onclick="addItemForm()">
+                        <i class="ki-outline ki-plus fs-2"></i>
+                        Tambah Item
+                    </button>
                 </div>
             </div>
-
-            <!-- OTHER Section -->
-            <div id="other-section" style="display: none;">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-white py-3">
-                        <h5 class="mb-0">Other Medical</h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="other-forms-container"></div>
-                        
-                        <div class="mt-3" id="other-load-more">
-                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addOtherForm()">
-                                <i class="fas fa-plus me-1"></i> Tambah Item Other
-                            </button>
-                            <small class="text-muted ms-2">Maksimal 6 item</small>
-                        </div>
-                    </div>
+            <div class="card-body pt-3">
+                <div id="items-container"></div>
+                <div class="text-center text-gray-500 fs-7 mt-3" id="empty-hint" style="display:none;">
+                    Belum ada item. Klik "Tambah Item" untuk menambahkan.
                 </div>
             </div>
+        </div>
 
-            <!-- Summary & Submit -->
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <h4 class="mb-1">Total Reimbursement</h4>
-                            <h2 class="mb-0 text-success fw-bold" id="grand-total">Rp 0</h2>
+        <!-- Summary & Submit -->
+        <div class="card">
+            <div class="card-body p-9">
+                <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between">
+                    <div class="d-flex flex-column flex-md-row gap-7 mb-5 mb-md-0">
+                        <div class="d-flex flex-column">
+                            <span class="text-gray-600 fs-7 fw-semibold mb-2">Total Reimbursement</span>
+                            <span class="text-gray-900 fs-2x fw-bold" id="grand-total">Rp 0</span>
                         </div>
-                        <div class="col-md-6 text-end">
-                            <button type="button" class="btn btn-light me-2" onclick="window.location.href='{{ route('manage-reimbursements.index') }}'">
-                                Batal
-                            </button>
-                            <button type="submit" class="btn btn-primary px-5" id="submitBtn">
-                                <span class="indicator-label">
-                                    <i class="fas fa-save me-1"></i> Update
-                                </span>
-                                <span class="indicator-progress" style="display: none;">
-                                    Menyimpan... <span class="spinner-border spinner-border-sm ms-2"></span>
-                                </span>
-                            </button>
+                        <div class="d-flex flex-column">
+                            <span class="text-gray-600 fs-7 fw-semibold mb-2">Sisa Budget Akhir</span>
+                            <span class="fs-2x fw-bold text-success" id="sisa-setelah-input">Rp 0</span>
                         </div>
+                    </div>
+                    <div class="d-flex gap-3">
+                        <button type="button" class="btn btn-light" onclick="window.location.href='{{ route('manage-reimbursements.index') }}'">
+                            Batal
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <span class="indicator-label">
+                                <i class="ki-outline ki-check fs-2"></i>
+                                Update
+                            </span>
+                            <span class="indicator-progress d-none">
+                                Menyimpan...
+                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -153,14 +132,17 @@
     </form>
 </div>
 
+<style>
+.form-item { transition: all 0.3s ease; }
+.form-item:hover { background-color: #f9fafb; }
+</style>
+
 @endsection
 
 @push('scripts')
 <script>
-let generalCount = 0;
-let otherCount = 0;
-const MAX_GENERAL = 6;
-const MAX_OTHER = 6;
+let itemCount = 0;
+const MAX_ITEMS = 10;
 
 let currentBudget = {
     total: 0,
@@ -168,9 +150,8 @@ let currentBudget = {
     year: null
 };
 
-const generalTypes = @json($generalTypes);
-const otherTypes = @json($otherTypes);
-const existingData = @json($reimbursement->childs);
+// Data existing dari server
+const existingChilds = @json($reimbursement->childs);
 
 $(document).ready(function() {
     $('#year_budget').select2({
@@ -181,7 +162,7 @@ $(document).ready(function() {
     // Load budget info untuk tahun yang sudah dipilih
     loadBudgetInfo();
 
-    // Load existing children data
+    // Load existing children
     loadExistingData();
 
     $('#year_budget').on('change', function() {
@@ -196,8 +177,8 @@ $(document).ready(function() {
 
 function loadBudgetInfo() {
     const selectedOption = $('#year_budget').find('option:selected');
-    const sisaBudget = parseInt(selectedOption.data('sisa'));
-    const totalBudget = parseInt(selectedOption.data('total'));
+    const sisaBudget = parseInt(selectedOption.data('sisa')) || 0;
+    const totalBudget = parseInt(selectedOption.data('total')) || 0;
     const selectedYear = $('#year_budget').val();
 
     if (selectedYear) {
@@ -206,30 +187,19 @@ function loadBudgetInfo() {
             sisa: sisaBudget,
             year: selectedYear
         };
-
         updateBudgetDisplay();
     }
 }
 
 function loadExistingData() {
-    const generalData = existingData.filter(child => child.reimbursement_type.group_medical === 'general');
-    const otherData = existingData.filter(child => child.reimbursement_type.group_medical === 'other');
-
-    // Load General items
-    if (generalData.length > 0) {
-        $('#general-section').show();
-        generalData.forEach(child => {
-            addGeneralForm(child);
-        });
+    if (!existingChilds || existingChilds.length === 0) {
+        $('#empty-hint').show();
+        return;
     }
 
-    // Load Other items
-    if (otherData.length > 0) {
-        $('#other-section').show();
-        otherData.forEach(child => {
-            addOtherForm(child);
-        });
-    }
+    existingChilds.forEach(child => {
+        addItemForm(child);
+    });
 
     calculateLivePreview();
 }
@@ -240,225 +210,180 @@ function updateBudgetDisplay() {
     calculateLivePreview();
 }
 
-function addGeneralForm(existingData = null) {
-    if (generalCount >= MAX_GENERAL) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Maksimal Tercapai',
-            text: 'Maksimal 6 item General'
-        });
+function addItemForm(existing = null) {
+    if (itemCount >= MAX_ITEMS) {
+        Swal.fire({ icon: 'warning', title: 'Maksimal Tercapai', text: 'Maksimal ' + MAX_ITEMS + ' item' });
         return;
     }
 
-    generalCount++;
-    const index = generalCount - 1;
+    const index = itemCount;
+    itemCount++;
+
+    const val = (field) => existing ? (existing[field] ?? '') : '';
+    const tagihan = (field) => existing && existing[field] > 0 ? formatRupiah(existing[field]) : '';
 
     const formHtml = `
-        <div class="border rounded p-3 mb-3 general-form-item" data-index="${index}">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <strong>Item #${generalCount}</strong>
-                <button type="button" class="btn btn-sm btn-light" onclick="removeGeneralForm(${index})"><i class="fas fa-times"></i></button>
+        <div class="form-item border border-gray-300 border-dashed rounded p-6 mb-5 reimbursement-item" data-index="${index}">
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <div class="d-flex align-items-center">
+                    <span class="badge badge-circle badge-light-primary fs-6 fw-bold me-3 item-number">${itemCount}</span>
+                    <span class="text-gray-800 fw-semibold fs-6">Item Reimbursement</span>
+                </div>
+                <button type="button" class="btn btn-icon btn-sm btn-light-danger" onclick="removeItemForm(${index})">
+                    <i class="ki-outline ki-trash fs-2"></i>
+                </button>
             </div>
-            
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">Tipe <span class="text-danger">*</span></label>
-                    <select class="form-select form-select-sm general-type-${index}" name="children[general_${index}][reimbursement_type_id]" 
-                            data-control="select2" required>
-                        <option></option>
-                        ${generalTypes.map(type => `<option value="${type.id}" ${existingData && existingData.reimbursement_type_id == type.id ? 'selected' : ''}>${type.medical_type}</option>`).join('')}
+
+            <div class="row g-5">
+                <div class="col-lg-2">
+                    <label class="form-label fs-7 fw-semibold text-gray-700">Tanggal</label>
+                    <input type="date" class="form-control form-control-solid"
+                           name="children[${index}][tanggal]"
+                           value="${val('tanggal')}"
+                           max="{{ date('Y-m-d') }}">
+                </div>
+
+                <div class="col-lg-3">
+                    <label class="form-label fs-7 fw-semibold text-gray-700">Nama Pasien</label>
+                    <input type="text" class="form-control form-control-solid"
+                           name="children[${index}][nama_reimbursement]"
+                           value="${val('nama_reimbursement')}"
+                           placeholder="Nama pasien...">
+                </div>
+
+                <div class="col-lg-2">
+                    <label class="form-label fs-7 fw-semibold text-gray-700">Status Keluarga</label>
+                    <select class="form-select form-select-solid" name="children[${index}][status_keluarga]">
+                        <option value="">Pilih status</option>
+                        ${['Karyawan','Istri','Suami','Anak','Orang Tua'].map(s =>
+                            `<option value="${s}" ${val('status_keluarga') == s ? 'selected' : ''}>${s}</option>`
+                        ).join('')}
                     </select>
                 </div>
-                
-                <div class="col-md-2">
-                    <label class="form-label">Harga <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control form-control-sm harga-input" 
-                           name="children[general_${index}][harga]" 
-                           value="${existingData ? formatRupiah(existingData.harga) : ''}"
-                           placeholder="0" 
-                           onkeyup="formatAndCalculate(this)" required>
-                </div>
-                
-                <div class="col-md-2">
-                    <label class="form-label">Penyakit</label>
-                    <input type="text" class="form-control form-control-sm" 
-                           name="children[general_${index}][jenis_penyakit]" 
-                           value="${existingData ? (existingData.jenis_penyakit || '') : ''}"
+
+                <div class="col-lg-2">
+                    <label class="form-label fs-7 fw-semibold text-gray-700">Jenis Penyakit</label>
+                    <input type="text" class="form-control form-control-solid"
+                           name="children[${index}][jenis_penyakit]"
+                           value="${val('jenis_penyakit')}"
                            placeholder="Flu, Demam...">
                 </div>
-                
-                <div class="col-md-2">
-                    <label class="form-label">Status Keluarga</label>
-                    <select class="form-select form-select-sm" name="children[general_${index}][status_keluarga]">
-                        <option value="">-- Pilih --</option>
-                        <option value="Diri Sendiri" ${existingData && existingData.status_keluarga == 'Diri Sendiri' ? 'selected' : ''}>Diri Sendiri</option>
-                        <option value="Istri" ${existingData && existingData.status_keluarga == 'Istri' ? 'selected' : ''}>Istri</option>
-                        <option value="Suami" ${existingData && existingData.status_keluarga == 'Suami' ? 'selected' : ''}>Suami</option>
-                        <option value="Anak" ${existingData && existingData.status_keluarga == 'Anak' ? 'selected' : ''}>Anak</option>
-                        <option value="Orang Tua" ${existingData && existingData.status_keluarga == 'Orang Tua' ? 'selected' : ''}>Orang Tua</option>
-                    </select>
-                </div>
-                
-                <div class="col-md-2">
-                    <label class="form-label">Catatan</label>
-                    <input type="text" class="form-control form-control-sm" 
-                           name="children[general_${index}][note]" 
-                           value="${existingData ? (existingData.note || '') : ''}"
-                           placeholder="Catatan...">
-                </div>
-            </div>
-        </div>
-    `;
 
-    $('#general-forms-container').append(formHtml);
-    $(`.general-type-${index}`).select2({ placeholder: 'Pilih tipe...' });
-
-    if (generalCount >= MAX_GENERAL) {
-        $('#general-load-more').hide();
-    }
-}
-
-function addOtherForm(existingData = null) {
-    if (otherCount >= MAX_OTHER) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Maksimal Tercapai',
-            text: 'Maksimal 6 item Other'
-        });
-        return;
-    }
-
-    otherCount++;
-    const index = otherCount - 1;
-
-    const formHtml = `
-        <div class="border rounded p-3 mb-3 other-form-item" data-index="${index}">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <strong>Item #${otherCount}</strong>
-                <button type="button" class="btn btn-sm btn-light" onclick="removeOtherForm(${index})"><i class="fas fa-times"></i></button>
-            </div>
-            
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">Tipe <span class="text-danger">*</span></label>
-                    <select class="form-select form-select-sm other-type-${index}" name="children[other_${index}][reimbursement_type_id]" 
-                            data-control="select2" required>
-                        <option></option>
-                        ${otherTypes.map(type => `<option value="${type.id}" ${existingData && existingData.reimbursement_type_id == type.id ? 'selected' : ''}>${type.medical_type}</option>`).join('')}
-                    </select>
+                <div class="col-lg-3">
+                    <label class="form-label fs-7 fw-semibold text-gray-700">Catatan</label>
+                    <input type="text" class="form-control form-control-solid"
+                           name="children[${index}][note]"
+                           value="${val('note')}"
+                           placeholder="Catatan tambahan...">
                 </div>
-                
-                <div class="col-md-2">
-                    <label class="form-label">Harga <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control form-control-sm harga-input" 
-                           name="children[other_${index}][harga]" 
-                           value="${existingData ? formatRupiah(existingData.harga) : ''}"
-                           placeholder="0" 
-                           onkeyup="formatAndCalculate(this)" required>
+
+                <div class="col-lg-3">
+                    <label class="form-label fs-7 fw-semibold text-gray-700">Tagihan Dokter</label>
+                    <input type="text" class="form-control form-control-solid tagihan-input"
+                           name="children[${index}][tagihan_dokter]"
+                           value="${tagihan('tagihan_dokter')}"
+                           placeholder="0"
+                           data-index="${index}"
+                           onkeyup="formatAndCalculate(this)">
                 </div>
-                
-                <div class="col-md-2">
-                    <label class="form-label">Penyakit</label>
-                    <input type="text" class="form-control form-control-sm" 
-                           name="children[other_${index}][jenis_penyakit]" 
-                           value="${existingData ? (existingData.jenis_penyakit || '') : ''}"
-                           placeholder="Contoh...">
+
+                <div class="col-lg-3">
+                    <label class="form-label fs-7 fw-semibold text-gray-700">Tagihan Obat</label>
+                    <input type="text" class="form-control form-control-solid tagihan-input"
+                           name="children[${index}][tagihan_obat]"
+                           value="${tagihan('tagihan_obat')}"
+                           placeholder="0"
+                           data-index="${index}"
+                           onkeyup="formatAndCalculate(this)">
                 </div>
-                
-                <div class="col-md-2">
-                    <label class="form-label">Status Keluarga</label>
-                    <select class="form-select form-select-sm" name="children[other_${index}][status_keluarga]">
-                        <option value="">-- Pilih --</option>
-                        <option value="Diri Sendiri" ${existingData && existingData.status_keluarga == 'Diri Sendiri' ? 'selected' : ''}>Diri Sendiri</option>
-                        <option value="Istri" ${existingData && existingData.status_keluarga == 'Istri' ? 'selected' : ''}>Istri</option>
-                        <option value="Suami" ${existingData && existingData.status_keluarga == 'Suami' ? 'selected' : ''}>Suami</option>
-                        <option value="Anak" ${existingData && existingData.status_keluarga == 'Anak' ? 'selected' : ''}>Anak</option>
-                        <option value="Orang Tua" ${existingData && existingData.status_keluarga == 'Orang Tua' ? 'selected' : ''}>Orang Tua</option>
-                    </select>
+
+                <div class="col-lg-3">
+                    <label class="form-label fs-7 fw-semibold text-gray-700">Tagihan Kacamata</label>
+                    <input type="text" class="form-control form-control-solid tagihan-input"
+                           name="children[${index}][tagihan_kacamata]"
+                           value="${tagihan('tagihan_kacamata')}"
+                           placeholder="0"
+                           data-index="${index}"
+                           onkeyup="formatAndCalculate(this)">
                 </div>
-                
-                <div class="col-md-2">
-                    <label class="form-label">Catatan</label>
-                    <input type="text" class="form-control form-control-sm" 
-                           name="children[other_${index}][note]" 
-                           value="${existingData ? (existingData.note || '') : ''}"
-                           placeholder="Catatan...">
+
+                <div class="col-lg-3">
+                    <label class="form-label fs-7 fw-semibold text-gray-700">Tagihan Gigi</label>
+                    <input type="text" class="form-control form-control-solid tagihan-input"
+                           name="children[${index}][tagihan_gigi]"
+                           value="${tagihan('tagihan_gigi')}"
+                           placeholder="0"
+                           data-index="${index}"
+                           onkeyup="formatAndCalculate(this)">
+                </div>
+
+                <div class="col-12">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-gray-600 fs-8 fw-semibold">Subtotal item ini:</span>
+                        <span class="text-primary fw-bold fs-7 item-subtotal" data-index="${index}">Rp 0</span>
+                    </div>
                 </div>
             </div>
         </div>
     `;
 
-    $('#other-forms-container').append(formHtml);
-    $(`.other-type-${index}`).select2({ placeholder: 'Pilih tipe...' });
+    $('#items-container').append(formHtml);
+    $('#empty-hint').hide();
 
-    if (otherCount >= MAX_OTHER) {
-        $('#other-load-more').hide();
+    // Hitung subtotal existing jika ada
+    if (existing) {
+        const subtotal = (existing.tagihan_dokter ?? 0) + (existing.tagihan_obat ?? 0)
+                       + (existing.tagihan_kacamata ?? 0) + (existing.tagihan_gigi ?? 0);
+        $(`.item-subtotal[data-index="${index}"]`).text('Rp ' + formatRupiah(subtotal));
     }
 }
 
-function removeGeneralForm(index) {
-    $(`.general-form-item[data-index="${index}"]`).remove();
-    generalCount--;
-    
-    $('.general-form-item').each(function(i) {
-        $(this).find('strong').first().text('Item #' + (i + 1));
-    });
-    
-    $('#general-load-more').show();
-    
-    if (generalCount === 0) {
-        $('#general-section').hide();
-    }
-    
-    calculateLivePreview();
-}
+function removeItemForm(index) {
+    $(`.reimbursement-item[data-index="${index}"]`).remove();
+    itemCount--;
 
-function removeOtherForm(index) {
-    $(`.other-form-item[data-index="${index}"]`).remove();
-    otherCount--;
-    
-    $('.other-form-item').each(function(i) {
-        $(this).find('strong').first().text('Item #' + (i + 1));
+    $('.reimbursement-item').each(function(i) {
+        $(this).find('.item-number').first().text(i + 1);
     });
-    
-    $('#other-load-more').show();
-    
-    if (otherCount === 0) {
-        $('#other-section').hide();
-    }
-    
+
+    if (itemCount === 0) $('#empty-hint').show();
+
     calculateLivePreview();
 }
 
 function formatAndCalculate(input) {
     let value = input.value.replace(/[^\d]/g, '');
-    input.value = formatRupiah(value);
+    input.value = value ? formatRupiah(value) : '';
+
+    const index = $(input).data('index');
+    let subtotal = 0;
+    $(`.tagihan-input[data-index="${index}"]`).each(function() {
+        const val = $(this).val().replace(/[^\d]/g, '');
+        subtotal += val ? parseInt(val) : 0;
+    });
+    $(`.item-subtotal[data-index="${index}"]`).text('Rp ' + formatRupiah(subtotal));
+
     calculateLivePreview();
 }
 
 function calculateLivePreview() {
     let total = 0;
-    
-    $('.harga-input').each(function() {
+
+    $('.tagihan-input').each(function() {
         const value = $(this).val().replace(/[^\d]/g, '');
-        if (value) {
-            total += parseInt(value);
-        }
+        if (value) total += parseInt(value);
     });
 
     $('#akan-digunakan').text('Rp ' + formatRupiah(total));
     $('#grand-total').text('Rp ' + formatRupiah(total));
-    
+
     const sisaSetelahInput = currentBudget.sisa - total;
-    $('#sisa-setelah-input').text('Rp ' + formatRupiah(sisaSetelahInput));
-    
-    $('#sisa-card').removeClass('bg-light-success bg-light-danger');
+    $('#sisa-setelah-input').text('Rp ' + formatRupiah(Math.abs(sisaSetelahInput)));
+
     if (sisaSetelahInput < 0) {
         $('#sisa-setelah-input').removeClass('text-success').addClass('text-danger');
-        $('#sisa-card').addClass('bg-light-danger');
     } else {
         $('#sisa-setelah-input').removeClass('text-danger').addClass('text-success');
-        $('#sisa-card').addClass('bg-light-success');
     }
 }
 
@@ -466,56 +391,58 @@ function submitReimbursement() {
     const submitBtn = $('#submitBtn');
     const indicatorLabel = submitBtn.find('.indicator-label');
     const indicatorProgress = submitBtn.find('.indicator-progress');
-    
-    const formData = {
-        _token: $('input[name="_token"]').val(),
-        _method: 'PUT',
-        year_budget: $('#year_budget').val(),
-        children: []
-    };
-    
-    // Collect all inputs
-    $('input[name^="children["], select[name^="children["]').each(function() {
-        const name = $(this).attr('name');
-        const match = name.match(/children\[(general|other)_(\d+)\]\[(\w+)\]/);
-        
-        if (match) {
-            const [, group, index, field] = match;
-            const key = `${group}_${index}`;
-            
-            let childObj = formData.children.find(c => c._key === key);
-            if (!childObj) {
-                childObj = { _key: key };
-                formData.children.push(childObj);
-            }
-            
-            if (field === 'harga') {
-                const value = $(this).val().replace(/[^\d]/g, '');
-                childObj[field] = parseInt(value) || 0;
-            } else {
-                childObj[field] = $(this).val();
-            }
-        }
-    });
-    
-    formData.children = formData.children
-        .filter(child => child.harga && child.harga > 0)
-        .map(child => {
-            delete child._key;
-            return child;
-        });
-    
-    if (formData.children.length === 0) {
-        Swal.fire({ icon: 'warning', title: 'Perhatian!', text: 'Minimal harus ada 1 item dengan harga terisi' });
+
+    if (!$('#year_budget').val()) {
+        Swal.fire({ icon: 'warning', title: 'Perhatian!', text: 'Pilih tahun budget terlebih dahulu' });
         return;
     }
-    
+
+    const children = [];
+
+    $('.reimbursement-item').each(function() {
+        const index = $(this).data('index');
+
+        const tagihan_dokter   = parseInt($(`[name="children[${index}][tagihan_dokter]"]`).val().replace(/[^\d]/g, '') || 0);
+        const tagihan_obat     = parseInt($(`[name="children[${index}][tagihan_obat]"]`).val().replace(/[^\d]/g, '') || 0);
+        const tagihan_kacamata = parseInt($(`[name="children[${index}][tagihan_kacamata]"]`).val().replace(/[^\d]/g, '') || 0);
+        const tagihan_gigi     = parseInt($(`[name="children[${index}][tagihan_gigi]"]`).val().replace(/[^\d]/g, '') || 0);
+
+        const subtotal = tagihan_dokter + tagihan_obat + tagihan_kacamata + tagihan_gigi;
+        if (subtotal === 0) return;
+
+        children.push({
+            tanggal:            $(`[name="children[${index}][tanggal]"]`).val() || null,
+            nama_reimbursement: $(`[name="children[${index}][nama_reimbursement]"]`).val() || null,
+            status_keluarga:    $(`[name="children[${index}][status_keluarga]"]`).val() || null,
+            jenis_penyakit:     $(`[name="children[${index}][jenis_penyakit]"]`).val() || null,
+            note:               $(`[name="children[${index}][note]"]`).val() || null,
+            tagihan_dokter,
+            tagihan_obat,
+            tagihan_kacamata,
+            tagihan_gigi,
+        });
+    });
+
+    if (children.length === 0) {
+        Swal.fire({ icon: 'warning', title: 'Perhatian!', text: 'Minimal harus ada 1 item dengan tagihan terisi' });
+        return;
+    }
+
+    const formData = {
+        _token:      $('input[name="_token"]').val(),
+        _method:     'PUT',
+        karyawan_id: $('input[name="karyawan_id"]').val(),
+        company_id:  $('input[name="company_id"]').val(),
+        year_budget: $('#year_budget').val(),
+        children,
+    };
+
     submitBtn.prop('disabled', true);
-    indicatorLabel.hide();
-    indicatorProgress.show();
-    
+    indicatorLabel.addClass('d-none');
+    indicatorProgress.removeClass('d-none');
+
     const reimbursementId = $('input[name="reimbursement_id"]').val();
-    
+
     $.ajax({
         url: "{{ url('manage-reimbursements') }}/" + reimbursementId,
         type: 'POST',
@@ -543,8 +470,8 @@ function submitReimbursement() {
         },
         complete: function() {
             submitBtn.prop('disabled', false);
-            indicatorLabel.show();
-            indicatorProgress.hide();
+            indicatorLabel.removeClass('d-none');
+            indicatorProgress.addClass('d-none');
         }
     });
 }

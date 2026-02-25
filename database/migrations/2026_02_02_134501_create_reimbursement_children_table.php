@@ -14,16 +14,19 @@ return new class extends Migration
         Schema::create('reimbursement_childs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('reimbursement_id')->constrained('reimbursements')->onDelete('cascade');
-            $table->foreignId('reimbursement_type_id')->constrained('master_reimbursement_types')->onDelete('cascade');
-            $table->integer('harga'); // Harga/nominal reimbursement
-            $table->string('jenis_penyakit')->nullable(); // Jenis penyakit
+            $table->date('tanggal')->nullable(); // Status approved
+            $table->string('nama_reimbursement')->nullable(); // nama dia/anak/istri
             $table->string('status_keluarga')->nullable(); // Untuk diri sendiri/istri/anak/dll
-            $table->string('note')->nullable(); // Format: '2025-01'
+            $table->string('jenis_penyakit')->nullable(); // Jenis penyakit
+            $table->integer('tagihan_dokter')->nullable(); // tagihan_dokter
+            $table->integer('tagihan_obat')->nullable(); // tagihan_obat
+            $table->integer('tagihan_kacamata')->nullable(); // tagihan_kacamata
+            $table->integer('tagihan_gigi')->nullable(); // tagihan_gigi
+            $table->string('note')->nullable(); 
             $table->timestamps();
             
             // Index untuk performa query
             $table->index('reimbursement_id');
-            $table->index('reimbursement_type_id');
         });
     }
 

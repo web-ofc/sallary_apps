@@ -26,13 +26,6 @@ class ReimbursementChild extends Model
         return $this->belongsTo(Reimbursement::class, 'reimbursement_id', 'id');
     }
 
-    /**
-     * Relasi ke Master Reimbursement Type
-     */
-    public function reimbursementType()
-    {
-        return $this->belongsTo(MasterReimbursementType::class, 'reimbursement_type_id', 'id');
-    }
 
     /**
      * Accessor untuk format harga

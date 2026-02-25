@@ -5,575 +5,708 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Reimbursement {{ $reimbursement->id_recapan ?? '-' }}</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         @page {
+            size: A4 portrait;
             margin: 0;
         }
 
         body {
-            font-family: 'Helvetica', 'Arial', sans-serif;
-            font-size: 9px;
-            line-height: 1.3;
-            color: #1a1a1a;
-            position: relative;
-            min-height: 100vh;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 8.5px;
+            line-height: 1.5;
+            color: #1e293b;
+            background: #fff;
         }
 
-        /* Content wrapper with bottom padding for fixed signature */
-        .content-wrapper {
-            padding: 15px 15px 140px 15px;
-        }
-
-        /* Header Section */
-        .header {
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #0066cc;
-        }
-
-        .header-content {
-            display: table;
+        /* ── TOP ACCENT ── */
+        .top-bar {
+            height: 4px;
+            background: #64748b;
             width: 100%;
         }
 
-        .logo-section {
-            display: table-cell;
-            width: 70px;
-            vertical-align: middle;
+        /* ── HEADER ── */
+        .header {
+            display: table;
+            width: 100%;
+            padding: 12px 22px 11px 22px;
+            border-bottom: 1px solid #e2e8f0;
         }
 
-        .company-info {
+        .header-left {
             display: table-cell;
             vertical-align: middle;
-            padding-left: 12px;
+            width: 55%;
+        }
+
+        .header-right {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: right;
+            width: 45%;
         }
 
         .company-logo {
-            max-width: 65px;
-            max-height: 65px;
+            max-height: 32px;
+            max-width: 95px;
+            display: block;
+            margin-bottom: 4px;
         }
 
         .company-name {
-            font-size: 13px;
+            font-size: 10.5px;
             font-weight: 700;
-            color: #0066cc;
-            margin-bottom: 2px;
-            letter-spacing: 0.3px;
+            color: #1e293b;
+            letter-spacing: -0.2px;
         }
 
-        .doc-subtitle {
-            font-size: 8px;
-            color: #666;
-            font-weight: 500;
+        .company-sub {
+            font-size: 7px;
+            color: #94a3b8;
+            margin-top: 1px;
         }
 
-        .doc-title {
-            font-size: 11px;
+        /* Document title block (right side) */
+        .doc-title-wrap {
+            display: inline-block;
+            text-align: right;
+        }
+
+        .doc-main-title {
+            font-size: 10px;
             font-weight: 700;
-            color: #0066cc;
-            text-align: center;
-            margin: 10px 0 12px 0;
+            color: #1e293b;
             text-transform: uppercase;
-            letter-spacing: 1.2px;
+            letter-spacing: 0.8px;
+            line-height: 1.2;
         }
 
-        /* Info Cards - Side by Side */
-        .info-cards {
+        .doc-main-subtitle {
+            font-size: 7.5px;
+            color: #64748b;
+            margin-top: 2px;
+            font-weight: 400;
+        }
+
+        .doc-id-row {
+            margin-top: 5px;
+        }
+
+        .doc-label {
+            font-size: 6.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .doc-id {
+            font-size: 8.5px;
+            font-weight: 700;
+            color: #475569;
+        }
+
+        /* ── BODY ── */
+        .body-wrap {
+            padding: 14px 22px 170px 22px;
+        }
+
+        /* ── INFO BAND ── */
+        .info-band {
             display: table;
             width: 100%;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            overflow: hidden;
         }
 
-        .info-card {
+        .band-header-row {
+            display: table;
+            width: 100%;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .band-header-cell {
             display: table-cell;
             width: 50%;
-            padding: 8px;
-            background: #f8f9fc;
-            border: 1px solid #e1e4e8;
+            padding: 5px 11px;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .band-header-cell:last-child { border-right: none; }
+
+        .band-title {
+            font-size: 6.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #64748b;
+        }
+
+        .band-body-row {
+            display: table;
+            width: 100%;
+        }
+
+        .band-col {
+            display: table-cell;
+            width: 50%;
+            padding: 9px 11px;
+            vertical-align: top;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .band-col:last-child { border-right: none; }
+
+        .field-row {
+            display: table;
+            width: 100%;
+            margin-bottom: 4px;
+        }
+
+        .field-row:last-child { margin-bottom: 0; }
+
+        .field-label {
+            display: table-cell;
+            width: 38%;
+            font-size: 7.5px;
+            color: #94a3b8;
+            font-weight: 400;
             vertical-align: top;
         }
 
-        .info-card:first-child {
-            border-right: none;
-        }
-
-        .card-header {
-            font-size: 9px;
-            font-weight: 700;
-            color: #0066cc;
-            margin-bottom: 6px;
-            padding-bottom: 3px;
-            border-bottom: 1px solid #d1d5db;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .info-row {
-            margin-bottom: 3px;
-            display: table;
-            width: 100%;
-        }
-
-        .info-label {
+        .field-sep {
             display: table-cell;
-            width: 40%;
-            font-size: 8px;
-            color: #666;
-            padding: 2px 0;
+            width: 10px;
+            font-size: 7.5px;
+            color: #cbd5e1;
+            vertical-align: top;
+            text-align: center;
         }
 
-        .info-value {
+        .field-value {
             display: table-cell;
             font-size: 8px;
-            color: #1a1a1a;
+            color: #1e293b;
             font-weight: 600;
-            padding: 2px 0;
+            vertical-align: top;
         }
 
         .badge {
             display: inline-block;
-            padding: 2px 6px;
-            font-size: 7px;
+            padding: 1.5px 7px;
+            font-size: 6.5px;
             font-weight: 700;
-            border-radius: 2px;
+            border-radius: 20px;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.4px;
         }
 
-        .badge-success {
-            background: #10b981;
-            color: white;
-        }
+        .badge-approved { background: #dcfce7; color: #15803d; }
+        .badge-pending  { background: #fef9c3; color: #a16207; }
 
-        .badge-warning {
-            background: #f59e0b;
-            color: white;
-        }
-
-        /* Table Styles */
-        .section {
-            margin-bottom: 10px;
-        }
-
-        .section-title {
-            font-size: 9px;
+        /* ── SECTION LABEL ── */
+        .section-label {
+            font-size: 6.5px;
             font-weight: 700;
-            color: #0066cc;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #64748b;
             margin-bottom: 5px;
-            padding: 4px 6px;
-            background: #f0f4ff;
-            border-left: 3px solid #0066cc;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        /* ── TABLE ── */
+        .table-wrap {
+            border: 1px solid #e2e8f0;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            overflow: hidden;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 8px;
         }
 
-        table th {
-            background: #0066cc;
-            color: white;
-            padding: 5px 6px;
+        /* rowspan header */
+        table thead tr.th-top th,
+        table thead tr.th-sub th {
+            padding: 4px 5px;
             text-align: left;
-            font-size: 8px;
-            font-weight: 600;
-            border: 1px solid #0052a3;
-        }
-
-        table td {
-            padding: 4px 6px;
-            border: 1px solid #e1e4e8;
-            font-size: 8px;
-        }
-
-        table tbody tr:nth-child(even) {
-            background: #f8f9fc;
-        }
-
-        table tbody tr:hover {
-            background: #f0f4ff;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .text-right {
-            text-align: right;
-        }
-
-        .text-bold {
+            font-size: 7px;
             font-weight: 700;
+            color: #475569;
+            letter-spacing: 0.2px;
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+            white-space: nowrap;
         }
 
-        .subtotal-row {
-            background: #e5edff !important;
-            font-weight: 700;
-            color: #0066cc;
-        }
-
-        .total-row {
-            background: #0066cc !important;
-            color: white !important;
-            font-weight: 700;
-        }
-
-        .total-row td {
-            border-color: #0052a3 !important;
-        }
-
-        /* Balance Section - Bottom */
-        .balance-section {
-            margin-top: 12px;
-            padding: 8px;
-            background: #f8f9fc;
-            border: 1px solid #e1e4e8;
-        }
-
-        .balance-title {
-            font-size: 9px;
-            font-weight: 700;
-            color: #0066cc;
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .balance-grid {
-            display: table;
-            width: 100%;
-        }
-
-        .balance-row {
-            display: table-row;
-        }
-
-        .balance-cell {
-            display: table-cell;
-            width: 25%;
-            padding: 6px 4px;
-            text-align: center;
-            border-right: 1px solid #d1d5db;
-        }
-
-        .balance-cell:last-child {
+        table thead tr.th-top th:last-child,
+        table thead tr.th-sub th:last-child {
             border-right: none;
         }
 
-        .balance-label {
-            font-size: 7px;
-            color: #666;
-            margin-bottom: 2px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
+        table thead tr.th-sub th {
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
         }
 
-        .balance-value {
+        .th-group {
+            text-align: center !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+
+        table th.ar { text-align: right; }
+        table th.ac { text-align: center; }
+
+        table td {
+            padding: 4px 5px;
+            border-bottom: 1px solid #f1f5f9;
+            border-right: 1px solid #f1f5f9;
+            font-size: 7.5px;
+            color: #334155;
+            vertical-align: middle;
+        }
+
+        table td:last-child { border-right: none; }
+        table tbody tr:last-child td { border-bottom: none; }
+        table tbody tr:nth-child(even) td { background: #fafafa; }
+
+        .ar  { text-align: right; }
+        .ac  { text-align: center; }
+        .fw  { font-weight: 700; }
+        .tm  { color: #94a3b8; }
+        .num { font-variant-numeric: tabular-nums; }
+
+        /* total row */
+        .tr-total td {
+            background: #475569 !important;
+            color: #f8fafc !important;
+            font-weight: 700;
+            font-size: 7.5px;
+            border: none !important;
+            padding: 5px 5px;
+        }
+
+        /* ── SUMMARY ── */
+        .summary {
+            display: table;
+            width: 100%;
+            border: 1px solid #e2e8f0;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+            overflow: hidden;
+        }
+
+        .summary-cell {
+            display: table-cell;
+            padding: 6px 10px;
+            border-right: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        .summary-cell:last-child { border-right: none; }
+
+        .summary-label {
+            font-size: 6.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-bottom: 1px;
+        }
+
+        .summary-value {
             font-size: 9px;
             font-weight: 700;
-            color: #0066cc;
+            color: #1e293b;
+            font-variant-numeric: tabular-nums;
         }
 
-        /* Fixed Signature Section at Bottom */
-        .signature-section {
+        /* ── NOTES ── */
+        .notes-wrap {
+            margin-top: 10px;
+            width: 50%;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .notes-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .notes-table thead tr th {
+            background: #f8fafc;
+            padding: 4px 8px;
+            font-size: 6.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #64748b;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+        }
+
+        .notes-table tbody td {
+            padding: 3px 8px;
+            font-size: 7.5px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+            color: #475569;
+        }
+
+        .notes-table tbody tr:last-child td { border-bottom: none; }
+
+        .notes-table tbody td.note-term {
+            font-weight: 600;
+            color: #64748b;
+            white-space: nowrap;
+            width: 1%;
+        }
+
+        .notes-table tbody td.note-sep {
+            color: #cbd5e1;
+            width: 10px;
+            text-align: center;
+            padding-left: 4px;
+            padding-right: 4px;
+        }
+
+        /* ── SIGNATURE ── */
+        .sig-wrap {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: white;
-            border-top: 2px solid #0066cc;
-            padding: 10px 15px 8px 15px;
-            page-break-inside: avoid;
+            background: #fff;
+            border-top: 1px solid #e2e8f0;
+            padding: 40px 22px 12px 22px;
         }
 
-        .signature-grid {
+        .sig-grid {
             display: table;
             width: 100%;
+            margin-bottom: 7px;
         }
 
-        .signature-cell {
+        .sig-col {
             display: table-cell;
             width: 50%;
-            padding: 6px;
+            padding-right: 18px;
             vertical-align: top;
         }
 
-        .signature-box {
-            text-align: center;
-            border: 1px solid #e1e4e8;
-            padding: 8px;
-            min-height: 90px;
-            background: #f8f9fc;
+        .sig-col:last-child {
+            padding-right: 0;
+            padding-left: 18px;
+            border-left: 1px solid #e2e8f0;
         }
 
-        .signature-title {
+        .sig-role {
+            font-size: 6.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-bottom: 44px;
+        }
+
+        .sig-line {
+            border-top: 1px solid #cbd5e1;
+            padding-top: 3px;
+        }
+
+        .sig-name {
             font-size: 8px;
             font-weight: 700;
-            margin-bottom: 35px;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: #1e293b;
         }
 
-        .signature-name {
-            font-size: 9px;
-            font-weight: 700;
-            border-top: 1px solid #1a1a1a;
-            padding-top: 3px;
-            display: inline-block;
-            min-width: 120px;
-            color: #1a1a1a;
-        }
-
-        .signature-position {
+        .sig-pos {
             font-size: 7px;
-            color: #666;
-            margin-top: 2px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
+            color: #94a3b8;
+            margin-top: 1px;
         }
 
-        /* Footer */
-        .footer {
+        .sig-footer {
             text-align: center;
-            font-size: 7px;
-            color: #999;
-            margin-top: 6px;
+            font-size: 6.5px;
+            color: #cbd5e1;
+            margin-top: 5px;
         }
 
-        .page-break {
-            page-break-after: always;
-        }
-
-        /* Amount highlight */
-        .amount-highlight {
-            color: #0066cc;
-            font-weight: 700;
+        /* ── BOTTOM ACCENT ── */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #64748b;
         }
     </style>
 </head>
 <body>
-    <div class="content-wrapper">
-        <!-- HEADER -->
-        <div class="header">
-            <div class="header-content">
-                @if(isset($company) && isset($company->logo) && $company->logo)
-                <div class="logo-section">
-                    <img src="{{ $company->logo }}" alt="Logo" class="company-logo">
-                </div>
-                @endif
-                <div class="company-info">
-                    <div class="company-name">{{ $company->company_name ?? '-' }}</div>
-                    <div class="doc-subtitle">Medical Reimbursement Form</div>
-                </div>
+
+<div class="top-bar"></div>
+
+{{-- ── HEADER ── --}}
+<div class="header">
+    <div class="header-left">
+        @if(isset($company) && isset($company->logo) && $company->logo)
+            <img src="{{ $company->logo }}" class="company-logo" alt="Logo">
+        @endif
+        <div class="company-name">{{ $company->company_name ?? '-' }}</div>
+        <div class="company-sub">Human Resources Department</div>
+    </div>
+    <div class="header-right">
+        <div class="doc-title-wrap">
+            <div class="doc-main-title">Medical Reimbursement</div>
+            <div class="doc-main-subtitle">Approval Document</div>
+            <div class="doc-id-row">
+                <span class="doc-label">No. &nbsp;</span>
+                <span class="doc-id">{{ $reimbursement->id_recapan ?? '-' }}</span>
+            </div>
+             <div class="doc-id-row" style="margin-top: 3px;">
+                <span class="doc-label">Dibuat Tanggal &nbsp;</span>
+                <span class="doc-id">
+                    {{ isset($reimbursement->created_at)
+                        ? \Carbon\Carbon::parse($reimbursement->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y')
+                        : '-' }}
+                </span>
             </div>
         </div>
+    </div>
+</div>
 
-        <!-- DOCUMENT TITLE -->
-        <div class="doc-title">Medical Reimbursement Form</div>
+{{-- ── BODY ── --}}
+<div class="body-wrap">
 
-        <!-- INFO CARDS - SIDE BY SIDE -->
-        <div class="info-cards">
-            <!-- Reimbursement Info Card -->
-            <div class="info-card">
-                <div class="card-header">Reimbursement Details</div>
-                <div class="info-row">
-                    <div class="info-label">ID Recap</div>
-                    <div class="info-value">{{ $reimbursement->id_recapan ?? '-' }}</div>
+    {{-- ── INFO BAND ── --}}
+    <div class="info-band">
+        <div class="band-header-row">
+            <div class="band-header-cell">
+                <div class="band-title">Employee Information</div>
+            </div>
+            <div class="band-header-cell">
+                <div class="band-title">Reimbursement Details</div>
+            </div>
+        </div>
+        <div class="band-body-row">
+            <div class="band-col">
+                <div class="field-row">
+                    <div class="field-label">Full Name</div>
+                    <div class="field-sep">:</div>
+                    <div class="field-value">{{ $karyawan->nama_lengkap ?? '-' }}</div>
                 </div>
-                <div class="info-row">
-                    <div class="info-label">Period</div>
-                    <div class="info-value">{{ isset($reimbursement->periode_slip) ? \Carbon\Carbon::parse($reimbursement->periode_slip . '-01')->format('F Y') : '-' }}</div>
+                <div class="field-row">
+                    <div class="field-label">NIK</div>
+                    <div class="field-sep">:</div>
+                    <div class="field-value">{{ $karyawan->nik ?? '-' }}</div>
                 </div>
-                <div class="info-row">
-                    <div class="info-label">Budget Year</div>
-                    <div class="info-value">{{ $reimbursement->year_budget ?? '-' }}</div>
+                <div class="field-row">
+                    <div class="field-label">Email</div>
+                    <div class="field-sep">:</div>
+                    <div class="field-value">{{ $karyawan->email_pribadi ?? '-' }}</div>
                 </div>
-                <div class="info-row">
-                    <div class="info-label">Status</div>
-                    <div class="info-value">
+                <div class="field-row">
+                    <div class="field-label">Phone</div>
+                    <div class="field-sep">:</div>
+                    <div class="field-value">{{ $karyawan->telp_pribadi ?? '-' }}</div>
+                </div>
+            </div>
+            <div class="band-col">
+                <div class="field-row">
+                    <div class="field-label">ID Recap</div>
+                    <div class="field-sep">:</div>
+                    <div class="field-value">{{ $reimbursement->id_recapan ?? '-' }}</div>
+                </div>
+                <div class="field-row">
+                    <div class="field-label">Period</div>
+                    <div class="field-sep">:</div>
+                    <div class="field-value">
+                        {{ isset($reimbursement->periode_slip)
+                            ? \Carbon\Carbon::parse($reimbursement->periode_slip . '-01')->format('F Y')
+                            : '-' }}
+                    </div>
+                </div>
+                <div class="field-row">
+                    <div class="field-label">Budget Year</div>
+                    <div class="field-sep">:</div>
+                    <div class="field-value">{{ $reimbursement->year_budget ?? '-' }}</div>
+                </div>
+                <div class="field-row">
+                    <div class="field-label">Status</div>
+                    <div class="field-sep">:</div>
+                    <div class="field-value">
                         @if(isset($reimbursement->status) && $reimbursement->status)
-                            <span class="badge badge-success">Approved</span>
+                            <span class="badge badge-approved">Approved</span>
                         @else
-                            <span class="badge badge-warning">Pending</span>
+                            <span class="badge badge-pending">Pending</span>
                         @endif
                     </div>
                 </div>
                 @if(isset($reimbursement->approved_at) && $reimbursement->approved_at)
-                <div class="info-row">
-                    <div class="info-label">Approved Date</div>
-                    <div class="info-value">{{ \Carbon\Carbon::parse($reimbursement->approved_at)->format('d M Y') }}</div>
+                <div class="field-row">
+                    <div class="field-label">Approved Date</div>
+                    <div class="field-sep">:</div>
+                    <div class="field-value">
+                        {{ \Carbon\Carbon::parse($reimbursement->approved_at)->format('d M Y') }}
+                    </div>
                 </div>
                 @endif
             </div>
-
-            <!-- Employee Info Card -->
-            <div class="info-card">
-                <div class="card-header">Employee Information</div>
-                <div class="info-row">
-                    <div class="info-label">Full Name</div>
-                    <div class="info-value">{{ $karyawan->nama_lengkap ?? '-' }}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">NIK</div>
-                    <div class="info-value">{{ $karyawan->nik ?? '-' }}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Email</div>
-                    <div class="info-value">{{ $karyawan->email_pribadi ?? '-' }}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Phone</div>
-                    <div class="info-value">{{ $karyawan->telp_pribadi ?? '-' }}</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- GENERAL MEDICAL ITEMS -->
-        @if(isset($generalChilds) && $generalChilds->count() > 0)
-        <div class="section">
-            <div class="section-title">General Medical Expenses</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 4%;">No</th>
-                        <th style="width: 24%;">Medical Type</th>
-                        <th style="width: 18%;">Disease Type</th>
-                        <th style="width: 14%;">Family Status</th>
-                        <th style="width: 26%;">Notes</th>
-                        <th style="width: 14%;">Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php $generalTotal = 0; @endphp
-                    @foreach($generalChilds as $index => $child)
-                    @php $generalTotal += $child->harga ?? 0; @endphp
-                    <tr>
-                        <td class="text-center">{{ $index + 1 }}</td>
-                        <td>{{ isset($child->reimbursementType) ? ($child->reimbursementType->medical_type ?? '-') : '-' }}</td>
-                        <td>{{ $child->jenis_penyakit ?? '-' }}</td>
-                        <td>{{ $child->status_keluarga ?? '-' }}</td>
-                        <td>{{ $child->note ?? '-' }}</td>
-                        <td class="text-right amount-highlight">Rp {{ number_format($child->harga ?? 0, 0, ',', '.') }}</td>
-                    </tr>
-                    @endforeach
-                    <tr class="subtotal-row">
-                        <td colspan="5" class="text-right">Subtotal General:</td>
-                        <td class="text-right">Rp {{ number_format($generalTotal, 0, ',', '.') }}</td>
-                        <td colspan="6"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        @endif
-
-        <!-- OTHER MEDICAL ITEMS -->
-        @if(isset($otherChilds) && $otherChilds->count() > 0)
-        <div class="section">
-            <div class="section-title">Other Medical Expenses</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 4%;">No</th>
-                        <th style="width: 24%;">Medical Type</th>
-                        <th style="width: 18%;">Disease Type</th>
-                        <th style="width: 14%;">Family Status</th>
-                        <th style="width: 26%;">Notes</th>
-                        <th style="width: 14%;">Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php $otherTotal = 0; @endphp
-                    @foreach($otherChilds as $index => $child)
-                    @php $otherTotal += $child->harga ?? 0; @endphp
-                    <tr>
-                        <td class="text-center">{{ $index + 1 }}</td>
-                        <td>{{ isset($child->reimbursementType) ? ($child->reimbursementType->medical_type ?? '-') : '-' }}</td>
-                        <td>{{ $child->jenis_penyakit ?? '-' }}</td>
-                        <td>{{ $child->status_keluarga ?? '-' }}</td>
-                        <td>{{ $child->note ?? '-' }}</td>
-                        <td class="text-right amount-highlight">Rp {{ number_format($child->harga ?? 0, 0, ',', '.') }}</td>
-                    </tr>
-                    @endforeach
-                    <tr class="subtotal-row">
-                        <td colspan="5" class="text-right">Subtotal Other:</td>
-                        <td class="text-right">Rp {{ number_format($otherTotal, 0, ',', '.') }}</td>
-                        <td colspan="6"></td>
-                    </tr>
-                    <br>
-                    <br>
-                    <tr class="total-row">
-                        <td colspan="5" class="text-right" style="font-size: 10px;">TOTAL REIMBURSEMENT:</td>
-                        <td class="text-right" style="font-size: 10px;">Rp {{ number_format($totalAmount ?? 0, 0, ',', '.') }}</td>
-                        <td colspan="6"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        @endif
-
-
-        <!-- BALANCE INFORMATION (MOVED TO BOTTOM) -->
-        @if(isset($balance) && $balance)
-        <div class="balance-section">
-            <div class="balance-title">Budget Balance - Year {{ $balance->year ?? '-' }}</div>
-            <div class="balance-grid">
-                <div class="balance-row">
-                    <div class="balance-cell">
-                        <div class="balance-label">Budget Claim</div>
-                        <div class="balance-value">Rp {{ number_format($balance->budget_claim ?? 0, 0, ',', '.') }}</div>
-                    </div>
-                    <div class="balance-cell">
-                        <div class="balance-label">Total Used</div>
-                        <div class="balance-value">Rp {{ number_format($balance->total_used ?? 0, 0, ',', '.') }}</div>
-                    </div>
-                    <div class="balance-cell">
-                        <div class="balance-label">This Claim</div>
-                        <div class="balance-value">Rp {{ number_format($totalAmount ?? 0, 0, ',', '.') }}</div>
-                    </div>
-                    <div class="balance-cell">
-                        <div class="balance-label">Remaining</div>
-                        <div class="balance-value">Rp {{ number_format($balance->sisa_budget ?? 0, 0, ',', '.') }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endif
-    </div>
-
-    <!-- FIXED SIGNATURE SECTION AT BOTTOM -->
-    <div class="signature-section">
-        <div class="signature-grid">
-            <div class="signature-cell">
-                <div class="signature-box">
-                    <div class="signature-title">Prepared By</div>
-                    <div style="margin-top: 35px;">
-                        <div class="signature-name">{{ isset($preparedBy) ? ($preparedBy->name ?? '-') : '-' }}</div>
-                        <div class="signature-position">Staff</div>
-                    </div>
-                </div>
-            </div>
-            <div class="signature-cell">
-                <div class="signature-box">
-                    <div class="signature-title">Approved By</div>
-                    <div style="margin-top: 35px;">
-                        <div class="signature-name">{{ isset($approver) ? ($approver->nama_lengkap ?? '-') : '-' }}</div>
-                        <div class="signature-position">Manager</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="footer">
-            <div>Generated on {{ $printDate ?? now()->format('d F Y H:i') }} | {{ $company->company_name ?? '-' }} - Medical Reimbursement System</div>
         </div>
     </div>
+
+    {{-- ── ITEMS TABLE ── --}}
+    @if(isset($childs) && $childs->count() > 0)
+    @php $grandTotal = 0; @endphp
+
+    <div class="section-label">Detail Reimbursement Items</div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                {{-- Row 1: base columns + "Keterangan" group --}}
+                <tr class="th-top">
+                    <th rowspan="2" class="ac" style="width: 3%; vertical-align: middle;">#</th>
+                    <th rowspan="2" style="width: 8%; vertical-align: middle;">Tanggal</th>
+                    <th rowspan="2" style="width: 15%; vertical-align: middle;">Reimburse Untuk</th>
+                    <th rowspan="2" style="width: 12%; vertical-align: middle;">Hubungan dengan Karyawan</th>
+                    <th rowspan="2" style="width: 13%; vertical-align: middle;">Analisa Penyakit</th>
+                    <th colspan="4" class="th-group" style="width: 37%;">Keterangan</th>
+                    <th rowspan="2" class="ar" style="width: 12%; vertical-align: middle;">TOTAL</th>
+                </tr>
+                {{-- Row 2: sub-columns under Keterangan --}}
+                <tr class="th-sub">
+                    <th class="ar" style="width: 10%;">Tagihan Dokter</th>
+                    <th class="ar" style="width: 9%;">Tagihan Obat</th>
+                    <th class="ar" style="width: 10%;">Tagihan Kacamata</th>
+                    <th class="ar" style="width: 8%;">Tagihan Gigi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($childs as $index => $child)
+                    @php
+                        $dokter   = $child->tagihan_dokter   ?? 0;
+                        $obat     = $child->tagihan_obat     ?? 0;
+                        $kacamata = $child->tagihan_kacamata ?? 0;
+                        $gigi     = $child->tagihan_gigi     ?? 0;
+                        $subtotal = $dokter + $obat + $kacamata + $gigi;
+                        $grandTotal += $subtotal;
+                    @endphp
+                    <tr>
+                        <td class="ac tm">{{ $index + 1 }}</td>
+                        <td>{{ $child->tanggal ? \Carbon\Carbon::parse($child->tanggal)->format('d/m/Y') : '-' }}</td>
+                        <td class="fw">{{ $child->nama_reimbursement ?? '-' }}</td>
+                        <td class="tm">{{ $child->status_keluarga ?? '-' }}</td>
+                        <td>{{ $child->jenis_penyakit ?? '-' }}</td>
+                        <td class="ar num">@if($dokter > 0){{ number_format($dokter, 0, ',', '.') }}@else<span class="tm">—</span>@endif</td>
+                        <td class="ar num">@if($obat > 0){{ number_format($obat, 0, ',', '.') }}@else<span class="tm">—</span>@endif</td>
+                        <td class="ar num">@if($kacamata > 0){{ number_format($kacamata, 0, ',', '.') }}@else<span class="tm">—</span>@endif</td>
+                        <td class="ar num">@if($gigi > 0){{ number_format($gigi, 0, ',', '.') }}@else<span class="tm">—</span>@endif</td>
+                        <td class="ar num fw">Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+            <tfoot>
+                <tr class="tr-total">
+                    <td colspan="9" class="ar">Total Reimbursement</td>
+                    <td class="ar num">Rp {{ number_format($grandTotal, 0, ',', '.') }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    {{-- ── SUMMARY ── --}}
+    <div class="summary">
+        <div class="summary-cell" style="width: 50%;">
+            <div class="summary-label">Total Items</div>
+            <div class="summary-value">{{ $childs->count() }} item</div>
+        </div>
+        <div class="summary-cell" style="width: 50%;">
+            <div class="summary-label">Total Klaim</div>
+            <div class="summary-value">Rp {{ number_format($totalAmount ?? $grandTotal, 0, ',', '.') }}</div>
+        </div>
+    </div>
+
+    {{-- ── NOTES ── --}}
+    <div class="notes-wrap">
+        <table class="notes-table">
+            <thead>
+                <tr><th colspan="3">Notes</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="note-term">Reimburse Untuk</td>
+                    <td class="note-sep">:</td>
+                    <td>Nama yang berobat</td>
+                </tr>
+                <tr>
+                    <td class="note-term">Hubungan dengan Karyawan</td>
+                    <td class="note-sep">:</td>
+                    <td>Hubungan dengan karyawan</td>
+                </tr>
+                <tr>
+                    <td class="note-term">Analisa Penyakit</td>
+                    <td class="note-sep">:</td>
+                    <td>Analisis penyakit yang diderita</td>
+                </tr>
+                <tr>
+                    <td class="note-term">Tagihan Dokter</td>
+                    <td class="note-sep">:</td>
+                    <td>Keterangan biaya tindakan / penanganan dokter</td>
+                </tr>
+                <tr>
+                    <td class="note-term">Tagihan Obat</td>
+                    <td class="note-sep">:</td>
+                    <td>Keterangan biaya jenis obat</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    @endif
+
+</div>
+
+{{-- ── SIGNATURE ── --}}
+<div class="sig-wrap">
+    <div class="sig-grid">
+        <div class="sig-col">
+            <div class="sig-role">Prepared By</div>
+            <div class="sig-line">
+                <div class="sig-name">{{ isset($preparedBy) ? ($preparedBy->name ?? '-') : '-' }}</div>
+                <div class="sig-pos">Staff &nbsp;·&nbsp; {{ $printDate ?? now()->format('d F Y') }}</div>
+            </div>
+        </div>
+        <div class="sig-col">
+            <div class="sig-role">Approved By</div>
+            <div class="sig-line">
+                <div class="sig-name">{{ isset($approver) ? ($approver->nama_lengkap ?? '-') : '-' }}</div>
+                <div class="sig-pos">{{ $company->jabatan_ttd ?? 'Manager' }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="sig-footer">
+        Generated {{ $printDate ?? now()->format('d F Y, H:i') }}
+        &nbsp;·&nbsp; {{ $company->company_name ?? '-' }}
+        &nbsp;·&nbsp; Medical Reimbursement System
+    </div>
+</div>
+
+<div class="bottom-bar"></div>
+
 </body>
 </html>

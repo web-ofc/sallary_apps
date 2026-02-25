@@ -130,34 +130,12 @@ class Reimbursement extends Model
         return $this->hasMany(ReimbursementChild::class, 'reimbursement_id', 'id');
     }
 
-    /**
-     * Relasi ke Children - General only
-     */
-    public function generalChilds()
+        public function getTotalAmountAttribute()
     {
-        return $this->hasMany(ReimbursementChild::class, 'reimbursement_id', 'id')
-            ->whereHas('reimbursementType', function($q) {
-                $q->where('group_medical', 'general');
-            });
-    }
-
-    /**
-     * Relasi ke Children - Other only
-     */
-    public function otherChilds()
-    {
-        return $this->hasMany(ReimbursementChild::class, 'reimbursement_id', 'id')
-            ->whereHas('reimbursementType', function($q) {
-                $q->where('group_medical', 'other');
-            });
-    }
-
-    /**
-     * Get total amount dari semua children
-     */
-    public function getTotalAmountAttribute()
-    {
-        return $this->childs()->sum('harga');
+        return $this->childs->sum(fn($c) =>
+            ($c->tagihan_dokter ?? 0) + ($c->tagihan_obat ?? 0) +
+            ($c->tagihan_kacamata ?? 0) + ($c->tagihan_gigi ?? 0)
+        );
     }
 
     /**
