@@ -130,7 +130,7 @@
 
         <!-- ✅ Belum Diinput — klik → sync → redirect ke halaman sync -->
         <div class="col-xl-3 col-md-6">
-            <div id="cardBelumInput"
+            <div id="cardbelumPunyaAkun"
                 onclick="syncAndNavigate()"
                 style="cursor: pointer;"
                 class="card card-xl-stretch mb-xl-8 border border-danger border-dashed card-hover-scale">
@@ -148,7 +148,7 @@
                             </span>
                             <span class="text-muted fw-semibold fs-8">karyawan tanpa akun di apps absen</span>
                         </div>
-                        <div id="cardBelumInputIcon">
+                        <div id="cardbelumPunyaAkunIcon">
                             <i class="fas fa-chevron-right text-danger"></i>
                         </div>
                     </div>
@@ -187,6 +187,7 @@ function loadPeriodes() {
                 $('#periodeFilter').html(options);
                 currentPeriode = response.data[0];
                 loadStatistics();
+                updateCardBelumInputLink();
             } else {
                 $('#periodeFilter').html('<option value="">Tidak ada data</option>');
             }
@@ -196,7 +197,6 @@ function loadPeriodes() {
         }
     });
 }
-
 function loadStatistics() {
     if (!currentPeriode) return;
 
@@ -217,12 +217,19 @@ function loadStatistics() {
                 $('#releasedSlip').text(d.released_slip);
                 $('#belumInput').text(d.belum_input);
                 $('#belumPunyaAkun').text(d.belum_punya_akun);
+                updateCardBelumInputLink(); // ← tambahkan ini
             }
         },
         error: function () {
             console.error('Error loading statistics');
         }
     });
+}
+
+// ← tambahkan fungsi ini
+function updateCardBelumInputLink() {
+    let url = '{{ route("dashboard.karyawan-belum-input") }}' + '?periode=' + currentPeriode;
+    $('#cardBelumInput').attr('href', url);
 }
 
 function formatPeriode(periode) {
@@ -233,12 +240,12 @@ function formatPeriode(periode) {
 
 // ✅ Klik card → sync dulu (background) → redirect ke halaman sync
 function syncAndNavigate() {
-    const icon      = $('#cardBelumInputIcon');
+    const icon      = $('#cardbelumPunyaAkunIcon');
     const targetUrl = '{{ route("sync-karyawan-without-user.index") }}';
 
     // Disable card + spinner
     icon.html('<span class="spinner-border spinner-border-sm text-danger"></span>');
-    $('#cardBelumInput').css('pointer-events', 'none');
+    $('#cardbelumPunyaAkun').css('pointer-events', 'none');
 
     $.ajax({
         url: '{{ route("sync-karyawan-without-user.sync") }}',

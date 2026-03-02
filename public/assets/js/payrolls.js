@@ -327,19 +327,39 @@ $(document).ready(function () {
                 headers: { "X-CSRF-TOKEN": CONFIG.csrf },
                 data: function (d) {
                     d.periode = $("#" + filterId).val();
-                     const tab = filterId
-                         .replace("filterPeriode", "")
-                         .toLowerCase(); // "pending" | "released" | "releasedslip"
-                     d.without_user = $("#toggleWithoutUser_" + tab).is(
-                         ":checked",
-                     )
-                         ? 1
-                         : 0;
+                    const tab = filterId
+                        .replace("filterPeriode", "")
+                        .toLowerCase();
+                    d.without_user = $("#toggleWithoutUser_" + tab).is(
+                        ":checked",
+                    )
+                        ? 1
+                        : 0;
                     d.without_slip = $("#toggleWithoutslip_" + tab).is(
                         ":checked",
                     )
                         ? 1
                         : 0;
+
+                    // ← tambah ini
+                    console.log("[DEBUG] dtOptions data sent:", {
+                        tab: tab,
+                        filterId: filterId,
+                        without_user_el: "#toggleWithoutUser_" + tab,
+                        without_user_found: $("#toggleWithoutUser_" + tab)
+                            .length,
+                        without_user_checked: $("#toggleWithoutUser_" + tab).is(
+                            ":checked",
+                        ),
+                        without_slip_el: "#toggleWithoutslip_" + tab,
+                        without_slip_found: $("#toggleWithoutslip_" + tab)
+                            .length,
+                        without_slip_checked: $("#toggleWithoutslip_" + tab).is(
+                            ":checked",
+                        ),
+                        d_without_user: d.without_user,
+                        d_without_slip: d.without_slip,
+                    });
                 },
             },
             columns: columns,
@@ -416,29 +436,40 @@ $(document).ready(function () {
     $("#filterPeriodePending").on("change", function () {
         if (tablePending) tablePending.ajax.reload();
     });
-    $("#toggleWithoutUser_pending").on("change", function () {
-        if (tablePending) tablePending.ajax.reload();
-    });
+   // Toggle "Belum Punya Akun" — Pending
+$("#toggleWithoutUser_pending").on("change", function () {
+    console.log('[DEBUG] toggleWithoutUser_pending changed:', $(this).is(":checked"));
+    console.log('[DEBUG] tablePending exists:', !!tablePending);
+    if (tablePending) tablePending.ajax.reload();
+});
 
-    // Toggle "Belum Punya Akun" — Released
-    $("#toggleWithoutUser_released").on("change", function () {
-        if (tableReleased) tableReleased.ajax.reload();
-    });
+// Toggle "Belum Punya Akun" — Released
+$("#toggleWithoutUser_released").on("change", function () {
+    console.log('[DEBUG] toggleWithoutUser_released changed:', $(this).is(":checked"));
+    console.log('[DEBUG] tableReleased exists:', !!tableReleased);
+    if (tableReleased) tableReleased.ajax.reload();
+});
 
-    // Toggle "Belum Punya Akun" — ReleasedSlip
-    $("#toggleWithoutUser_releasedslip").on("change", function () {
-        if (tableReleasedSlip) tableReleasedSlip.ajax.reload();
-    });
+// Toggle "Belum Punya Akun" — ReleasedSlip
+$("#toggleWithoutUser_releasedslip").on("change", function () {
+    console.log('[DEBUG] toggleWithoutUser_releasedslip changed:', $(this).is(":checked"));
+    console.log('[DEBUG] tableReleasedSlip exists:', !!tableReleasedSlip);
+    if (tableReleasedSlip) tableReleasedSlip.ajax.reload();
+});
 
-    // Toggle "Belum Download Slip" — Released
-    $("#toggleWithoutslip_released").on("change", function () {
-        if (tableReleased) tableReleased.ajax.reload();
-    });
+// Toggle "Belum Download Slip" — Released
+$("#toggleWithoutslip_released").on("change", function () {
+    console.log('[DEBUG] toggleWithoutslip_released changed:', $(this).is(":checked"));
+    console.log('[DEBUG] tableReleased exists:', !!tableReleased);
+    if (tableReleased) tableReleased.ajax.reload();
+});
 
-    // Toggle "Belum Download Slip" — ReleasedSlip
-    $("#toggleWithoutslip_releasedslip").on("change", function () {
-        if (tableReleasedSlip) tableReleasedSlip.ajax.reload();
-    });
+// Toggle "Belum Download Slip" — ReleasedSlip
+$("#toggleWithoutslip_releasedslip").on("change", function () {
+    console.log('[DEBUG] toggleWithoutslip_releasedslip changed:', $(this).is(":checked"));
+    console.log('[DEBUG] tableReleasedSlip exists:', !!tableReleasedSlip);
+    if (tableReleasedSlip) tableReleasedSlip.ajax.reload();
+});
     
      $("#btnResetFilterPending").on("click", function () {
          $("#filterPeriodePending").val("");
