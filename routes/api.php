@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\PayrollApiController;
 use App\Http\Controllers\Api\ReimbursementApiController;
 use App\Http\Controllers\Api\ReimbursementFileApiController;
 use App\Http\Controllers\CompanyViewController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\JenisTerSyncController;
 use App\Http\Controllers\KaryawanPtkpHistorySyncController;
 use App\Http\Controllers\KaryawanSyncController;
@@ -28,6 +29,8 @@ use Illuminate\Support\Facades\Route;
     Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
         return $request->user();
     });
+
+    
 
     Route::prefix('karyawan')->group(function () {
         
@@ -194,4 +197,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/years/{karyawan_id}', [ReimbursementFileApiController::class, 'getAvailableYears'])
             ->name('years');
     });
+
+    
+  
 });
+

@@ -10,6 +10,21 @@
         <button type="button" class="btn btn-sm btn-light-primary" id="btnResetFilterReleasedSlip">
             <i class="ki-outline ki-arrows-circle fs-5"></i>
         </button>
+         {{-- ✅ Filter: Belum Punya Akun --}}
+        <div class="form-check form-check-custom form-check-solid ms-2"
+             title="Tampilkan hanya karyawan yang belum punya akun di apps absen">
+            <input class="form-check-input" type="checkbox" id="toggleWithoutUser_releasedslip" />
+            <label class="form-check-label fw-semibold fs-7 text-gray-700 ms-2" for="toggleWithoutUser_releasedslip">
+                Belum Punya Akun
+            </label>
+        </div>
+        <div class="form-check form-check-custom form-check-solid ms-2"
+                title="Tampilan untuk melihat karyawan yang sudah di downlaod slip">
+            <input type="checkbox" class="form-check-input" id="toggleWithoutslip_releasedslip"/>
+            <label for="toggleWithoutslip_releasedslip" class="form-check-label fw-semibold fs-7 text-gray-700 ms-2">
+                Belum download slip
+            </label>
+        </div>
     </div>
     <button type="button" class="btn btn-sm btn-light-success" id="btnExportReleasedSlip">
         <i class="ki-outline ki-file-down fs-3"></i> Export

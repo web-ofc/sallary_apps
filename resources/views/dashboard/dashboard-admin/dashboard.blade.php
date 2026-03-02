@@ -128,6 +128,34 @@
             </a>
         </div>
 
+        <!-- ✅ Belum Diinput — klik → sync → redirect ke halaman sync -->
+        <div class="col-xl-3 col-md-6">
+            <div id="cardBelumInput"
+                onclick="syncAndNavigate()"
+                style="cursor: pointer;"
+                class="card card-xl-stretch mb-xl-8 border border-danger border-dashed card-hover-scale">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="symbol symbol-50px me-5">
+                            <span class="symbol-label bg-light-danger">
+                                <i class="fas fa-user-times fs-2x text-danger"></i>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <span class="text-gray-700 fw-semibold d-block fs-6">Belum Punya Akun</span>
+                            <span class="text-gray-900 fw-bold d-block fs-2" id="belumPunyaAkun"> {{-- ✅ ganti id --}}
+                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                            </span>
+                            <span class="text-muted fw-semibold fs-8">karyawan tanpa akun di apps absen</span>
+                        </div>
+                        <div id="cardBelumInputIcon">
+                            <i class="fas fa-chevron-right text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
     </div>
 </div>
@@ -142,7 +170,6 @@ $(document).ready(function () {
     $('#periodeFilter').change(function () {
         currentPeriode = $(this).val();
         loadStatistics();
-        updateCardBelumInputLink();
     });
 });
 
@@ -158,15 +185,13 @@ function loadPeriodes() {
                     options += `<option value="${periode}" ${selected}>${formatPeriode(periode)}</option>`;
                 });
                 $('#periodeFilter').html(options);
-
                 currentPeriode = response.data[0];
                 loadStatistics();
             } else {
                 $('#periodeFilter').html('<option value="">Tidak ada data</option>');
             }
         },
-        error: function (xhr) {
-            console.error('Error loading periodes:', xhr);
+        error: function () {
             $('#periodeFilter').html('<option value="">Error loading</option>');
         }
     });
@@ -175,12 +200,9 @@ function loadPeriodes() {
 function loadStatistics() {
     if (!currentPeriode) return;
 
-    // Reset ke spinner dulu
-    ['totalPayroll', 'draftCount', 'releasedCount', 'releasedSlip', 'belumInput'].forEach(function (id) {
+    ['totalPayroll', 'draftCount', 'releasedCount', 'releasedSlip', 'belumInput','belumPunyaAkun'].forEach(function (id) {
         $('#' + id).html('<span class="spinner-border spinner-border-sm" role="status"></span>');
     });
-
-    
 
     $.ajax({
         url: '{{ route("dashboard.statistics") }}',
@@ -194,11 +216,11 @@ function loadStatistics() {
                 $('#releasedCount').text(d.released_count);
                 $('#releasedSlip').text(d.released_slip);
                 $('#belumInput').text(d.belum_input);
-                updateCardBelumInputLink(); // ← tambah di sini
+                $('#belumPunyaAkun').text(d.belum_punya_akun);
             }
         },
-        error: function (xhr) {
-            console.error('Error loading statistics:', xhr);
+        error: function () {
+            console.error('Error loading statistics');
         }
     });
 }
@@ -209,9 +231,27 @@ function formatPeriode(periode) {
     return `${monthNames[parseInt(month) - 1]} ${year}`;
 }
 
-function updateCardBelumInputLink() {
-    let url = '{{ route("dashboard.karyawan-belum-input") }}' + '?periode=' + currentPeriode;
-    $('#cardBelumInput').attr('href', url);
+// ✅ Klik card → sync dulu (background) → redirect ke halaman sync
+function syncAndNavigate() {
+    const icon      = $('#cardBelumInputIcon');
+    const targetUrl = '{{ route("sync-karyawan-without-user.index") }}';
+
+    // Disable card + spinner
+    icon.html('<span class="spinner-border spinner-border-sm text-danger"></span>');
+    $('#cardBelumInput').css('pointer-events', 'none');
+
+    $.ajax({
+        url: '{{ route("sync-karyawan-without-user.sync") }}',
+        type: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        success: function () {
+            window.location.href = targetUrl;
+        },
+        error: function () {
+            // Sync gagal → tetap redirect, tampilkan data lama di halaman tujuan
+            window.location.href = targetUrl;
+        }
+    });
 }
 </script>
 @endpush

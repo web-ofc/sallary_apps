@@ -186,6 +186,47 @@
                                                 </tr>
                                             </thead>
                                             <tbody></tbody>
+                                            <tfoot id="validTableFoot" style="display:none;">
+                                                <tr class="fw-bold bg-light fs-7">
+                                                    <td colspan="4"></td>
+                                                    <td class="text-end" id="ft-gaji_pokok">-</td>
+                                                    <td class="text-end" id="ft-monthly_kpi">-</td>
+                                                    <td class="text-end" id="ft-overtime">-</td>
+                                                    <td class="text-end" id="ft-medical_reimbursement">-</td>
+                                                    <td class="text-end" id="ft-insentif_sholat">-</td>
+                                                    <td class="text-end" id="ft-monthly_bonus">-</td>
+                                                    <td class="text-end" id="ft-rapel">-</td>
+                                                    <td class="text-end" id="ft-tunjangan_pulsa">-</td>
+                                                    <td class="text-end" id="ft-tunjangan_kehadiran">-</td>
+                                                    <td class="text-end" id="ft-tunjangan_transport">-</td>
+                                                    <td class="text-end" id="ft-tunjangan_lainnya">-</td>
+                                                    <td class="text-end" id="ft-yearly_bonus">-</td>
+                                                    <td class="text-end" id="ft-thr">-</td>
+                                                    <td class="text-end" id="ft-other">-</td>
+                                                    <td class="text-end" id="ft-ca_corporate">-</td>
+                                                    <td class="text-end" id="ft-ca_personal">-</td>
+                                                    <td class="text-end" id="ft-ca_kehadiran">-</td>
+                                                    <td class="text-end" id="ft-bpjs_tenaga_kerja">-</td>
+                                                    <td class="text-end" id="ft-bpjs_kesehatan">-</td>
+                                                    <td class="text-end" id="ft-pph_21_deduction">-</td>
+                                                    <td class="text-end" id="ft-bpjs_tk_jht_3_7">-</td>
+                                                    <td class="text-end" id="ft-bpjs_tk_jht_2">-</td>
+                                                    <td class="text-end" id="ft-bpjs_tk_jkk">-</td>
+                                                    <td class="text-end" id="ft-bpjs_tk_jkm">-</td>
+                                                    <td class="text-end" id="ft-bpjs_tk_jp_2">-</td>
+                                                    <td class="text-end" id="ft-bpjs_tk_jp_1">-</td>
+                                                    <td class="text-end" id="ft-bpjs_kes_4">-</td>
+                                                    <td class="text-end" id="ft-bpjs_kes_1">-</td>
+                                                    <td class="text-end bg-light" id="ft-pph_21">-</td>
+                                                    <td class="text-end" id="ft-glh">-</td>
+                                                    <td class="text-end" id="ft-lm">-</td>
+                                                    <td class="text-end" id="ft-lainnya">-</td>
+                                                    <td class="text-end" id="ft-tunjangan">-</td>
+                                                    <td class="text-end " id="ft-total_penerimaan">-</td>
+                                                    <td class="text-end " id="ft-total_potongan">-</td>
+                                                    <td class="text-end " id="ft-gaji_bersih">-</td>
+                                                </tr>
+                                            </tfoot>
                                         </table>
                                     </div>
                                 </div>
@@ -928,7 +969,14 @@ function showValidData() {
             url: '{{ route("payrolls.import.datatable.valid") }}',
             type: 'POST',
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            },
+            // ✅ Tambahkan dataSrc untuk capture totals
+            dataSrc: function(json) {
+                if (json.totals) {
+                    renderFooterTotals(json.totals);
+                }
+                return json.data;
             }
         },
         columns: [
@@ -1026,6 +1074,53 @@ function showValidData() {
     $('html, body').animate({
         scrollTop: $('#successSection').offset().top - 100
     }, 500);
+}
+
+function renderFooterTotals(totals) {
+    const fields = [
+        ['gaji_pokok', totals.gaji_pokok],
+        ['monthly_kpi', totals.monthly_kpi],
+        ['overtime', totals.overtime],
+        ['medical_reimbursement', totals.medical_reimbursement],
+        ['insentif_sholat', totals.insentif_sholat],
+        ['monthly_bonus', totals.monthly_bonus],
+        ['rapel', totals.rapel],
+        ['tunjangan_pulsa', totals.tunjangan_pulsa],
+        ['tunjangan_kehadiran', totals.tunjangan_kehadiran],
+        ['tunjangan_transport', totals.tunjangan_transport],
+        ['tunjangan_lainnya', totals.tunjangan_lainnya],
+        ['yearly_bonus', totals.yearly_bonus],
+        ['thr', totals.thr],
+        ['other', totals.other],
+        ['ca_corporate', totals.ca_corporate],
+        ['ca_personal', totals.ca_personal],
+        ['ca_kehadiran', totals.ca_kehadiran],
+        ['bpjs_tenaga_kerja', totals.bpjs_tenaga_kerja],
+        ['bpjs_kesehatan', totals.bpjs_kesehatan],
+        ['pph_21_deduction', totals.pph_21_deduction],
+        ['bpjs_tk_jht_3_7', totals.bpjs_tk_jht_3_7_percent],
+        ['bpjs_tk_jht_2', totals.bpjs_tk_jht_2_percent],
+        ['bpjs_tk_jkk', totals.bpjs_tk_jkk_0_24_percent],
+        ['bpjs_tk_jkm', totals.bpjs_tk_jkm_0_3_percent],
+        ['bpjs_tk_jp_2', totals.bpjs_tk_jp_2_percent],
+        ['bpjs_tk_jp_1', totals.bpjs_tk_jp_1_percent],
+        ['bpjs_kes_4', totals.bpjs_kes_4_percent],
+        ['bpjs_kes_1', totals.bpjs_kes_1_percent],
+        ['pph_21', totals.pph_21],
+        ['glh', totals.glh],
+        ['lm', totals.lm],
+        ['lainnya', totals.lainnya],
+        ['tunjangan', totals.tunjangan],
+        ['total_penerimaan', totals.total_penerimaan],
+        ['total_potongan', totals.total_potongan],
+        ['gaji_bersih', totals.gaji_bersih],
+    ];
+
+    fields.forEach(([id, val]) => {
+        $('#ft-' + id).text(formatRupiah(val));
+    });
+
+    $('#validTableFoot').show();
 }
 
 function showErrorData() {

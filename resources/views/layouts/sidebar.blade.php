@@ -27,24 +27,45 @@
                 
                 <div class="menu menu-column menu-rounded menu-sub-indention fw-semibold fs-6" id="#kt_app_sidebar_menu" data-kt-menu="true" data-kt-menu-expand="false">
                 
-                    {{-- ============================================
-                        DASHBOARD MENU
-                    ============================================ --}}
-                    <div class="menu-item">
-                        <a class="menu-link {{ request()->routeIs('dashboard.admin') ? 'active' : '' }}" 
-                        href="{{ route('dashboard.admin') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-element-11 fs-2">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                    <span class="path3"></span>
-                                    <span class="path4"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">Dashboard</span>
-                        </a>
-                    </div>
+                  {{-- Dashboard Admin --}}
+                    @auth
+                        @if(auth()->user()->role === 'admin')
+                        <div class="menu-item">
+                            <a class="menu-link {{ request()->routeIs('dashboard.admin') ? 'active' : '' }}" 
+                            href="{{ route('dashboard.admin') }}">
+                                <span class="menu-icon">
+                                    <i class="ki-duotone ki-element-11 fs-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                        <span class="path3"></span>
+                                        <span class="path4"></span>
+                                    </i>
+                                </span>
+                                <span class="menu-title">Dashboard</span>
+                            </a>
+                        </div>
+                        @endif
+                    @endauth
 
+                    {{-- Dashboard Management --}}
+                    @auth
+                        @if(auth()->user()->role === 'management')
+                        <div class="menu-item">
+                            <a class="menu-link {{ request()->routeIs('dashboard.management') ? 'active' : '' }}" 
+                            href="{{ route('dashboard.management') }}">
+                                <span class="menu-icon">
+                                    <i class="ki-duotone ki-element-11 fs-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                        <span class="path3"></span>
+                                        <span class="path4"></span>
+                                    </i>
+                                </span>
+                                <span class="menu-title">Dashboard</span>
+                            </a>
+                        </div>
+                        @endif
+                    @endauth
                     {{-- ============================================
                         DIVIDER
                     ============================================ --}}

@@ -93,7 +93,7 @@ class PayrollController extends Controller
             'bpjs_kes_4_percent', 'bpjs_kes_1_percent',
             'glh', 'lm', 'lainnya', 'tunjangan',
             'salary', 'total_penerimaan', 'total_potongan', 'gaji_bersih',
-            'is_released', 'is_released_slip','ptkp_status'
+            'is_released', 'is_released_slip','ptkp_status','slip_downloaded_at'
         ];
     }
 
@@ -120,6 +120,37 @@ class PayrollController extends Controller
         if ($request->filled('periode')) {
             $query->where('periode', $request->periode);
         }
+
+        // (karyawan belum punya akun user di apps absen)
+        if ($request->boolean('without_user')) {
+            $ids = \App\Models\SyncKaryawanWithoutUser::pluck('absen_karyawan_id');
+            
+            \Log::info('without_user filter', [
+                'ids_count' => $ids->count(),
+                'ids' => $ids->take(5)->toArray(), // sample
+            ]);
+            
+            if ($ids->isEmpty()) {
+                // Kalau kosong, return empty result
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->whereIn('karyawan_id', $ids);
+            }
+        }
+
+        if ($request->boolean('without_slip')) {
+            $query->whereNull('slip_downloaded_at');
+            
+            // ✅ Otomatis filter karyawan belum punya akun juga
+            $ids = \App\Models\SyncKaryawanWithoutUser::pluck('absen_karyawan_id');
+            
+            if ($ids->isEmpty()) {
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->whereIn('karyawan_id', $ids);
+            }
+        }
+
 
         return $query;
     }
@@ -150,6 +181,7 @@ class PayrollController extends Controller
 
             return DataTables::eloquent($query)
                 ->addIndexColumn()
+                ->setRowClass(fn($p) => $p->slip_downloaded_at ? 'table-success' : '')  // ← tambah ini
                 ->filter(function ($query) use ($request) {
                     $this->applySearch($query, $request);
                 })
@@ -191,6 +223,10 @@ class PayrollController extends Controller
 
             return DataTables::eloquent($query)
                 ->addIndexColumn()
+                ->setRowClass(fn($p) => $p->slip_downloaded_at ? 'table-success' : '')  // ← tambah ini
+                ->filter(function ($query) use ($request) {
+                    $this->applySearch($query, $request);
+                })
                 ->filter(function ($query) use ($request) {
                     $this->applySearch($query, $request);
                 })
@@ -232,11 +268,14 @@ class PayrollController extends Controller
                 ->where('is_released', 1)
                 ->where('is_released_slip', 1);
 
+
+
             return DataTables::eloquent($query)
-                ->addIndexColumn()
-                ->filter(function ($query) use ($request) {
-                    $this->applySearch($query, $request);
-                })
+                 ->addIndexColumn()
+                    ->setRowClass(fn($p) => $p->slip_downloaded_at ? 'table-success' : '')  // ← tambah ini
+                    ->filter(function ($query) use ($request) {
+                        $this->applySearch($query, $request);
+                    })
                 ->addColumn('checkbox', function ($row) {
                     return '<div class="form-check form-check-sm form-check-custom form-check-solid">
                                 <input class="form-check-input row-checkbox-released-slip" type="checkbox" value="' . $row->id . '" />
@@ -780,7 +819,8 @@ class PayrollController extends Controller
             );
             
             $filename = 'slip-gaji-' . ($karyawan?->nik ?? 'unknown') . '-' . $payroll->periode . '.pdf';
-            
+            Payroll::where('id', $payroll->id)->update(['slip_downloaded_at' => now()]);
+
             return $pdf->download($filename);
             
         } catch (\Exception $e) {
@@ -893,6 +933,7 @@ private function getImageBase64($filename, $folder = 'logos')
         File::deleteDirectory($tmpDir);
         return back()->with('error', 'Gagal membuat ZIP');
     }
+    
 
     try {
         foreach ($payrolls as $p) {
@@ -992,6 +1033,7 @@ private function getImageBase64($filename, $folder = 'logos')
 
             $zip->addFile($filePath, $filename);
         }
+        Payroll::whereIn('id', $payrolls->pluck('id'))->update(['slip_downloaded_at' => now()]);
 
         $zip->close();
 

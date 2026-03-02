@@ -327,6 +327,19 @@ $(document).ready(function () {
                 headers: { "X-CSRF-TOKEN": CONFIG.csrf },
                 data: function (d) {
                     d.periode = $("#" + filterId).val();
+                     const tab = filterId
+                         .replace("filterPeriode", "")
+                         .toLowerCase(); // "pending" | "released" | "releasedslip"
+                     d.without_user = $("#toggleWithoutUser_" + tab).is(
+                         ":checked",
+                     )
+                         ? 1
+                         : 0;
+                    d.without_slip = $("#toggleWithoutslip_" + tab).is(
+                        ":checked",
+                    )
+                        ? 1
+                        : 0;
                 },
             },
             columns: columns,
@@ -403,12 +416,36 @@ $(document).ready(function () {
     $("#filterPeriodePending").on("change", function () {
         if (tablePending) tablePending.ajax.reload();
     });
-    $("#btnResetFilterPending").on("click", function () {
-        $("#filterPeriodePending").val("");
-        $("#searchPending").val("");
-        if (tablePending) tablePending.search("").ajax.reload();
+    $("#toggleWithoutUser_pending").on("change", function () {
+        if (tablePending) tablePending.ajax.reload();
     });
 
+    // Toggle "Belum Punya Akun" — Released
+    $("#toggleWithoutUser_released").on("change", function () {
+        if (tableReleased) tableReleased.ajax.reload();
+    });
+
+    // Toggle "Belum Punya Akun" — ReleasedSlip
+    $("#toggleWithoutUser_releasedslip").on("change", function () {
+        if (tableReleasedSlip) tableReleasedSlip.ajax.reload();
+    });
+
+    // Toggle "Belum Download Slip" — Released
+    $("#toggleWithoutslip_released").on("change", function () {
+        if (tableReleased) tableReleased.ajax.reload();
+    });
+
+    // Toggle "Belum Download Slip" — ReleasedSlip
+    $("#toggleWithoutslip_releasedslip").on("change", function () {
+        if (tableReleasedSlip) tableReleasedSlip.ajax.reload();
+    });
+    
+     $("#btnResetFilterPending").on("click", function () {
+         $("#filterPeriodePending").val("");
+         $("#searchPending").val("");
+         $("#toggleWithoutUser_pending").prop("checked", false);
+         if (tablePending) tablePending.search("").ajax.reload();
+     });
     // Released
     $("#searchReleased").on("keyup", function () {
         if (tableReleased) tableReleased.search(this.value).draw();
@@ -416,11 +453,14 @@ $(document).ready(function () {
     $("#filterPeriodeReleased").on("change", function () {
         if (tableReleased) tableReleased.ajax.reload();
     });
+    
     $("#btnResetFilterReleased").on("click", function () {
-        $("#filterPeriodeReleased").val("");
-        $("#searchReleased").val("");
-        if (tableReleased) tableReleased.search("").ajax.reload();
-    });
+         $("#filterPeriodeReleased").val("");
+         $("#searchReleased").val("");
+         $("#toggleWithoutUser_released").prop("checked", false);
+         $("#toggleWithoutslip_released").prop("checked", false); // ← tambah
+         if (tableReleased) tableReleased.search("").ajax.reload();
+     });
 
     // Released Slip
     $("#searchReleasedSlip").on("keyup", function () {
@@ -432,6 +472,8 @@ $(document).ready(function () {
     $("#btnResetFilterReleasedSlip").on("click", function () {
         $("#filterPeriodeReleasedSlip").val("");
         $("#searchReleasedSlip").val("");
+        $("#toggleWithoutUser_releasedslip").prop("checked", false);
+        $("#toggleWithoutslip_releasedslip").prop("checked", false); 
         if (tableReleasedSlip) tableReleasedSlip.search("").ajax.reload();
     });
 
@@ -479,6 +521,39 @@ $(document).ready(function () {
     }
 
     // ========================================
+    // HELPER: Submit download form + reload table
+    // ========================================
+    function submitDownloadForm(action, ids, onComplete) {
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = action;
+
+        const csrf = document.createElement("input");
+        csrf.type = "hidden";
+        csrf.name = "_token";
+        csrf.value = CONFIG.csrf;
+        form.appendChild(csrf);
+
+        ids.forEach((id) => {
+            const inp = document.createElement("input");
+            inp.type = "hidden";
+            inp.name = "ids[]";
+            inp.value = id;
+            form.appendChild(inp);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+
+        // ✅ Setelah submit, tunggu 3 detik lalu reload datatable
+        // (3 detik cukup untuk server mulai proses, file mulai didownload)
+        setTimeout(function () {
+            if (onComplete) onComplete();
+        }, 3000);
+    }
+
+    // ========================================
     // CHECKBOX — RELEASED
     // ========================================
     $("#checkAllReleased").on("change", function () {
@@ -514,7 +589,6 @@ $(document).ready(function () {
         e.preventDefault();
 
         if (!selectedReleasedIds.length) return;
-
         if (selectedReleasedIds.length > 20) {
             showToast(
                 "Maksimal download 20 slip dalam sekali proses.",
@@ -523,30 +597,16 @@ $(document).ready(function () {
             return;
         }
 
-        // POST form biar langsung download file (ZIP)
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = CONFIG.routes.downloadZip; // kita set di blade config
-
-        const csrf = document.createElement("input");
-        csrf.type = "hidden";
-        csrf.name = "_token";
-        csrf.value = CONFIG.csrf;
-        form.appendChild(csrf);
-
-        selectedReleasedIds.forEach((id) => {
-            const inp = document.createElement("input");
-            inp.type = "hidden";
-            inp.name = "ids[]";
-            inp.value = id;
-            form.appendChild(inp);
-        });
-
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
+        submitDownloadForm(
+            CONFIG.routes.downloadZip,
+            selectedReleasedIds,
+            function () {
+                if (tableReleased) tableReleased.ajax.reload(null, false);
+                if (tableReleasedSlip)
+                    tableReleasedSlip.ajax.reload(null, false);
+            },
+        );
     });
-
 
 
     // ========================================
@@ -691,28 +751,15 @@ $(document).ready(function () {
             return;
         }
 
-        // POST form biar browser langsung download file
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = CONFIG.routes.downloadZip;
-
-        const csrf = document.createElement("input");
-        csrf.type = "hidden";
-        csrf.name = "_token";
-        csrf.value = CONFIG.csrf;
-        form.appendChild(csrf);
-
-        selectedReleasedSlipIds.forEach((id) => {
-            const inp = document.createElement("input");
-            inp.type = "hidden";
-            inp.name = "ids[]";
-            inp.value = id;
-            form.appendChild(inp);
-        });
-
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
+        submitDownloadForm(
+            CONFIG.routes.downloadZip,
+            selectedReleasedSlipIds,
+            function () {
+                if (tableReleasedSlip)
+                    tableReleasedSlip.ajax.reload(null, false);
+                if (tableReleased) tableReleased.ajax.reload(null, false);
+            },
+        );
     });
 
 
@@ -755,6 +802,18 @@ $(document).ready(function () {
                 deletePayrollId = null;
             },
         });
+    });
+
+    // ✅ Intercept single PDF download link → reload table setelahnya
+    $(document).on("click", "a[href*='download-pdf']", function () {
+        const href = $(this).attr("href");
+        
+        setTimeout(function () {
+            if (tableReleased) tableReleased.ajax.reload(null, false);
+            if (tableReleasedSlip) tableReleasedSlip.ajax.reload(null, false);
+        }, 3000);
+        
+        // Biarkan link berjalan normal
     });
 
     // ========================================

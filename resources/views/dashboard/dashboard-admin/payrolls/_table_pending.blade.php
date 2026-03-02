@@ -10,6 +10,14 @@
         <button type="button" class="btn btn-sm btn-light-primary" id="btnResetFilterPending">
             <i class="ki-outline ki-arrows-circle fs-5"></i>
         </button>
+
+        <div class="form-check form-check-custom form-check-solid ms-2"
+             title="Tampilkan hanya karyawan yang belum punya akun di apps absen">
+            <input class="form-check-input" type="checkbox" id="toggleWithoutUser_pending" />
+            <label class="form-check-label fw-semibold fs-7 text-gray-700 ms-2" for="toggleWithoutUser_pending">
+                Belum Punya Akun
+            </label>
+        </div>
     </div>
     <div class="d-flex align-items-center gap-2">
         <button type="button" class="btn btn-sm btn-light-success" id="btnExportPending">

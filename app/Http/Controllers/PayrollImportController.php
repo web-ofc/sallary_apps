@@ -358,11 +358,71 @@ class PayrollImportController extends Controller
             ];
         });
 
+
+        // ✅ Hitung totals dari SEMUA valid rows (bukan hanya page ini)
+        $allData = collect($validRows);
+
+        // Filter dulu kalau ada search
+        if (!empty($search)) {
+            $allData = $allData->filter(function ($row) use ($search) {
+                return stripos($row['periode'], $search) !== false ||
+                    stripos($row['karyawan_nama'] ?? '', $search) !== false ||
+                    stripos($row['karyawan_nik'] ?? '', $search) !== false ||
+                    stripos($row['company_name'] ?? '', $search) !== false;
+            });
+        }
+
+        $numericFields = [
+            'gaji_pokok', 'monthly_kpi', 'overtime', 'medical_reimbursement',
+            'insentif_sholat', 'monthly_bonus', 'rapel',
+            'tunjangan_pulsa', 'tunjangan_kehadiran', 'tunjangan_transport', 'tunjangan_lainnya',
+            'yearly_bonus', 'thr', 'other',
+            'ca_corporate', 'ca_personal', 'ca_kehadiran',
+            'bpjs_tenaga_kerja', 'bpjs_kesehatan', 'pph_21_deduction',
+            'bpjs_tk_jht_3_7_percent', 'bpjs_tk_jht_2_percent', 'bpjs_tk_jkk_0_24_percent',
+            'bpjs_tk_jkm_0_3_percent', 'bpjs_tk_jp_2_percent', 'bpjs_tk_jp_1_percent',
+            'bpjs_kes_4_percent', 'bpjs_kes_1_percent',
+            'pph_21', 'glh', 'lm', 'lainnya', 'tunjangan',
+        ];
+
+        $totals = [];
+        foreach ($numericFields as $field) {
+            $totals[$field] = $allData->sum(fn($r) => $r[$field] ?? 0);
+        }
+
+        // Hitung total_penerimaan, total_potongan, gaji_bersih dari formattedData semua rows
+        // Pakai allData karena formattedData hanya slice page ini
+        $allFormatted = $allData->map(function ($row) {
+            $salaryType = $row['salary_type'] ?? 'gross';
+            $tunjangan = ($salaryType === 'nett') ? ($row['pph_21'] ?? 0) : 0;
+            $bpjsTkPerusahaanIncome = ($row['bpjs_tk_jht_3_7_percent'] ?? 0) + ($row['bpjs_tk_jkk_0_24_percent'] ?? 0) + ($row['bpjs_tk_jkm_0_3_percent'] ?? 0) + ($row['bpjs_tk_jp_2_percent'] ?? 0);
+            $bpjsKesPerusahaanIncome = ($row['bpjs_kes_4_percent'] ?? 0);
+            $bpjsTkPegawaiIncome = ($salaryType === 'nett') ? (($row['bpjs_tk_jht_2_percent'] ?? 0) + ($row['bpjs_tk_jp_1_percent'] ?? 0) + ($row['bpjs_tenaga_kerja'] ?? 0)) : 0;
+            $bpjsKesPegawaiIncome = ($salaryType === 'nett') ? (($row['bpjs_kes_1_percent'] ?? 0) + ($row['bpjs_kesehatan'] ?? 0)) : 0;
+            $totalPenerimaan = ($row['gaji_pokok'] ?? 0) + ($row['monthly_kpi'] ?? 0) + ($row['overtime'] ?? 0) + ($row['medical_reimbursement'] ?? 0) + $bpjsTkPerusahaanIncome + $bpjsKesPerusahaanIncome + $bpjsTkPegawaiIncome + $bpjsKesPegawaiIncome + ($row['insentif_sholat'] ?? 0) + ($row['monthly_bonus'] ?? 0) + ($row['rapel'] ?? 0) + ($row['tunjangan_pulsa'] ?? 0) + ($row['tunjangan_kehadiran'] ?? 0) + ($row['tunjangan_transport'] ?? 0) + ($row['tunjangan_lainnya'] ?? 0) + ($row['yearly_bonus'] ?? 0) + ($row['thr'] ?? 0) + ($row['other'] ?? 0) + $tunjangan;
+            $pphForPotongan = ($salaryType === 'nett') ? -($row['pph_21'] ?? 0) : -($row['pph_21_deduction'] ?? 0);
+            $bpjsTkPerusahaanDeduction = -$bpjsTkPerusahaanIncome;
+            $bpjsKesPerusahaanDeduction = -($row['bpjs_kes_4_percent'] ?? 0);
+            $bpjsTkPegawaiDeduction = -(($row['bpjs_tk_jht_2_percent'] ?? 0) + ($row['bpjs_tk_jp_1_percent'] ?? 0));
+            $bpjsKesPegawaiDeduction = -($row['bpjs_kes_1_percent'] ?? 0);
+            $totalPotongan = ($row['ca_corporate'] ?? 0) + ($row['ca_personal'] ?? 0) + ($row['ca_kehadiran'] ?? 0) + $pphForPotongan + $bpjsTkPerusahaanDeduction + $bpjsTkPegawaiDeduction + $bpjsKesPerusahaanDeduction + $bpjsKesPegawaiDeduction;
+            return [
+                'total_penerimaan' => $totalPenerimaan,
+                'total_potongan'   => $totalPotongan,
+                'gaji_bersih'      => $totalPenerimaan + $totalPotongan,
+            ];
+        });
+
+        $totals['total_penerimaan'] = $allFormatted->sum('total_penerimaan');
+        $totals['total_potongan']   = $allFormatted->sum('total_potongan');
+        $totals['gaji_bersih']      = $allFormatted->sum('gaji_bersih');
+
         return response()->json([
             'draw' => intval($request->input('draw')),
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
-            'data' => $formattedData
+            'data' => $formattedData,
+            'totals'          => $totals,
         ]);
 
     } catch (\Exception $e) {

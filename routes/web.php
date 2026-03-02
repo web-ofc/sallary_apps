@@ -29,6 +29,7 @@ use App\Http\Controllers\ReimbursementController;
 use App\Http\Controllers\ReimbursementFileController;
 use App\Http\Controllers\ReimbursementPeriodController;
 use App\Http\Controllers\SettingCompanyUserController;
+use App\Http\Controllers\SyncKaryawanWithoutUserController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -62,6 +63,20 @@ Route::middleware('auth')->group(function () {
         Route::get('/statistics', [DashboardController::class, 'getStatistics'])->name('dashboard.statistics');
     });
 });
+
+Route::middleware(['auth', 'role:admin,management'])
+    ->prefix('dashboard-management/reimbursement')
+    ->name('dashboard.management.reimbursement.')
+    ->controller(\App\Http\Controllers\DashboardController::class)
+    ->group(function () {
+        Route::get('summary',      'reimbursementSummary');
+        Route::get('tren',         'reimbursementTren');
+        Route::get('top-karyawan', 'reimbursementTopKaryawan');
+        Route::get('per-bulan',    'reimbursementPerBulan');
+        Route::get('periode-aktif','reimbursementPeriodeAktif');
+        Route::get('pengajuan',    'reimbursementPengajuan');
+    });
+
 Route::middleware(['auth', 'role:admin'])->group(function () {
     
     Route::resource('/manage-user', UserController::class);
@@ -177,7 +192,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('payrolls.download-pdf');
         Route::post('/payrolls/download-pdf-zip', [PayrollController::class, 'downloadPdfZip'])
     ->name('payrolls.download-pdf-zip');
-
         
         
 
@@ -412,6 +426,15 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::post('/validate-file', [ReimbursementFileController::class, 'validateFile'])->name('validate-file'); // ✅ NEW
         Route::get('/download/{id}', [ReimbursementFileController::class, 'download'])->name('download');
         Route::get('/get-karyawan-list', [ReimbursementFileController::class, 'getKaryawanList'])->name('get-karyawan-list');
+    });
+
+    
+    Route::post('/dashboard/sync-karyawan-without-user', [DashboardController::class, 'syncKaryawanWithoutUser'])
+        ->name('dashboard.sync-karyawan-without-user');
+    Route::prefix('sync-karyawan-without-user')->name('sync-karyawan-without-user.')->group(function () {
+        Route::get('/',      [SyncKaryawanWithoutUserController::class, 'index'])->name('index');
+        Route::get('/data',  [SyncKaryawanWithoutUserController::class, 'data'])->name('data');
+        Route::post('/sync', [SyncKaryawanWithoutUserController::class, 'sync'])->name('sync');
     });
 });
 
