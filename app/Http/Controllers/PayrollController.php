@@ -123,43 +123,29 @@ class PayrollController extends Controller
 
        // (karyawan belum punya akun user di apps absen)
         if ($request->boolean('without_user')) {
-            try {
-                $ids = \App\Models\SyncKaryawanWithoutUser::pluck('absen_karyawan_id');
-                
-                \Log::info('without_user filter', [
-                    'ids_count' => $ids->count(),
-                    'ids' => $ids->take(5)->toArray(),
-                ]);
-                
-                if ($ids->isEmpty()) {
-                    $query->whereRaw('1 = 0');
-                } else {
-                    $query->whereIn('karyawan_id', $ids);
-                }
-            } catch (\Exception $e) {
-                \Log::error('without_user error: ' . $e->getMessage());
-                return response()->json([
-                    'error' => $e->getMessage(),
-                ], 500);
+            $ids = \App\Models\SyncKaryawanWithoutUser::pluck('absen_karyawan_id');
+            
+            \Log::info('without_user filter', [
+                'ids_count' => $ids->count(),
+                'ids' => $ids->take(5)->toArray(),
+            ]);
+            
+            if ($ids->isEmpty()) {
+                $query->where('id', 0); // ← ganti whereRaw
+            } else {
+                $query->whereIn('karyawan_id', $ids);
             }
         }
 
         if ($request->boolean('without_slip')) {
-            try {
-                $query->whereNull('slip_downloaded_at');
-                
-                $ids = \App\Models\SyncKaryawanWithoutUser::pluck('absen_karyawan_id');
-                
-                if ($ids->isEmpty()) {
-                    $query->whereRaw('1 = 0');
-                } else {
-                    $query->whereIn('karyawan_id', $ids);
-                }
-            } catch (\Exception $e) {
-                \Log::error('without_slip error: ' . $e->getMessage());
-                return response()->json([
-                    'error' => $e->getMessage(),
-                ], 500);
+            $query->whereNull('slip_downloaded_at');
+            
+            $ids = \App\Models\SyncKaryawanWithoutUser::pluck('absen_karyawan_id');
+            
+            if ($ids->isEmpty()) {
+                $query->where('id', 0); // ← ganti whereRaw
+            } else {
+                $query->whereIn('karyawan_id', $ids);
             }
         }
 
