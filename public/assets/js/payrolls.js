@@ -546,11 +546,14 @@ $(document).ready(function () {
         form.submit();
         document.body.removeChild(form);
 
-        // ✅ Setelah submit, tunggu 3 detik lalu reload datatable
-        // (3 detik cukup untuk server mulai proses, file mulai didownload)
+        // ✅ Naikan ke 6 detik untuk production
+        showToast(
+            "Download dimulai, tabel akan diperbarui dalam beberapa detik...",
+            "info",
+        );
         setTimeout(function () {
             if (onComplete) onComplete();
-        }, 3000);
+        }, 6000);
     }
 
     // ========================================
@@ -805,17 +808,16 @@ $(document).ready(function () {
     });
 
     // ✅ Intercept single PDF download link → reload table setelahnya
-    $(document).on("click", "a[href*='download-pdf']", function () {
-        const href = $(this).attr("href");
-        
-        setTimeout(function () {
-            if (tableReleased) tableReleased.ajax.reload(null, false);
-            if (tableReleasedSlip) tableReleasedSlip.ajax.reload(null, false);
-        }, 3000);
-        
-        // Biarkan link berjalan normal
-    });
-
+   $(document).on("click", "a[href*='download-pdf']", function () {
+       showToast(
+           "Download dimulai, tabel akan diperbarui dalam beberapa detik...",
+           "info",
+       );
+       setTimeout(function () {
+           if (tableReleased) tableReleased.ajax.reload(null, false);
+           if (tableReleasedSlip) tableReleasedSlip.ajax.reload(null, false);
+       }, 6000); // ← naik dari 3000 ke 6000
+   });
     // ========================================
     // EXPORT (fetch + blob download)
     // ========================================
