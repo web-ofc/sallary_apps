@@ -60,21 +60,29 @@ class ReimbursementController extends Controller
                 'reimbursements.approved_id',
                 'reimbursements.approved_at',
                 'reimbursements.created_at',
+                'karyawans.nama_lengkap as karyawan_nama',
+                'companies.company_name as company_nama',
             ])
+            ->leftJoin('karyawans', 'reimbursements.karyawan_id', '=', 'karyawans.absen_karyawan_id')
+            ->leftJoin('companies', 'reimbursements.company_id', '=', 'companies.absen_company_id')
             ->with([
                 'karyawan:absen_karyawan_id,nama_lengkap,nik',
                 'company:absen_company_id,company_name',
+                'approver:absen_karyawan_id,nama_lengkap',
+                'userBy:id,name',
                 'childs:reimbursement_id,tagihan_dokter,tagihan_obat,tagihan_kacamata,tagihan_gigi',
             ]);
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status === 'approved');
+            $query->where('reimbursements.status', $request->status === 'approved');
         }
         if ($request->filled('year')) {
-            $query->where('year_budget', $request->year);
+            $query->where('reimbursements.year_budget', $request->year);
         }
 
         return DataTables::eloquent($query)
+            ->filterColumn('karyawan_info', fn($q, $k) => $q->where('karyawans.nama_lengkap', 'like', "%{$k}%"))
+            ->filterColumn('company_info',  fn($q, $k) => $q->where('companies.company_name',  'like', "%{$k}%"))
             ->addIndexColumn()
             ->addColumn('karyawan_info', fn($r) => $r->karyawan
                 ? '<div class="d-flex flex-column"><span class="fw-bold">' . e($r->karyawan->nama_lengkap) . '</span></div>'
