@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\Company;
 use App\Models\Payroll;
 use App\Models\Karyawan;
+use App\Models\JenisPenyakit;
 use Illuminate\Http\Request;
 use App\Models\Reimbursement;
 use App\Models\ReimbursementChild;
@@ -124,33 +125,22 @@ class ReimbursementController extends Controller
     }
 
     // =========================================================================
-    // ✅ SYNC ENDPOINT — dipanggil AJAX saat user klik "Tambah Reimbursement"
-    // POST /manage-reimbursements/sync-karyawan
+    // SYNC & LIST HELPERS
     // =========================================================================
     public function syncKaryawan()
     {
         $result = $this->syncService->forceSync();
-
         return response()->json($result, $result['success'] ? 200 : 500);
     }
 
-    // =========================================================================
-    // GET KARYAWAN LIST untuk Select2 — dari tabel lokal (hasil sync)
-    // =========================================================================
     public function getKaryawanList(Request $request)
     {
-        $search  = (string) $request->get('q', ''); // ✅ cast ke string, hindari null
+        $search  = (string) $request->get('q', '');
         $page    = max(1, (int) $request->get('page', 1));
         $perPage = 15;
-
-        return response()->json(
-            $this->syncService->searchLocal($search, $page, $perPage)
-        );
+        return response()->json($this->syncService->searchLocal($search, $page, $perPage));
     }
 
-    // =========================================================================
-    // GET COMPANY LIST untuk Select2 — dari DB lokal
-    // =========================================================================
     public function getCompanyList(Request $request)
     {
         $search  = $request->get('q', '');
@@ -158,7 +148,6 @@ class ReimbursementController extends Controller
         $perPage = 15;
 
         $query = Company::select('absen_company_id', 'company_name')->orderBy('company_name');
-
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('company_name', 'like', "%{$search}%")
@@ -170,9 +159,36 @@ class ReimbursementController extends Controller
         $companies = $query->skip(($page - 1) * $perPage)->take($perPage)->get();
 
         return response()->json([
-            'results' => $companies->map(fn($c) => [
+            'results'    => $companies->map(fn($c) => [
                 'id'   => $c->absen_company_id,
                 'text' => $c->company_name . ' (ID: ' . $c->absen_company_id . ')',
+            ]),
+            'pagination' => ['more' => ($page * $perPage) < $total],
+        ]);
+    }
+
+    // ✅ NEW: endpoint untuk Select2 jenis penyakit
+    public function getJenisPenyakitList(Request $request)
+    {
+        $search  = $request->get('q', '');
+        $page    = (int) $request->get('page', 1);
+        $perPage = 20;
+
+        $query = JenisPenyakit::where('is_active', true)->orderBy('nama_penyakit');
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_penyakit', 'like', "%{$search}%")
+                  ->orWhere('kode', 'like', "%{$search}%");
+            });
+        }
+
+        $total = $query->count();
+        $items = $query->skip(($page - 1) * $perPage)->take($perPage)->get();
+
+        return response()->json([
+            'results'    => $items->map(fn($j) => [
+                'id'   => $j->id,
+                'text' => ($j->kode ? '[' . $j->kode . '] ' : '') . $j->nama_penyakit,
             ]),
             'pagination' => ['more' => ($page * $perPage) < $total],
         ]);
@@ -258,18 +274,23 @@ class ReimbursementController extends Controller
         $periodeSlip = now()->format('Y-m');
 
         $validator = Validator::make($request->all(), [
-            'karyawan_id'                     => 'required|exists:karyawans,absen_karyawan_id',
-            'company_id'                      => 'required|exists:companies,absen_company_id',
-            'children'                        => 'required|array|min:1',
-            'children.*.tanggal'              => 'nullable|date',
-            'children.*.nama_reimbursement'   => 'nullable|string|max:255',
-            'children.*.status_keluarga'      => 'nullable|string|max:100',
-            'children.*.jenis_penyakit'       => 'nullable|string|max:255',
-            'children.*.tagihan_dokter'       => 'nullable|integer|min:0',
-            'children.*.tagihan_obat'         => 'nullable|integer|min:0',
-            'children.*.tagihan_kacamata'     => 'nullable|integer|min:0',
-            'children.*.tagihan_gigi'         => 'nullable|integer|min:0',
-            'children.*.note'                 => 'nullable|string|max:500',
+            'karyawan_id'                       => 'required|exists:karyawans,absen_karyawan_id',
+            'company_id'                        => 'required|exists:companies,absen_company_id',
+            'year_budget'                       => 'required|integer',
+            'children'                          => 'required|array|min:1',
+            'children.*.tanggal'                => 'nullable|date',
+            'children.*.nama_reimbursement'     => 'nullable|string|max:255',
+            'children.*.status_keluarga'        => 'required|string|max:100',
+            'children.*.jenispenyakit_id'       => 'required|exists:jenis_penyakits,id',
+            'children.*.tagihan_dokter'         => 'nullable|integer|min:0',
+            'children.*.tagihan_obat'           => 'nullable|integer|min:0',
+            'children.*.tagihan_kacamata'       => 'nullable|integer|min:0',
+            'children.*.tagihan_gigi'           => 'nullable|integer|min:0',
+            'children.*.note'                   => 'nullable|string|max:500',
+        ], [
+            'children.*.jenispenyakit_id.required' => 'Jenis penyakit wajib dipilih',
+            'children.*.jenispenyakit_id.exists'   => 'Jenis penyakit tidak valid',
+            'children.*.status_keluarga.required'  => 'Status keluarga wajib dipilih',
         ]);
 
         if ($validator->fails()) {
@@ -329,7 +350,7 @@ class ReimbursementController extends Controller
                     'tanggal'            => $child['tanggal'] ?? null,
                     'nama_reimbursement' => $child['nama_reimbursement'] ?? null,
                     'status_keluarga'    => $child['status_keluarga'] ?? null,
-                    'jenis_penyakit'     => $child['jenis_penyakit'] ?? null,
+                    'jenispenyakit_id'   => $child['jenispenyakit_id'],
                     'tagihan_dokter'     => $child['tagihan_dokter'] ?? 0,
                     'tagihan_obat'       => $child['tagihan_obat'] ?? 0,
                     'tagihan_kacamata'   => $child['tagihan_kacamata'] ?? 0,
@@ -360,7 +381,7 @@ class ReimbursementController extends Controller
             $reimbursement = Reimbursement::with([
                 'karyawan:absen_karyawan_id,nama_lengkap,nik',
                 'company:absen_company_id,company_name',
-                'childs',
+                'childs.jenisPenyakit:id,kode,nama_penyakit',
             ])->findOrFail($id);
 
             if ($reimbursement->status) {
@@ -385,18 +406,23 @@ class ReimbursementController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'karyawan_id'                     => 'required|exists:karyawans,absen_karyawan_id',
-            'company_id'                      => 'required|exists:companies,absen_company_id',
-            'children'                        => 'required|array|min:1',
-            'children.*.tanggal'              => 'nullable|date',
-            'children.*.nama_reimbursement'   => 'nullable|string|max:255',
-            'children.*.status_keluarga'      => 'nullable|string|max:100',
-            'children.*.jenis_penyakit'       => 'nullable|string|max:255',
-            'children.*.tagihan_dokter'       => 'nullable|integer|min:0',
-            'children.*.tagihan_obat'         => 'nullable|integer|min:0',
-            'children.*.tagihan_kacamata'     => 'nullable|integer|min:0',
-            'children.*.tagihan_gigi'         => 'nullable|integer|min:0',
-            'children.*.note'                 => 'nullable|string|max:500',
+            'karyawan_id'                       => 'required|exists:karyawans,absen_karyawan_id',
+            'company_id'                        => 'required|exists:companies,absen_company_id',
+            'year_budget'                       => 'required|integer',
+            'children'                          => 'required|array|min:1',
+            'children.*.tanggal'                => 'nullable|date',
+            'children.*.nama_reimbursement'     => 'nullable|string|max:255',
+            'children.*.status_keluarga'        => 'required|string|max:100',
+            'children.*.jenispenyakit_id'       => 'required|exists:jenis_penyakits,id',
+            'children.*.tagihan_dokter'         => 'nullable|integer|min:0',
+            'children.*.tagihan_obat'           => 'nullable|integer|min:0',
+            'children.*.tagihan_kacamata'       => 'nullable|integer|min:0',
+            'children.*.tagihan_gigi'           => 'nullable|integer|min:0',
+            'children.*.note'                   => 'nullable|string|max:500',
+        ], [
+            'children.*.jenispenyakit_id.required' => 'Jenis penyakit wajib dipilih',
+            'children.*.jenispenyakit_id.exists'   => 'Jenis penyakit tidak valid',
+            'children.*.status_keluarga.required'  => 'Status keluarga wajib dipilih',
         ]);
 
         if ($validator->fails()) {
@@ -426,11 +452,7 @@ class ReimbursementController extends Controller
                 return response()->json(['success' => false, 'message' => 'Data balance tidak ditemukan'], 404);
             }
 
-            $currentTotal = $reimbursement->childs->sum(fn($c) =>
-                ($c->tagihan_dokter ?? 0) + ($c->tagihan_obat ?? 0) +
-                ($c->tagihan_kacamata ?? 0) + ($c->tagihan_gigi ?? 0)
-            );
-
+            $currentTotal    = $reimbursement->childs->sum(fn($c) => $c->subtotal);
             $availableBudget = $balance->sisa_budget + $currentTotal;
 
             if ($totalAmount > $availableBudget) {
@@ -454,7 +476,7 @@ class ReimbursementController extends Controller
                     'tanggal'            => $child['tanggal'] ?? null,
                     'nama_reimbursement' => $child['nama_reimbursement'] ?? null,
                     'status_keluarga'    => $child['status_keluarga'] ?? null,
-                    'jenis_penyakit'     => $child['jenis_penyakit'] ?? null,
+                    'jenispenyakit_id'   => $child['jenispenyakit_id'],
                     'tagihan_dokter'     => $child['tagihan_dokter'] ?? 0,
                     'tagihan_obat'       => $child['tagihan_obat'] ?? 0,
                     'tagihan_kacamata'   => $child['tagihan_kacamata'] ?? 0,
@@ -485,7 +507,7 @@ class ReimbursementController extends Controller
             $reimbursement = Reimbursement::with([
                 'karyawan:absen_karyawan_id,nama_lengkap,nik',
                 'approver:absen_karyawan_id,nama_lengkap',
-                'childs',
+                'childs.jenisPenyakit:id,kode,nama_penyakit',
             ])->findOrFail($id);
 
             return response()->json(['success' => true, 'data' => $reimbursement]);
@@ -532,7 +554,7 @@ class ReimbursementController extends Controller
                 'company:absen_company_id,company_name,logo,ttd,nama_ttd,jabatan_ttd',
                 'approver:absen_karyawan_id,nama_lengkap',
                 'userBy:id,name,email',
-                'childs',
+                'childs.jenisPenyakit:id,kode,nama_penyakit',
             ])->findOrFail($id);
 
             if (!$reimbursement->status) {
@@ -543,10 +565,7 @@ class ReimbursementController extends Controller
                 ->where('karyawan_id', $reimbursement->karyawan_id)
                 ->where('year', $reimbursement->year_budget)->first();
 
-            $totalAmount = $reimbursement->childs->sum(fn($c) =>
-                ($c->tagihan_dokter ?? 0) + ($c->tagihan_obat ?? 0) +
-                ($c->tagihan_kacamata ?? 0) + ($c->tagihan_gigi ?? 0)
-            );
+            $totalAmount = $reimbursement->childs->sum(fn($c) => $c->subtotal);
 
             if ($balance) {
                 $balance = (object)[

@@ -98,5 +98,8 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage-reimbursement-childs', function ($user) {
             return in_array($user->role, ['management','admin']);
         });
+        Gate::define('jenis-penyakits', function ($user) {
+            return in_array($user->role, ['management','admin']);
+        });
     }
 }

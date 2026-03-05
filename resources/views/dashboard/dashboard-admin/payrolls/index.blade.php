@@ -297,7 +297,7 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('assets/js/payrolls.js') }}"></script>
+<script src="{{ asset('assets/js/payrolls.js') }}?v={{ filemtime(public_path('assets/js/payrolls.js')) }}"></script>
 <script>
 // Pass Laravel routes ke JS (minimal, cukup di sini)
 window.PAYROLL_CONFIG = {

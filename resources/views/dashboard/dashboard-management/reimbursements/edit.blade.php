@@ -3,7 +3,6 @@
 @section('content')
 
 <div class="container-fluid">
-    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-6">
         <div>
             <h1 class="fs-2x fw-bold text-gray-900 mb-2">Edit Reimbursement Medical</h1>
@@ -90,7 +89,30 @@
                 </div>
             </div>
             <div class="card-body pt-3">
-                <div id="items-container"></div>
+                <div style="overflow-x: auto;">
+                    <div style="min-width: 1180px;">
+
+                        <!-- Table Header -->
+                        <div class="d-flex align-items-center bg-light rounded px-3 py-2 mb-1">
+                            <div style="width:28px; flex-shrink:0;"></div>
+                            <div class="text-gray-500 fs-8 fw-bold px-1" style="width:150px; flex-shrink:0;">Tanggal</div>
+                            <div class="text-gray-500 fs-8 fw-bold px-1" style="width:200px; flex-shrink:0;">Nama Pasien</div>
+                            <div class="text-gray-500 fs-8 fw-bold px-1" style="width:150px; flex-shrink:0;">Status</div>
+                            <div class="text-gray-500 fs-8 fw-bold px-1" style="width:220px; flex-shrink:0;">Jenis Penyakit</div>
+                            <div class="text-gray-500 fs-8 fw-bold px-1" style="width:120px; flex-shrink:0;">Dokter (Rp)</div>
+                            <div class="text-gray-500 fs-8 fw-bold px-1" style="width:120px; flex-shrink:0;">Obat (Rp)</div>
+                            <div class="text-gray-500 fs-8 fw-bold px-1" style="width:120px; flex-shrink:0;">Kacamata (Rp)</div>
+                            <div class="text-gray-500 fs-8 fw-bold px-1" style="width:120px; flex-shrink:0;">Gigi (Rp)</div>
+                            <div class="text-gray-500 fs-8 fw-bold px-1" style="width:115px; flex-shrink:0;">Catatan</div>
+                            <div class="text-gray-500 fs-8 fw-bold px-1" style="width:85px; flex-shrink:0;">Subtotal</div>
+                            <div style="width:32px; flex-shrink:0;"></div>
+                        </div>
+
+                        <div id="items-container"></div>
+
+                    </div>
+                </div>
+
                 <div class="text-center text-gray-500 fs-7 mt-3" id="empty-hint" style="display:none;">
                     Belum ada item. Klik "Tambah Item" untuk menambahkan.
                 </div>
@@ -112,18 +134,10 @@
                         </div>
                     </div>
                     <div class="d-flex gap-3">
-                        <button type="button" class="btn btn-light" onclick="window.location.href='{{ route('manage-reimbursements.index') }}'">
-                            Batal
-                        </button>
+                        <button type="button" class="btn btn-light" onclick="window.location.href='{{ route('manage-reimbursements.index') }}'">Batal</button>
                         <button type="submit" class="btn btn-primary" id="submitBtn">
-                            <span class="indicator-label">
-                                <i class="ki-outline ki-check fs-2"></i>
-                                Update
-                            </span>
-                            <span class="indicator-progress d-none">
-                                Menyimpan...
-                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                            </span>
+                            <span class="indicator-label"><i class="ki-outline ki-check fs-2"></i> Update</span>
+                            <span class="indicator-progress d-none">Menyimpan... <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
                         </button>
                     </div>
                 </div>
@@ -133,8 +147,14 @@
 </div>
 
 <style>
-.form-item { transition: all 0.3s ease; }
+.form-item { transition: background 0.2s ease; }
 .form-item:hover { background-color: #f9fafb; }
+.form-item .form-control,
+.form-item .form-select { font-size: 12px; padding: 6px 8px; height: 34px; min-height: 34px; }
+.form-item .form-select { padding-right: 28px; background-size: 14px; }
+.form-item .select2-container .select2-selection--single { height: 34px; }
+.form-item .select2-container--bootstrap5 .select2-selection--single .select2-selection__rendered { line-height: 34px; font-size: 12px; }
+.form-item .select2-container--bootstrap5 .select2-selection--single .select2-selection__arrow { height: 34px; }
 </style>
 
 @endsection
@@ -143,31 +163,20 @@
 <script>
 let itemCount = 0;
 const MAX_ITEMS = 10;
+const JENIS_PENYAKIT_URL = "{{ route('manage-reimbursements.jenis-penyakit.list') }}";
 
-let currentBudget = {
-    total: 0,
-    sisa: 0,
-    year: null
-};
+let currentBudget = { total: 0, sisa: 0, year: null };
 
-// Data existing dari server
-const existingChilds = @json($reimbursement->childs);
+// childs sudah include relasi jenis_penyakit dari controller (with childs.jenisPenyakit)
+const existingChilds = @json($reimbursement->childs->load('jenisPenyakit'));
 
 $(document).ready(function() {
-    $('#year_budget').select2({
-        placeholder: 'Pilih tahun budget...',
-        allowClear: false
-    });
+    $('#year_budget').select2({ placeholder: 'Pilih tahun budget...', allowClear: false });
 
-    // Load budget info untuk tahun yang sudah dipilih
     loadBudgetInfo();
-
-    // Load existing children
     loadExistingData();
 
-    $('#year_budget').on('change', function() {
-        loadBudgetInfo();
-    });
+    $('#year_budget').on('change', function() { loadBudgetInfo(); });
 
     $('#reimbursementForm').on('submit', function(e) {
         e.preventDefault();
@@ -176,19 +185,16 @@ $(document).ready(function() {
 });
 
 function loadBudgetInfo() {
-    const selectedOption = $('#year_budget').find('option:selected');
-    const sisaBudget = parseInt(selectedOption.data('sisa')) || 0;
-    const totalBudget = parseInt(selectedOption.data('total')) || 0;
-    const selectedYear = $('#year_budget').val();
+    const opt  = $('#year_budget').find('option:selected');
+    const year = $('#year_budget').val();
+    if (!year) return;
 
-    if (selectedYear) {
-        currentBudget = {
-            total: totalBudget,
-            sisa: sisaBudget,
-            year: selectedYear
-        };
-        updateBudgetDisplay();
-    }
+    currentBudget = {
+        total: parseInt(opt.data('total')) || 0,
+        sisa:  parseInt(opt.data('sisa'))  || 0,
+        year,
+    };
+    updateBudgetDisplay();
 }
 
 function loadExistingData() {
@@ -196,11 +202,7 @@ function loadExistingData() {
         $('#empty-hint').show();
         return;
     }
-
-    existingChilds.forEach(child => {
-        addItemForm(child);
-    });
-
+    existingChilds.forEach(child => addItemForm(child));
     calculateLivePreview();
 }
 
@@ -219,110 +221,91 @@ function addItemForm(existing = null) {
     const index = itemCount;
     itemCount++;
 
-    const val = (field) => existing ? (existing[field] ?? '') : '';
+    const val     = (field) => existing ? (existing[field] ?? '') : '';
     const tagihan = (field) => existing && existing[field] > 0 ? formatRupiah(existing[field]) : '';
 
     const formHtml = `
-        <div class="form-item border border-gray-300 border-dashed rounded p-6 mb-5 reimbursement-item" data-index="${index}">
-            <div class="d-flex justify-content-between align-items-center mb-5">
-                <div class="d-flex align-items-center">
-                    <span class="badge badge-circle badge-light-primary fs-6 fw-bold me-3 item-number">${itemCount}</span>
-                    <span class="text-gray-800 fw-semibold fs-6">Item Reimbursement</span>
-                </div>
-                <button type="button" class="btn btn-icon btn-sm btn-light-danger" onclick="removeItemForm(${index})">
-                    <i class="ki-outline ki-trash fs-2"></i>
-                </button>
+        <div class="form-item d-flex align-items-center border-bottom px-3 py-2 reimbursement-item" data-index="${index}">
+
+            <div style="width:28px; flex-shrink:0;">
+                <span class="badge badge-circle badge-light-primary fs-8 fw-bold item-number">${itemCount}</span>
             </div>
 
-            <div class="row g-5">
-                <div class="col-lg-2">
-                    <label class="form-label fs-7 fw-semibold text-gray-700">Tanggal</label>
-                    <input type="date" class="form-control form-control-solid"
-                           name="children[${index}][tanggal]"
-                           value="${val('tanggal')}"
-                           max="{{ date('Y-m-d') }}">
-                </div>
+            <!-- Tanggal -->
+            <div style="width:150px; flex-shrink:0;" class="px-1">
+                <input type="date" class="form-control form-control-solid form-control-sm"
+                       name="children[${index}][tanggal]" value="${val('tanggal')}" max="{{ date('Y-m-d') }}">
+            </div>
 
-                <div class="col-lg-3">
-                    <label class="form-label fs-7 fw-semibold text-gray-700">Nama Pasien</label>
-                    <input type="text" class="form-control form-control-solid"
-                           name="children[${index}][nama_reimbursement]"
-                           value="${val('nama_reimbursement')}"
-                           placeholder="Nama pasien...">
-                </div>
+            <!-- Nama Pasien -->
+            <div style="width:200px; flex-shrink:0;" class="px-1">
+                <input type="text" class="form-control form-control-solid form-control-sm"
+                       name="children[${index}][nama_reimbursement]" value="${val('nama_reimbursement')}" placeholder="Nama pasien...">
+            </div>
 
-                <div class="col-lg-2">
-                    <label class="form-label fs-7 fw-semibold text-gray-700">Status Keluarga</label>
-                    <select class="form-select form-select-solid" name="children[${index}][status_keluarga]">
-                        <option value="">Pilih status</option>
-                        ${['Karyawan','Istri','Suami','Anak','Orang Tua'].map(s =>
-                            `<option value="${s}" ${val('status_keluarga') == s ? 'selected' : ''}>${s}</option>`
-                        ).join('')}
-                    </select>
-                </div>
+            <!-- Status Keluarga -->
+            <div style="width:150px; flex-shrink:0;" class="px-1">
+                <select class="form-select form-select-solid form-select-sm" name="children[${index}][status_keluarga]" required>
+                    <option value=""></option>
+                    ${['Karyawan','Istri','Suami','Anak'].map(s =>
+                        `<option value="${s}" ${val('status_keluarga') == s ? 'selected' : ''}>${s}</option>`
+                    ).join('')}
+                </select>
+            </div>
 
-                <div class="col-lg-2">
-                    <label class="form-label fs-7 fw-semibold text-gray-700">Jenis Penyakit</label>
-                    <input type="text" class="form-control form-control-solid"
-                           name="children[${index}][jenis_penyakit]"
-                           value="${val('jenis_penyakit')}"
-                           placeholder="Flu, Demam...">
-                </div>
+            <!-- Jenis Penyakit — Select2 AJAX -->
+            <div style="width:220px; flex-shrink:0;" class="px-1">
+                <select class="form-select form-select-solid form-select-sm jenispenyakit-select"
+                        name="children[${index}][jenispenyakit_id]"
+                        data-index="${index}" required>
+                    <option value="">Pilih penyakit...</option>
+                </select>
+            </div>
 
-                <div class="col-lg-3">
-                    <label class="form-label fs-7 fw-semibold text-gray-700">Catatan</label>
-                    <input type="text" class="form-control form-control-solid"
-                           name="children[${index}][note]"
-                           value="${val('note')}"
-                           placeholder="Catatan tambahan...">
-                </div>
+            <!-- Tagihan Dokter -->
+            <div style="width:120px; flex-shrink:0;" class="px-1">
+                <input type="text" class="form-control form-control-solid form-control-sm tagihan-input"
+                       name="children[${index}][tagihan_dokter]" value="${tagihan('tagihan_dokter')}"
+                       placeholder="0" data-index="${index}" onkeyup="formatAndCalculate(this)">
+            </div>
 
-                <div class="col-lg-3">
-                    <label class="form-label fs-7 fw-semibold text-gray-700">Tagihan Dokter</label>
-                    <input type="text" class="form-control form-control-solid tagihan-input"
-                           name="children[${index}][tagihan_dokter]"
-                           value="${tagihan('tagihan_dokter')}"
-                           placeholder="0"
-                           data-index="${index}"
-                           onkeyup="formatAndCalculate(this)">
-                </div>
+            <!-- Tagihan Obat -->
+            <div style="width:120px; flex-shrink:0;" class="px-1">
+                <input type="text" class="form-control form-control-solid form-control-sm tagihan-input"
+                       name="children[${index}][tagihan_obat]" value="${tagihan('tagihan_obat')}"
+                       placeholder="0" data-index="${index}" onkeyup="formatAndCalculate(this)">
+            </div>
 
-                <div class="col-lg-3">
-                    <label class="form-label fs-7 fw-semibold text-gray-700">Tagihan Obat</label>
-                    <input type="text" class="form-control form-control-solid tagihan-input"
-                           name="children[${index}][tagihan_obat]"
-                           value="${tagihan('tagihan_obat')}"
-                           placeholder="0"
-                           data-index="${index}"
-                           onkeyup="formatAndCalculate(this)">
-                </div>
+            <!-- Tagihan Kacamata -->
+            <div style="width:120px; flex-shrink:0;" class="px-1">
+                <input type="text" class="form-control form-control-solid form-control-sm tagihan-input"
+                       name="children[${index}][tagihan_kacamata]" value="${tagihan('tagihan_kacamata')}"
+                       placeholder="0" data-index="${index}" onkeyup="formatAndCalculate(this)">
+            </div>
 
-                <div class="col-lg-3">
-                    <label class="form-label fs-7 fw-semibold text-gray-700">Tagihan Kacamata</label>
-                    <input type="text" class="form-control form-control-solid tagihan-input"
-                           name="children[${index}][tagihan_kacamata]"
-                           value="${tagihan('tagihan_kacamata')}"
-                           placeholder="0"
-                           data-index="${index}"
-                           onkeyup="formatAndCalculate(this)">
-                </div>
+            <!-- Tagihan Gigi -->
+            <div style="width:120px; flex-shrink:0;" class="px-1">
+                <input type="text" class="form-control form-control-solid form-control-sm tagihan-input"
+                       name="children[${index}][tagihan_gigi]" value="${tagihan('tagihan_gigi')}"
+                       placeholder="0" data-index="${index}" onkeyup="formatAndCalculate(this)">
+            </div>
 
-                <div class="col-lg-3">
-                    <label class="form-label fs-7 fw-semibold text-gray-700">Tagihan Gigi</label>
-                    <input type="text" class="form-control form-control-solid tagihan-input"
-                           name="children[${index}][tagihan_gigi]"
-                           value="${tagihan('tagihan_gigi')}"
-                           placeholder="0"
-                           data-index="${index}"
-                           onkeyup="formatAndCalculate(this)">
-                </div>
+            <!-- Catatan -->
+            <div style="width:115px; flex-shrink:0;" class="px-1">
+                <input type="text" class="form-control form-control-solid form-control-sm"
+                       name="children[${index}][note]" value="${val('note')}" placeholder="Catatan...">
+            </div>
 
-                <div class="col-12">
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="text-gray-600 fs-8 fw-semibold">Subtotal item ini:</span>
-                        <span class="text-primary fw-bold fs-7 item-subtotal" data-index="${index}">Rp 0</span>
-                    </div>
-                </div>
+            <!-- Subtotal -->
+            <div style="width:85px; flex-shrink:0;" class="px-1">
+                <span class="text-primary fw-bold fs-8 item-subtotal" data-index="${index}">Rp 0</span>
+            </div>
+
+            <!-- Hapus -->
+            <div style="width:32px; flex-shrink:0;" class="text-end">
+                <button type="button" class="btn btn-icon btn-sm btn-light-danger" style="width:26px;height:26px;" onclick="removeItemForm(${index})">
+                    <i class="ki-outline ki-trash fs-4"></i>
+                </button>
             </div>
         </div>
     `;
@@ -330,15 +313,45 @@ function addItemForm(existing = null) {
     $('#items-container').append(formHtml);
     $('#empty-hint').hide();
 
-    // Hitung subtotal existing jika ada
+    initJenisPenyakitSelect2(index, existing);
+
     if (existing) {
-        const subtotal = (existing.tagihan_dokter ?? 0) + (existing.tagihan_obat ?? 0)
-                       + (existing.tagihan_kacamata ?? 0) + (existing.tagihan_gigi ?? 0);
-        $(`.item-subtotal[data-index="${index}"]`).text('Rp ' + formatRupiah(subtotal));
+        const sub = (existing.tagihan_dokter ?? 0) + (existing.tagihan_obat ?? 0)
+                  + (existing.tagihan_kacamata ?? 0) + (existing.tagihan_gigi ?? 0);
+        $(`.item-subtotal[data-index="${index}"]`).text('Rp ' + formatRupiah(sub));
     }
 }
 
+function initJenisPenyakitSelect2(index, existing = null) {
+    const $select = $(`.jenispenyakit-select[data-index="${index}"]`);
+
+    // Pre-load existing value — ambil dari relasi jenis_penyakit
+    if (existing && existing.jenispenyakit_id && existing.jenis_penyakit) {
+        const jp    = existing.jenis_penyakit;
+        const label = (jp.kode ? '[' + jp.kode + '] ' : '') + jp.nama_penyakit;
+        $select.append(new Option(label, jp.id, true, true));
+    }
+
+    $select.select2({
+        ajax: {
+            url: JENIS_PENYAKIT_URL,
+            dataType: 'json',
+            delay: 250,
+            data: p => ({ q: p.term || '', page: p.page || 1 }),
+            processResults: d => ({ results: d.results, pagination: d.pagination }),
+            cache: true
+        },
+        placeholder: 'Pilih penyakit...',
+        allowClear: true,
+        minimumInputLength: 0,
+        width: '100%',
+    });
+}
+
 function removeItemForm(index) {
+    const $select = $(`.jenispenyakit-select[data-index="${index}"]`);
+    if ($select.hasClass('select2-hidden-accessible')) $select.select2('destroy');
+
     $(`.reimbursement-item[data-index="${index}"]`).remove();
     itemCount--;
 
@@ -347,7 +360,6 @@ function removeItemForm(index) {
     });
 
     if (itemCount === 0) $('#empty-hint').show();
-
     calculateLivePreview();
 }
 
@@ -358,29 +370,26 @@ function formatAndCalculate(input) {
     const index = $(input).data('index');
     let subtotal = 0;
     $(`.tagihan-input[data-index="${index}"]`).each(function() {
-        const val = $(this).val().replace(/[^\d]/g, '');
-        subtotal += val ? parseInt(val) : 0;
+        const v = $(this).val().replace(/[^\d]/g, '');
+        subtotal += v ? parseInt(v) : 0;
     });
     $(`.item-subtotal[data-index="${index}"]`).text('Rp ' + formatRupiah(subtotal));
-
     calculateLivePreview();
 }
 
 function calculateLivePreview() {
     let total = 0;
-
     $('.tagihan-input').each(function() {
-        const value = $(this).val().replace(/[^\d]/g, '');
-        if (value) total += parseInt(value);
+        const v = $(this).val().replace(/[^\d]/g, '');
+        if (v) total += parseInt(v);
     });
 
     $('#akan-digunakan').text('Rp ' + formatRupiah(total));
     $('#grand-total').text('Rp ' + formatRupiah(total));
 
-    const sisaSetelahInput = currentBudget.sisa - total;
-    $('#sisa-setelah-input').text('Rp ' + formatRupiah(Math.abs(sisaSetelahInput)));
-
-    if (sisaSetelahInput < 0) {
+    const sisa = currentBudget.sisa - total;
+    $('#sisa-setelah-input').text('Rp ' + formatRupiah(Math.abs(sisa)));
+    if (sisa < 0) {
         $('#sisa-setelah-input').removeClass('text-success').addClass('text-danger');
     } else {
         $('#sisa-setelah-input').removeClass('text-danger').addClass('text-success');
@@ -388,8 +397,8 @@ function calculateLivePreview() {
 }
 
 function submitReimbursement() {
-    const submitBtn = $('#submitBtn');
-    const indicatorLabel = submitBtn.find('.indicator-label');
+    const submitBtn         = $('#submitBtn');
+    const indicatorLabel    = submitBtn.find('.indicator-label');
     const indicatorProgress = submitBtn.find('.indicator-progress');
 
     if (!$('#year_budget').val()) {
@@ -398,10 +407,13 @@ function submitReimbursement() {
     }
 
     const children = [];
+    let hasError   = false;
 
     $('.reimbursement-item').each(function() {
+        if (hasError) return;
         const index = $(this).data('index');
 
+        const jenispenyakit_id = $(`.jenispenyakit-select[data-index="${index}"]`).val();
         const tagihan_dokter   = parseInt($(`[name="children[${index}][tagihan_dokter]"]`).val().replace(/[^\d]/g, '') || 0);
         const tagihan_obat     = parseInt($(`[name="children[${index}][tagihan_obat]"]`).val().replace(/[^\d]/g, '') || 0);
         const tagihan_kacamata = parseInt($(`[name="children[${index}][tagihan_kacamata]"]`).val().replace(/[^\d]/g, '') || 0);
@@ -410,23 +422,30 @@ function submitReimbursement() {
         const subtotal = tagihan_dokter + tagihan_obat + tagihan_kacamata + tagihan_gigi;
         if (subtotal === 0) return;
 
+        if (!jenispenyakit_id) {
+            Swal.fire({ icon: 'warning', title: 'Perhatian!', text: 'Jenis penyakit wajib dipilih untuk setiap item' });
+            hasError = true;
+            return;
+        }
+
         children.push({
             tanggal:            $(`[name="children[${index}][tanggal]"]`).val() || null,
             nama_reimbursement: $(`[name="children[${index}][nama_reimbursement]"]`).val() || null,
             status_keluarga:    $(`[name="children[${index}][status_keluarga]"]`).val() || null,
-            jenis_penyakit:     $(`[name="children[${index}][jenis_penyakit]"]`).val() || null,
+            jenispenyakit_id:   parseInt(jenispenyakit_id),
             note:               $(`[name="children[${index}][note]"]`).val() || null,
-            tagihan_dokter,
-            tagihan_obat,
-            tagihan_kacamata,
-            tagihan_gigi,
+            tagihan_dokter, tagihan_obat, tagihan_kacamata, tagihan_gigi,
         });
     });
+
+    if (hasError) return;
 
     if (children.length === 0) {
         Swal.fire({ icon: 'warning', title: 'Perhatian!', text: 'Minimal harus ada 1 item dengan tagihan terisi' });
         return;
     }
+
+    const reimbursementId = $('input[name="reimbursement_id"]').val();
 
     const formData = {
         _token:      $('input[name="_token"]').val(),
@@ -441,32 +460,19 @@ function submitReimbursement() {
     indicatorLabel.addClass('d-none');
     indicatorProgress.removeClass('d-none');
 
-    const reimbursementId = $('input[name="reimbursement_id"]').val();
-
     $.ajax({
         url: "{{ url('manage-reimbursements') }}/" + reimbursementId,
         type: 'POST',
         data: JSON.stringify(formData),
         contentType: 'application/json',
-        success: function(response) {
-            if (response.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: response.message,
-                    showConfirmButton: false,
-                    timer: 2000
-                }).then(() => {
-                    window.location.href = "{{ route('manage-reimbursements.index') }}";
-                });
+        success: function(r) {
+            if (r.success) {
+                Swal.fire({ icon: 'success', title: 'Berhasil!', text: r.message, showConfirmButton: false, timer: 2000 })
+                    .then(() => window.location.href = "{{ route('manage-reimbursements.index') }}");
             }
         },
         error: function(xhr) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal!',
-                text: xhr.responseJSON?.message || 'Terjadi kesalahan.'
-            });
+            Swal.fire({ icon: 'error', title: 'Gagal!', text: xhr.responseJSON?.message || 'Terjadi kesalahan.' });
         },
         complete: function() {
             submitBtn.prop('disabled', false);

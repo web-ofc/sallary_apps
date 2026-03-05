@@ -17,7 +17,9 @@ return new class extends Migration
             $table->date('tanggal')->nullable(); // Status approved
             $table->string('nama_reimbursement')->nullable(); // nama dia/anak/istri
             $table->string('status_keluarga')->nullable(); // Untuk diri sendiri/istri/anak/dll
-            $table->string('jenis_penyakit')->nullable(); // Jenis penyakit
+            $table->foreignId('jenispenyakit_id')
+            ->nullable()
+            ->constrained('jenis_penyakits');
             $table->integer('tagihan_dokter')->nullable(); // tagihan_dokter
             $table->integer('tagihan_obat')->nullable(); // tagihan_obat
             $table->integer('tagihan_kacamata')->nullable(); // tagihan_kacamata

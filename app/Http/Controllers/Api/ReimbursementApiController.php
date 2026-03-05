@@ -9,7 +9,6 @@ use App\Models\ReimbursementChild;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-
 class ReimbursementApiController extends Controller
 {
     /**
@@ -37,41 +36,30 @@ class ReimbursementApiController extends Controller
             $query = Reimbursement::with([
                 'karyawan:absen_karyawan_id,nama_lengkap,nik',
                 'company:absen_company_id,company_name',
-                'childs:id,reimbursement_id,tanggal,nama_reimbursement,status_keluarga,jenis_penyakit,tagihan_dokter,tagihan_obat,tagihan_kacamata,tagihan_gigi,note'
+                'childs:id,reimbursement_id,tanggal,nama_reimbursement,status_keluarga,jenispenyakit_id,tagihan_dokter,tagihan_obat,tagihan_kacamata,tagihan_gigi,note',
+                'childs.jenisPenyakit:id,kode,nama_penyakit',
             ])
             ->select('id', 'id_recapan', 'karyawan_id', 'company_id', 'year_budget', 'periode_slip', 'approved_id', 'user_by_id', 'approved_at', 'status', 'created_at', 'updated_at')
             ->where('status', false)
             ->orderBy('created_at', 'desc');
 
-            if ($request->filled('karyawan_id')) {
-                $query->where('karyawan_id', $request->karyawan_id);
-            }
-
-            if ($request->filled('company_id')) {
-                $query->where('company_id', $request->company_id);
-            }
-
-            if ($request->filled('periode_slip')) {
-                $query->where('periode_slip', $request->periode_slip);
-            }
-
-            if ($request->filled('year_budget')) {
-                $query->where('year_budget', $request->year_budget);
-            }
+            if ($request->filled('karyawan_id'))   $query->where('karyawan_id',  $request->karyawan_id);
+            if ($request->filled('company_id'))     $query->where('company_id',   $request->company_id);
+            if ($request->filled('periode_slip'))   $query->where('periode_slip', $request->periode_slip);
+            if ($request->filled('year_budget'))    $query->where('year_budget',  $request->year_budget);
 
             $reimbursements = $query->paginate($perPage);
 
-            // Tambah total_amount ke tiap reimbursement
             $reimbursements->getCollection()->transform(function ($reimbursement) {
-                $reimbursement->total_amount = $this->calcTotal($reimbursement->childs);
+                $reimbursement->total_amount    = $this->calcTotal($reimbursement->childs);
                 $reimbursement->formatted_total = 'Rp ' . number_format($reimbursement->total_amount, 0, ',', '.');
                 return $reimbursement;
             });
 
             return response()->json([
-                'success' => true,
-                'message' => 'Data reimbursement pending berhasil diambil',
-                'data' => $reimbursements->items(),
+                'success'    => true,
+                'message'    => 'Data reimbursement pending berhasil diambil',
+                'data'       => $reimbursements->items(),
                 'pagination' => [
                     'current_page' => $reimbursements->currentPage(),
                     'per_page'     => $reimbursements->perPage(),
@@ -102,12 +90,12 @@ class ReimbursementApiController extends Controller
                 'karyawan:absen_karyawan_id,nama_lengkap,nik,email_pribadi,telp_pribadi',
                 'company:absen_company_id,company_name',
                 'approver:absen_karyawan_id,nama_lengkap',
-                'childs:id,reimbursement_id,tanggal,nama_reimbursement,status_keluarga,jenis_penyakit,tagihan_dokter,tagihan_obat,tagihan_kacamata,tagihan_gigi,note'
+                'childs:id,reimbursement_id,tanggal,nama_reimbursement,status_keluarga,jenispenyakit_id,tagihan_dokter,tagihan_obat,tagihan_kacamata,tagihan_gigi,note',
+                'childs.jenisPenyakit:id,kode,nama_penyakit',
             ])->findOrFail($id);
 
             $totalAmount = $this->calcTotal($reimbursement->childs);
 
-            // Format childs dengan subtotal per item
             $childsFormatted = $reimbursement->childs->map(function ($child) {
                 $subtotal = ($child->tagihan_dokter   ?? 0)
                           + ($child->tagihan_obat     ?? 0)
@@ -115,23 +103,27 @@ class ReimbursementApiController extends Controller
                           + ($child->tagihan_gigi     ?? 0);
 
                 return [
-                    'id'                  => $child->id,
-                    'reimbursement_id'    => $child->reimbursement_id,
-                    'tanggal'             => $child->tanggal,
-                    'nama_reimbursement'  => $child->nama_reimbursement,
-                    'status_keluarga'     => $child->status_keluarga,
-                    'jenis_penyakit'      => $child->jenis_penyakit,
-                    'tagihan_dokter'      => $child->tagihan_dokter   ?? 0,
-                    'tagihan_obat'        => $child->tagihan_obat     ?? 0,
-                    'tagihan_kacamata'    => $child->tagihan_kacamata ?? 0,
-                    'tagihan_gigi'        => $child->tagihan_gigi     ?? 0,
-                    'note'                => $child->note,
-                    'subtotal'            => $subtotal,
-                    'formatted_subtotal'  => 'Rp ' . number_format($subtotal, 0, ',', '.'),
+                    'id'                 => $child->id,
+                    'reimbursement_id'   => $child->reimbursement_id,
+                    'tanggal'            => $child->tanggal,
+                    'nama_reimbursement' => $child->nama_reimbursement,
+                    'status_keluarga'    => $child->status_keluarga,
+                    'jenispenyakit_id'   => $child->jenispenyakit_id,
+                    'jenis_penyakit'     => $child->jenisPenyakit ? [
+                        'id'           => $child->jenisPenyakit->id,
+                        'kode'         => $child->jenisPenyakit->kode,
+                        'nama_penyakit'=> $child->jenisPenyakit->nama_penyakit,
+                    ] : null,
+                    'tagihan_dokter'     => $child->tagihan_dokter   ?? 0,
+                    'tagihan_obat'       => $child->tagihan_obat     ?? 0,
+                    'tagihan_kacamata'   => $child->tagihan_kacamata ?? 0,
+                    'tagihan_gigi'       => $child->tagihan_gigi     ?? 0,
+                    'note'               => $child->note,
+                    'subtotal'           => $subtotal,
+                    'formatted_subtotal' => 'Rp ' . number_format($subtotal, 0, ',', '.'),
                 ];
             })->values();
 
-            // Balance info
             $balanceInfo = DB::table('balance_reimbursements')
                 ->where('karyawan_id', $reimbursement->karyawan_id)
                 ->where('year', $reimbursement->year_budget)
@@ -140,13 +132,13 @@ class ReimbursementApiController extends Controller
             $balance = null;
             if ($balanceInfo) {
                 $balance = [
-                    'year'                    => (int) $balanceInfo->year,
-                    'budget_claim'            => (int) $balanceInfo->budget_claim,
-                    'total_used'              => (int) $balanceInfo->total_used,
-                    'sisa_budget'             => (int) $balanceInfo->sisa_budget,
-                    'formatted_budget_claim'  => 'Rp ' . number_format($balanceInfo->budget_claim, 0, ',', '.'),
-                    'formatted_total_used'    => 'Rp ' . number_format($balanceInfo->total_used,   0, ',', '.'),
-                    'formatted_sisa_budget'   => 'Rp ' . number_format($balanceInfo->sisa_budget,  0, ',', '.'),
+                    'year'                   => (int) $balanceInfo->year,
+                    'budget_claim'           => (int) $balanceInfo->budget_claim,
+                    'total_used'             => (int) $balanceInfo->total_used,
+                    'sisa_budget'            => (int) $balanceInfo->sisa_budget,
+                    'formatted_budget_claim' => 'Rp ' . number_format($balanceInfo->budget_claim, 0, ',', '.'),
+                    'formatted_total_used'   => 'Rp ' . number_format($balanceInfo->total_used,   0, ',', '.'),
+                    'formatted_sisa_budget'  => 'Rp ' . number_format($balanceInfo->sisa_budget,  0, ',', '.'),
                 ];
             }
 
@@ -190,7 +182,6 @@ class ReimbursementApiController extends Controller
     public function approveReimbursement(Request $request, $id)
     {
         DB::beginTransaction();
-
         try {
             $validator = Validator::make($request->all(), [
                 'approved_id' => 'nullable|integer|exists:karyawans,absen_karyawan_id',
@@ -224,11 +215,10 @@ class ReimbursementApiController extends Controller
 
             DB::commit();
 
-            // Load untuk response
             $reimbursement->load([
                 'karyawan:absen_karyawan_id,nama_lengkap,nik',
                 'approver:absen_karyawan_id,nama_lengkap',
-                'childs:id,reimbursement_id,tagihan_dokter,tagihan_obat,tagihan_kacamata,tagihan_gigi'
+                'childs:id,reimbursement_id,tagihan_dokter,tagihan_obat,tagihan_kacamata,tagihan_gigi',
             ]);
 
             $totalAmount = $this->calcTotal($reimbursement->childs);
@@ -250,7 +240,6 @@ class ReimbursementApiController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal approve reimbursement',
@@ -268,37 +257,25 @@ class ReimbursementApiController extends Controller
         try {
             $query = Reimbursement::query();
 
-            if ($request->filled('karyawan_id')) {
-                $query->where('karyawan_id', $request->karyawan_id);
-            }
+            if ($request->filled('karyawan_id'))  $query->where('karyawan_id',  $request->karyawan_id);
+            if ($request->filled('company_id'))    $query->where('company_id',   $request->company_id);
+            if ($request->filled('year_budget'))   $query->where('year_budget',  $request->year_budget);
+            if ($request->filled('periode_slip'))  $query->where('periode_slip', $request->periode_slip);
 
-            if ($request->filled('company_id')) {
-                $query->where('company_id', $request->company_id);
-            }
-
-            if ($request->filled('year_budget')) {
-                $query->where('year_budget', $request->year_budget);
-            }
-
-            if ($request->filled('periode_slip')) {
-                $query->where('periode_slip', $request->periode_slip);
-            }
+            $childsSelect = ['id', 'reimbursement_id', 'tagihan_dokter', 'tagihan_obat', 'tagihan_kacamata', 'tagihan_gigi'];
 
             $totalPending  = (clone $query)->where('status', false)->count();
             $totalApproved = (clone $query)->where('status', true)->count();
 
-            // Ambil kolom tagihan saja untuk efisiensi
-            $childsSelect = 'id,reimbursement_id,tagihan_dokter,tagihan_obat,tagihan_kacamata,tagihan_gigi';
-
             $totalAmountPending = (clone $query)
                 ->where('status', false)
-                ->with(['childs' => fn($q) => $q->select(explode(',', $childsSelect))])
+                ->with(['childs' => fn($q) => $q->select($childsSelect)])
                 ->get()
                 ->sum(fn($r) => $this->calcTotal($r->childs));
 
             $totalAmountApproved = (clone $query)
                 ->where('status', true)
-                ->with(['childs' => fn($q) => $q->select(explode(',', $childsSelect))])
+                ->with(['childs' => fn($q) => $q->select($childsSelect)])
                 ->get()
                 ->sum(fn($r) => $this->calcTotal($r->childs));
 

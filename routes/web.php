@@ -6,6 +6,7 @@ use App\Http\Controllers\CompanySyncController;
 use App\Http\Controllers\CompanyViewController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileProxyController;
+use App\Http\Controllers\JenisPenyakitController;
 use App\Http\Controllers\JenisTerSyncController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\KaryawanPtkpHistorySyncController;
@@ -471,9 +472,13 @@ Route::middleware(['auth', 'role:admin,management'])->group(function () {
 
     Route::resource('/balance-reimbursements', BalanceReimbursementController::class);
     Route::get('balancereimbursements/data', [BalanceReimbursementController::class, 'getData'])->name('balancereimbursements.data');
-
-     Route::post('/sync-karyawan', [ReimbursementController::class, 'syncKaryawan'])
+    
+    Route::post('/sync-karyawan', [ReimbursementController::class, 'syncKaryawan'])
     ->name('manage-reimbursements.sync-karyawan');
+    
+    Route::resource('/jenis-penyakits', JenisPenyakitController::class);
+    Route::get('jenispenyakits/data', [JenisPenyakitController::class, 'getData'])->name('jenispenyakits.data');
+    Route::get('manage-reimbursements/jenis-penyakit/list', [ReimbursementController::class, 'getJenisPenyakitList'])->name('manage-reimbursements.jenis-penyakit.list');
 });
 
 

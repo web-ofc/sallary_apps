@@ -284,6 +284,7 @@
                             request()->routeIs('manage-reimbursements.*') || 
                             request()->routeIs('master-salaries.*') || 
                             request()->routeIs('balance-reimbursements.*') || 
+                            request()->routeIs('jenis-penyakits.*') || 
                             request()->routeIs('manage-reimbursementperiods.*') ? 'here show' : '' 
                             }}">
                             
@@ -313,6 +314,13 @@
                                     href="{{ route('manage-reimbursementperiods.index') }}">
                                         <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
                                         <span class="menu-title">Periode</span>
+                                    </a>
+                                </div>
+                                <div class="menu-item">
+                                    <a class="menu-link {{ request()->routeIs('jenis-penyakits.*') ? 'active' : '' }}" 
+                                    href="{{ route('jenis-penyakits.index') }}">
+                                        <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                                        <span class="menu-title">Jenis Penyakit</span>
                                     </a>
                                 </div>
                                 <div class="menu-item">

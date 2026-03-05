@@ -25,6 +25,10 @@ class ReimbursementChild extends Model
     {
         return $this->belongsTo(Reimbursement::class, 'reimbursement_id', 'id');
     }
+    public function jenisPenyakit()
+    {
+        return $this->belongsTo(JenisPenyakit::class, 'jenispenyakit_id', 'id');
+    }
 
 
     /**
