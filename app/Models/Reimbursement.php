@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Reimbursement extends Model
 {
@@ -14,13 +15,10 @@ class Reimbursement extends Model
 
     protected $casts = [
         'year_budget' => 'integer',
-        'status' => 'boolean',
+        'status'      => 'boolean',
         'approved_at' => 'date',
     ];
 
-    /**
-     * Boot model - auto generate id_recapan
-     */
     protected static function boot()
     {
         parent::boot();
@@ -32,149 +30,82 @@ class Reimbursement extends Model
         });
     }
 
-     /**
-     * ✅ NEW: Generate unique ID Recapan per company per year
+    /**
+     * Generate unique ID Recapan — race-condition safe
      * Format: RMB-{COMPANY_CODE}-{YYMM}-{XXXX}
-     * Example: RMB-CEK-2602-0001
-     * 
-     * Rules:
-     * - RMB = Reimbursement code (fixed)
-     * - COMPANY_CODE = dari companies.code (via absen_company_id)
-     * - YYMM = Year (2 digit) + Month (2 digit) dari now()
-     * - XXXX = Counter per company per year (reset setiap ganti tahun)
-     * 
-     * @param int $companyId absen_company_id
-     * @return string
+     * Pakai DB::transaction + lockForUpdate supaya ga duplicate
      */
     public static function generateIdRecapan($companyId)
     {
-        // Get company code
         $company = \App\Models\Company::where('absen_company_id', $companyId)->first();
-        
+
         if (!$company || empty($company->code)) {
             throw new \Exception("Company code tidak ditemukan untuk company_id: {$companyId}");
         }
 
         $companyCode = strtoupper($company->code);
-        
-        // Format: YYMM (e.g., 2602 for Feb 2026)
-        $yearMonth = now()->format('ym'); // lowercase 'y' = 2 digit year
-        
-        // Current year untuk reset counter
-        $currentYear = now()->year;
-        
-        // Prefix: RMB-{COMPANY_CODE}-{YYMM}-
-        $prefix = "RMB-{$companyCode}-{$yearMonth}-";
-        
-        // ✅ IMPORTANT: withTrashed() untuk include soft deleted records
-        // Cari record terakhir untuk company ini di tahun ini
-        $lastRecord = static::withTrashed()
-            ->where('company_id', $companyId)
-            ->where('year_budget', $currentYear)
-            ->where('id_recapan', 'like', "RMB-{$companyCode}-{$yearMonth}-%")
-            ->orderBy('id_recapan', 'desc')
-            ->first();
-        
-        if ($lastRecord) {
-            // Extract last 4 digits
-            $lastNumber = (int) substr($lastRecord->id_recapan, -4);
-            $newNumber = $lastNumber + 1;
-        } else {
-            // First record untuk company ini di tahun/bulan ini
-            $newNumber = 1;
-        }
-        
-        // Format: 0001, 0002, dst
-        return $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+        $yearMonth   = now()->format('ym'); // e.g. 2603
+        $prefix      = "RMB-{$companyCode}-{$yearMonth}-";
+
+        return DB::transaction(function () use ($prefix) {
+            // Ambil angka tertinggi yang sudah ada (include soft deleted), lock row
+            $lastNumber = static::withTrashed()
+                ->where('id_recapan', 'like', "{$prefix}%")
+                ->lockForUpdate()
+                ->orderByRaw('CAST(SUBSTRING_INDEX(id_recapan, "-", -1) AS UNSIGNED) DESC')
+                ->value(DB::raw('CAST(SUBSTRING_INDEX(id_recapan, "-", -1) AS UNSIGNED)'));
+
+            $newNumber = ($lastNumber ?? 0) + 1;
+            $candidate = $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+
+            // Safety: kalau masih bentrok (edge case), terus increment
+            while (static::withTrashed()->where('id_recapan', $candidate)->exists()) {
+                $newNumber++;
+                $candidate = $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+            }
+
+            return $candidate;
+        });
     }
 
-    /**
-     * Relasi ke Karyawan menggunakan absen_karyawan_id
-     */
     public function karyawan()
     {
         return $this->belongsTo(Karyawan::class, 'karyawan_id', 'absen_karyawan_id');
     }
 
-    /**
-     * Relasi ke Karyawan menggunakan absen_company_id
-     */
     public function company()
     {
         return $this->belongsTo(Company::class, 'company_id', 'absen_company_id');
     }
 
-    /**
-     * Relasi ke Approver (juga karyawan)
-     */
     public function approver()
     {
         return $this->belongsTo(Karyawan::class, 'approved_id', 'absen_karyawan_id');
     }
 
-     /**
-     * Relasi ke User yang membuat reimbursement (prepare)
-     */
     public function userBy()
     {
         return $this->belongsTo(User::class, 'user_by_id');
     }
 
-
-
-    /**
-     * Relasi ke Children
-     */
     public function childs()
     {
         return $this->hasMany(ReimbursementChild::class, 'reimbursement_id', 'id');
     }
 
-        public function getTotalAmountAttribute()
+    public function getTotalAmountAttribute()
     {
         return $this->childs->sum(fn($c) =>
-            ($c->tagihan_dokter ?? 0) + ($c->tagihan_obat ?? 0) +
-            ($c->tagihan_kacamata ?? 0) + ($c->tagihan_gigi ?? 0)
+            ($c->tagihan_dokter   ?? 0) +
+            ($c->tagihan_obat     ?? 0) +
+            ($c->tagihan_kacamata ?? 0) +
+            ($c->tagihan_gigi     ?? 0)
         );
     }
 
-    /**
-     * Scope - filter by year
-     */
-    public function scopeByYear($query, $year)
-    {
-        return $query->where('year_budget', $year);
-    }
-
-    /**
-     * Scope - filter by periode slip
-     */
-    public function scopeByPeriode($query, $periode)
-    {
-        return $query->where('periode_slip', $periode);
-    }
-
-    /**
-     * Scope - filter by karyawan (absen_karyawan_id)
-     */
-    public function scopeByKaryawan($query, $absenKaryawanId)
-    {
-        return $query->where('karyawan_id', $absenKaryawanId);
-    }
-
-    /**
-     * Scope - approved only
-     */
-    public function scopeApproved($query)
-    {
-        return $query->where('status', true);
-    }
-
-    /**
-     * Scope - pending only
-     */
-    public function scopePending($query)
-    {
-        return $query->where('status', false);
-    }
+    public function scopeByYear($query, $year)       { return $query->where('year_budget', $year); }
+    public function scopeByPeriode($query, $periode)  { return $query->where('periode_slip', $periode); }
+    public function scopeByKaryawan($query, $id)      { return $query->where('karyawan_id', $id); }
+    public function scopeApproved($query)             { return $query->where('status', true); }
+    public function scopePending($query)              { return $query->where('status', false); }
 }
