@@ -637,7 +637,7 @@
         </div>
         <div class="summary-cell" style="width: 50%;">
             <div class="summary-label">Total Klaim</div>
-            <div class="summary-value">Rp {{ number_format($totalAmount ?? $grandTotal, 0, ',', '.') }}</div>
+            <div class="summary-value">Rp {{ number_format( $grandTotal, 0, ',', '.') }}</div>
         </div>
     </div>
 
