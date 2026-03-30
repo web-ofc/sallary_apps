@@ -277,70 +277,114 @@
                         DATA REIMBURSTMENT GROUP (ACCORDION)
                     ============================================ --}}
                     @auth
-                        @if(in_array(auth()->id(), [1, 14]))
-                        <div data-kt-menu-trigger="click" 
-                            class="menu-item menu-accordion 
-                            {{  
-                            request()->routeIs('manage-reimbursements.*') || 
-                            request()->routeIs('master-salaries.*') || 
-                            request()->routeIs('balance-reimbursements.*') || 
-                            request()->routeIs('jenis-penyakits.*') || 
-                            request()->routeIs('manage-reimbursementperiods.*') ? 'here show' : '' 
-                            }}">
-                            
-                            <span class="menu-link">
-                                <span class="menu-icon">
-                                    <i class="ki-duotone ki-profile-user fs-2">
-                                        <span class="path1"></span>
-                                        <span class="path2"></span>
-                                        <span class="path3"></span>
-                                        <span class="path4"></span>
-                                    </i>
-                                </span>
-                                <span class="menu-title">Medical Reimbursement</span>
-                                <span class="menu-arrow"></span>
-                            </span>
+@if(in_array(auth()->id(), [1, 14]))
+<div data-kt-menu-trigger="click" 
+    class="menu-item menu-accordion 
+    {{  
+    request()->routeIs('manage-reimbursements.*') || 
+    request()->routeIs('master-salaries.*') || 
+    request()->routeIs('balance-reimbursements.*') || 
+    request()->routeIs('sum-reimburstment.*') || 
+    request()->routeIs('jenis-penyakits.*') || 
+    request()->routeIs('reportreimbursements.pivot') ||
+    request()->routeIs('reportreimbursements.pivot-*') ||
+    request()->routeIs('report-reimbursements.*') || 
+    request()->routeIs('manage-reimbursementperiods.*') ? 'here show' : '' 
+    }}">
+    
+    <span class="menu-link">
+        <span class="menu-icon">
+            <i class="ki-duotone ki-profile-user fs-2">
+                <span class="path1"></span>
+                <span class="path2"></span>
+                <span class="path3"></span>
+                <span class="path4"></span>
+            </i>
+        </span>
+        <span class="menu-title">Medical Reimbursement</span>
+        <span class="menu-arrow"></span>
+    </span>
 
-                            <div class="menu-sub menu-sub-accordion">
-                                <div class="menu-item">
-                                    <a class="menu-link {{ request()->routeIs('manage-reimbursements.*') ? 'active' : '' }}" 
-                                    href="{{ route('manage-reimbursements.index') }}">
-                                        <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                        <span class="menu-title">Reimbursement</span>
-                                    </a>
-                                </div>
-                                <div class="menu-item">
-                                    <a class="menu-link {{ request()->routeIs('manage-reimbursementperiods.*') ? 'active' : '' }}" 
-                                    href="{{ route('manage-reimbursementperiods.index') }}">
-                                        <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                        <span class="menu-title">Periode</span>
-                                    </a>
-                                </div>
-                                <div class="menu-item">
-                                    <a class="menu-link {{ request()->routeIs('jenis-penyakits.*') ? 'active' : '' }}" 
-                                    href="{{ route('jenis-penyakits.index') }}">
-                                        <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                        <span class="menu-title">Jenis Penyakit</span>
-                                    </a>
-                                </div>
-                                <div class="menu-item">
-                                    <a class="menu-link {{ request()->routeIs('master-salaries.*') ? 'active' : '' }}" 
-                                    href="{{ route('master-salaries.index') }}">
-                                        <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                        <span class="menu-title">Master Salary</span>
-                                    </a>
-                                </div>
-                                <div class="menu-item">
-                                    <a class="menu-link {{ request()->routeIs('balance-reimbursements.*') ? 'active' : '' }}" 
-                                    href="{{ route('balance-reimbursements.index') }}">
-                                        <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                        <span class="menu-title">Balance Reimbursements</span>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        @endif
-                        @endauth
+    <div class="menu-sub menu-sub-accordion">
+        <div class="menu-item">
+            <a class="menu-link {{ request()->routeIs('manage-reimbursements.*') ? 'active' : '' }}" 
+            href="{{ route('manage-reimbursements.index') }}">
+                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                <span class="menu-title">Reimbursement</span>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a class="menu-link {{ request()->routeIs('manage-reimbursementperiods.*') ? 'active' : '' }}" 
+            href="{{ route('manage-reimbursementperiods.index') }}">
+                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                <span class="menu-title">Periode</span>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a class="menu-link {{ request()->routeIs('jenis-penyakits.*') ? 'active' : '' }}" 
+            href="{{ route('jenis-penyakits.index') }}">
+                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                <span class="menu-title">Jenis Penyakit</span>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a class="menu-link {{ request()->routeIs('master-salaries.*') ? 'active' : '' }}" 
+            href="{{ route('master-salaries.index') }}">
+                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                <span class="menu-title">Master Salary</span>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a class="menu-link {{ request()->routeIs('balance-reimbursements.*') ? 'active' : '' }}" 
+            href="{{ route('balance-reimbursements.index') }}">
+                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                <span class="menu-title">Balance Reimbursements</span>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a class="menu-link {{ request()->routeIs('sum-reimburstment.*') ? 'active' : '' }}" 
+            href="{{ route('sum-reimburstment.index') }}">
+                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                <span class="menu-title">Sum Reimbursements</span>
+            </a>
+        </div>
+
+        {{-- Sub-group: Report --}}
+        <div data-kt-menu-trigger="click"
+            class="menu-item menu-accordion
+            {{
+            request()->routeIs('report-reimbursements.*') ||
+            request()->routeIs('reportreimbursements.pivot') ||
+            request()->routeIs('reportreimbursements.pivot-*')
+            ? 'here show' : ''
+            }}">
+            <span class="menu-link">
+                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                <span class="menu-title">Report & Analisa</span>
+                <span class="menu-arrow"></span>
+            </span>
+            <div class="menu-sub menu-sub-accordion">
+                <div class="menu-item">
+                    <a class="menu-link {{ request()->routeIs('report-reimbursements.*') ? 'active' : '' }}"
+                    href="{{ route('report-reimbursements.index') }}">
+                        <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                        <span class="menu-title">Analisa per Karyawan</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a class="menu-link {{ request()->routeIs('reportreimbursements.pivot') || request()->routeIs('reportreimbursements.pivot-*') ? 'active' : '' }}"
+                    href="{{ route('reportreimbursements.pivot') }}">
+                        <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                        <span class="menu-title">Pivot Reimbursement</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+@endif
+@endauth
 
                     {{-- ============================================
                         DIVIDER

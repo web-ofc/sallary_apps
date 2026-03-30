@@ -29,7 +29,9 @@ use App\Http\Controllers\RangeBrutoSyncController;
 use App\Http\Controllers\ReimbursementController;
 use App\Http\Controllers\ReimbursementFileController;
 use App\Http\Controllers\ReimbursementPeriodController;
+use App\Http\Controllers\ReportReimbursementsController;
 use App\Http\Controllers\SettingCompanyUserController;
+use App\Http\Controllers\SumReimbursementsController;
 use App\Http\Controllers\SyncKaryawanWithoutUserController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -479,6 +481,30 @@ Route::middleware(['auth', 'role:admin,management'])->group(function () {
     Route::resource('/jenis-penyakits', JenisPenyakitController::class);
     Route::get('jenispenyakits/data', [JenisPenyakitController::class, 'getData'])->name('jenispenyakits.data');
     Route::get('manage-reimbursements/jenis-penyakit/list', [ReimbursementController::class, 'getJenisPenyakitList'])->name('manage-reimbursements.jenis-penyakit.list');
+    
+    Route::resource('/report-reimbursements', ReportReimbursementsController::class);
+    Route::post('reportreimbursements/data', [ReportReimbursementsController::class, 'getData'])
+        ->name('reportreimbursements.data');
+    Route::get('reportreimbursements/search-karyawan', [ReportReimbursementsController::class, 'searchKaryawan'])
+        ->name('reportreimbursements.search-karyawan');
+
+    // Pivot routes
+    Route::get('reportreimbursements/pivot', [ReportReimbursementsController::class, 'pivot'])
+        ->name('reportreimbursements.pivot');
+    Route::get('reportreimbursements/pivot-columns', [ReportReimbursementsController::class, 'getPivotColumns'])
+        ->name('reportreimbursements.pivot-columns');
+    Route::post('reportreimbursements/pivot-data', [ReportReimbursementsController::class, 'getPivotData'])
+        ->name('reportreimbursements.pivot-data');
+
+    // ---- BARU: Dashboard cards + Top penyakit ----
+    Route::post('reportreimbursements/pivot-stats', [ReportReimbursementsController::class, 'getPivotStats'])
+        ->name('reportreimbursements.pivot-stats');
+    Route::post('reportreimbursements/pivot-top-penyakit', [ReportReimbursementsController::class, 'getPivotTopPenyakit'])
+        ->name('reportreimbursements.pivot-top-penyakit');
+
+        Route::resource('/sum-reimburstment', SumReimbursementsController::class);
+        Route::get('sumreimburstment/data', [SumReimbursementsController::class, 'getData'])->name('sumreimburstment.data');
+        Route::get('sumreimburstment/export', [SumReimbursementsController::class, 'export'])->name('sumreimburstment.export');
 });
 
 

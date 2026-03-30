@@ -101,5 +101,11 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('jenis-penyakits', function ($user) {
             return in_array($user->role, ['management','admin']);
         });
+        Gate::define('report-reimbursements', function ($user) {
+            return in_array($user->role, ['management','admin']);
+        });
+        Gate::define('sum-reimburstment', function ($user) {
+            return in_array($user->role, ['management','admin']);
+        });
     }
 }
